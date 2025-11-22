@@ -291,7 +291,9 @@ class GameEngine extends ChangeNotifier {
     }
 
     final updatedPlayed = Set<int>.from(played)..add(cardIndex);
-    _state = _state.copyWith(
+
+    // Only update score animations if points were scored, otherwise preserve existing animations
+    final stateUpdate = _state.copyWith(
       peggingCount: countAfter,
       peggingPile: pileAfter,
       isPlayerTurn: mgr.isPlayerTurn == Player.player,
@@ -301,9 +303,15 @@ class GameEngine extends ChangeNotifier {
       opponentScore: opponentScore,
       gameStatus: status,
       peggingManager: mgr,
-      playerScoreAnimation: peggingAnimation?.isPlayer == true ? peggingAnimation : null,
-      opponentScoreAnimation: peggingAnimation?.isPlayer == false ? peggingAnimation : null,
     );
+
+    // Apply animation updates only if there are points to show
+    _state = peggingAnimation != null
+        ? stateUpdate.copyWith(
+            playerScoreAnimation: peggingAnimation.isPlayer ? peggingAnimation : null,
+            opponentScoreAnimation: !peggingAnimation.isPlayer ? peggingAnimation : null,
+          )
+        : stateUpdate;
     notifyListeners();
 
     if (outcome.reset != null && outcome.reset!.resetFor31) {
@@ -699,12 +707,18 @@ class GameEngine extends ChangeNotifier {
       );
     }
 
-    _state = _state.copyWith(
+    // Only update animations if there are positive deltas to show
+    final stateUpdate = _state.copyWith(
       playerScore: newPlayerScore,
       opponentScore: newOpponentScore,
-      playerScoreAnimation: playerAnimation,
-      opponentScoreAnimation: opponentAnimation,
     );
+
+    _state = (playerAnimation != null || opponentAnimation != null)
+        ? stateUpdate.copyWith(
+            playerScoreAnimation: playerAnimation,
+            opponentScoreAnimation: opponentAnimation,
+          )
+        : stateUpdate;
     notifyListeners();
   }
 
@@ -787,16 +801,22 @@ class GameEngine extends ChangeNotifier {
         }
       }
 
-      _state = _state.copyWith(
+      // Only update animations if last card scored, otherwise preserve existing animations
+      final stateUpdate = _state.copyWith(
         isPeggingPhase: false,
         currentPhase: GamePhase.handCounting,
         gameStatus: status + '\nPegging complete. Count hands.',
         isPlayerTurn: false,
         playerScore: playerScore,
         opponentScore: opponentScore,
-        playerScoreAnimation: lastCardAnimation?.isPlayer == true ? lastCardAnimation : null,
-        opponentScoreAnimation: lastCardAnimation?.isPlayer == false ? lastCardAnimation : null,
       );
+
+      _state = lastCardAnimation != null
+          ? stateUpdate.copyWith(
+              playerScoreAnimation: lastCardAnimation.isPlayer ? lastCardAnimation : null,
+              opponentScoreAnimation: !lastCardAnimation.isPlayer ? lastCardAnimation : null,
+            )
+          : stateUpdate;
       notifyListeners();
     }
   }

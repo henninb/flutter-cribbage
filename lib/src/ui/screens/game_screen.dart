@@ -204,69 +204,49 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
     return GestureDetector(
       onTap: _handleTap,
       child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: 1,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            bottom: BorderSide(
+              color: Theme.of(context).dividerColor,
+              width: 1,
+            ),
           ),
         ),
-      ),
-      child: Stack(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _ScoreColumn(
-                label: 'You',
-                score: widget.state.playerScore,
-                subtitle: widget.state.isPlayerDealer ? 'Dealer' : 'Pone',
-                isDealer: widget.state.currentPhase != GamePhase.cutForDealer && widget.state.isPlayerDealer,
-              ),
-              if (widget.state.starterCard != null)
-                _StarterCard(card: widget.state.starterCard!),
-              _ScoreColumn(
-                label: 'Opponent',
-                score: widget.state.opponentScore,
-                subtitle: widget.state.isPlayerDealer ? 'Pone' : 'Dealer',
-                isDealer: widget.state.currentPhase != GamePhase.cutForDealer && !widget.state.isPlayerDealer,
-              ),
-            ],
-          ),
-          // Player score animation overlay (positioned to the right of player score)
-          if (widget.state.playerScoreAnimation != null)
-            Positioned(
-              left: 120,
-              top: 0,
-              bottom: 0,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ScoreAnimationWidget(
-                  points: widget.state.playerScoreAnimation!.points,
-                  isPlayer: widget.state.playerScoreAnimation!.isPlayer,
-                  onAnimationComplete: () => widget.engine.clearScoreAnimation(true),
-                ),
-              ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _ScoreColumn(
+              label: 'You',
+              score: widget.state.playerScore,
+              subtitle: widget.state.isPlayerDealer ? 'Dealer' : 'Pone',
+              isDealer: widget.state.currentPhase != GamePhase.cutForDealer && widget.state.isPlayerDealer,
+              scoreAnimation: widget.state.playerScoreAnimation != null
+                  ? ScoreAnimationWidget(
+                      points: widget.state.playerScoreAnimation!.points,
+                      isPlayer: widget.state.playerScoreAnimation!.isPlayer,
+                      onAnimationComplete: () => widget.engine.clearScoreAnimation(true),
+                    )
+                  : null,
             ),
-          // Opponent score animation overlay (positioned to the left of opponent score)
-          if (widget.state.opponentScoreAnimation != null)
-            Positioned(
-              right: 120,
-              top: 0,
-              bottom: 0,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: ScoreAnimationWidget(
-                  points: widget.state.opponentScoreAnimation!.points,
-                  isPlayer: widget.state.opponentScoreAnimation!.isPlayer,
-                  onAnimationComplete: () => widget.engine.clearScoreAnimation(false),
-                ),
-              ),
+            if (widget.state.starterCard != null)
+              _StarterCard(card: widget.state.starterCard!),
+            _ScoreColumn(
+              label: 'Opponent',
+              score: widget.state.opponentScore,
+              subtitle: widget.state.isPlayerDealer ? 'Pone' : 'Dealer',
+              isDealer: widget.state.currentPhase != GamePhase.cutForDealer && !widget.state.isPlayerDealer,
+              scoreAnimation: widget.state.opponentScoreAnimation != null
+                  ? ScoreAnimationWidget(
+                      points: widget.state.opponentScoreAnimation!.points,
+                      isPlayer: widget.state.opponentScoreAnimation!.isPlayer,
+                      onAnimationComplete: () => widget.engine.clearScoreAnimation(false),
+                    )
+                  : null,
             ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -277,12 +257,14 @@ class _ScoreColumn extends StatelessWidget {
   final int score;
   final String subtitle;
   final bool isDealer;
+  final Widget? scoreAnimation;
 
   const _ScoreColumn({
     required this.label,
     required this.score,
     required this.subtitle,
     required this.isDealer,
+    this.scoreAnimation,
   });
 
   @override
@@ -315,11 +297,20 @@ class _ScoreColumn extends StatelessWidget {
             ],
           ],
         ),
-        Text(
-          '$score',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$score',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            if (scoreAnimation != null) ...[
+              const SizedBox(width: 8),
+              scoreAnimation!,
+            ],
+          ],
         ),
         Text(
           subtitle,
