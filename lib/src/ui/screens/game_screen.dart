@@ -573,6 +573,8 @@ class _PlayerHand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cardsRemaining = state.playerHand.length - state.playerCardsPlayed.length;
+
     // Create sorted indices based on card rank (lowest to highest)
     final sortedIndices = List<int>.generate(state.playerHand.length, (i) => i);
     sortedIndices.sort((a, b) {
@@ -584,13 +586,20 @@ class _PlayerHand extends StatelessWidget {
       return cardA.suit.index.compareTo(cardB.suit.index);
     });
 
-    return SizedBox(
-      height: CardConstants.playerHandHeight,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        shrinkWrap: true,
-        itemCount: sortedIndices.length,
-        itemBuilder: (context, displayIndex) {
+    return Column(
+      children: [
+        Text(
+          'You ($cardsRemaining cards)',
+          style: Theme.of(context).textTheme.labelMedium,
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: CardConstants.playerHandHeight,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: sortedIndices.length,
+            itemBuilder: (context, displayIndex) {
           // Get the original index from the sorted list
           final originalIndex = sortedIndices[displayIndex];
           final card = state.playerHand[originalIndex];
@@ -633,6 +642,8 @@ class _PlayerHand extends StatelessWidget {
           );
         },
       ),
+        ),
+      ],
     );
   }
 }
