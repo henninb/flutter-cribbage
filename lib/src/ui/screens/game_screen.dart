@@ -1,0 +1,891 @@
+import 'package:flutter/material.dart';
+
+import '../../game/engine/game_engine.dart';
+import '../../game/engine/game_state.dart';
+import '../../models/theme_models.dart';
+import '../../models/game_settings.dart';
+import '../widgets/cribbage_board.dart';
+import '../widgets/welcome_screen.dart';
+import '../widgets/action_bar.dart';
+import '../widgets/hand_counting_dialog.dart';
+import '../widgets/card_constants.dart';
+import 'settings_screen.dart';
+
+/// Main game screen with zone-based layout (NO SCROLLING)
+class GameScreen extends StatefulWidget {
+  const GameScreen({
+    super.key,
+    required this.engine,
+    required this.currentTheme,
+    required this.onThemeChange,
+    required this.currentSettings,
+    required this.onSettingsChange,
+  });
+
+  final GameEngine engine;
+  final CribbageTheme currentTheme;
+  final Function(CribbageTheme) onThemeChange;
+  final GameSettings currentSettings;
+  final Function(GameSettings) onSettingsChange;
+
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  bool _showSettings = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: widget.engine,
+      builder: (context, _) {
+        final state = widget.engine.state;
+
+        // Show settings overlay if requested
+        if (_showSettings) {
+          return SettingsScreen(
+            currentSettings: widget.currentSettings,
+            onSettingsChange: widget.onSettingsChange,
+            onBackPressed: () {
+              setState(() {
+                _showSettings = false;
+              });
+            },
+          );
+        }
+
+        // Main game screen with fixed zones
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Cribbage'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                tooltip: 'Settings',
+                onPressed: () {
+                  setState(() {
+                    _showSettings = true;
+                  });
+                },
+              ),
+            ],
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Zone 1: Score Header (only when game started)
+                if (state.gameStarted) _ScoreHeader(state: state),
+
+                // Zone 2: Game Area (flexible, NO SCROLL)
+                Expanded(
+                  child: _GameArea(
+                    state: state,
+                    engine: widget.engine,
+                  ),
+                ),
+
+                // Zone 3: Action Bar
+                ActionBar(
+                  state: state,
+                  onStartGame: widget.engine.startNewGame,
+                  onCutForDealer: widget.engine.cutForDealer,
+                  onDeal: widget.engine.dealCards,
+                  onConfirmCrib: widget.engine.confirmCribSelection,
+                  onGo: () => widget.engine.handleGo(),
+                  onStartCounting: widget.engine.startHandCounting,
+                ),
+
+                // Zone 4: Cribbage Board
+                CribbageBoard(
+                  playerScore: state.playerScore,
+                  opponentScore: state.opponentScore,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Score header showing scores and stats
+class _ScoreHeader extends StatelessWidget {
+  final GameState state;
+
+  const _ScoreHeader({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    // Debug: Print scores being displayed
+    debugPrint('[UI] ScoreHeader displaying - Player: ${state.playerScore}, Opponent: ${state.opponentScore}');
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _ScoreColumn(
+            label: 'You',
+            score: state.playerScore,
+            subtitle: state.isPlayerDealer ? 'Dealer' : 'Pone',
+            isDealer: state.currentPhase != GamePhase.cutForDealer && state.isPlayerDealer,
+          ),
+          if (state.starterCard != null)
+            _StarterCard(card: state.starterCard!),
+          _ScoreColumn(
+            label: 'Opponent',
+            score: state.opponentScore,
+            subtitle: state.isPlayerDealer ? 'Pone' : 'Dealer',
+            isDealer: state.currentPhase != GamePhase.cutForDealer && !state.isPlayerDealer,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScoreColumn extends StatelessWidget {
+  final String label;
+  final int score;
+  final String subtitle;
+  final bool isDealer;
+
+  const _ScoreColumn({
+    required this.label,
+    required this.score,
+    required this.subtitle,
+    required this.isDealer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
+            if (isDealer) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'D',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        Text(
+          '$score',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        Text(
+          subtitle,
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ],
+    );
+  }
+}
+
+class _StarterCard extends StatelessWidget {
+  final dynamic card;
+
+  const _StarterCard({required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Starter',
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+          Text(
+            card.label,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Game area - shows different content based on phase
+/// NO SCROLLING - everything must fit in available space
+class _GameArea extends StatelessWidget {
+  final GameState state;
+  final GameEngine engine;
+
+  const _GameArea({
+    required this.state,
+    required this.engine,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Show welcome screen if game not started
+    if (!state.gameStarted) {
+      return const WelcomeScreen();
+    }
+
+    // Show pending reset dialog if exists
+    if (state.pendingReset != null) {
+      return _PendingResetDialog(
+        state: state,
+        onDismiss: engine.acknowledgePendingReset,
+      );
+    }
+
+    // Show winner modal if game over
+    if (state.showWinnerModal && state.winnerModalData != null) {
+      return _WinnerModal(
+        data: state.winnerModalData!,
+        onDismiss: engine.dismissWinnerModal,
+      );
+    }
+
+    // Show hand counting dialog
+    if (state.isInHandCountingPhase) {
+      return HandCountingDialog(
+        state: state,
+        onContinue: engine.proceedToNextCountingPhase,
+      );
+    }
+
+    // Show game content based on phase
+    return _GameContent(state: state, engine: engine);
+  }
+}
+
+/// Main game content - different layout per phase
+class _GameContent extends StatelessWidget {
+  final GameState state;
+  final GameEngine engine;
+
+  const _GameContent({
+    required this.state,
+    required this.engine,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Opponent hand (only show after cards are dealt)
+          if (_shouldShowOpponentHand()) _OpponentHand(state: state),
+
+          // Middle section - varies by phase
+          _buildMiddleSection(context),
+
+          // Player hand (only show after cards are dealt)
+          if (_shouldShowOpponentHand()) _PlayerHand(state: state, engine: engine),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiddleSection(BuildContext context) {
+    switch (state.currentPhase) {
+      case GamePhase.cutForDealer:
+        return Expanded(child: _CutCardsDisplay(state: state));
+
+      case GamePhase.dealing:
+        // Show cut cards only if we just cut for dealer (initial game start)
+        if (state.showCutForDealer) {
+          return Expanded(child: _CutCardsDisplay(state: state));
+        }
+        return const Expanded(child: SizedBox.shrink());
+
+      case GamePhase.cribSelection:
+        return Column(
+          children: [
+            Text(
+              'Select 2 cards for the crib',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              '${state.selectedCards.length}/2 selected',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        );
+
+      case GamePhase.pegging:
+        return _PeggingDisplay(state: state);
+
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  bool _shouldShowOpponentHand() {
+    // Only show opponent hand after cards have been dealt
+    return state.currentPhase != GamePhase.cutForDealer &&
+           state.currentPhase != GamePhase.dealing;
+  }
+}
+
+/// Opponent hand display
+class _OpponentHand extends StatelessWidget {
+  final GameState state;
+
+  const _OpponentHand({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final cardsRemaining = state.opponentHand.length - state.opponentCardsPlayed.length;
+
+    // Create sorted indices based on card rank (lowest to highest)
+    final sortedIndices = List<int>.generate(state.opponentHand.length, (i) => i);
+    sortedIndices.sort((a, b) {
+      final cardA = state.opponentHand[a];
+      final cardB = state.opponentHand[b];
+      // First compare by rank index, then by suit for consistent ordering
+      final rankComparison = cardA.rank.index.compareTo(cardB.rank.index);
+      if (rankComparison != 0) return rankComparison;
+      return cardA.suit.index.compareTo(cardB.suit.index);
+    });
+
+    return Column(
+      children: [
+        Text(
+          'Opponent ($cardsRemaining cards)',
+          style: Theme.of(context).textTheme.labelMedium,
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: CardConstants.opponentHandHeight,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: sortedIndices.length,
+            itemBuilder: (context, displayIndex) {
+              // Get the original index from the sorted list
+              final originalIndex = sortedIndices[displayIndex];
+              final isPlayed = state.opponentCardsPlayed.contains(originalIndex);
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Opacity(
+                  opacity: isPlayed ? 0.3 : 1.0,
+                  child: _CardBack(),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CardBack extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: CardConstants.cardBackWidth,
+      height: CardConstants.cardBackHeight,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.tertiary,
+          width: CardConstants.cardBorderWidth,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Icon(
+          Icons.style,
+          color: Theme.of(context).colorScheme.tertiary,
+          size: 28,
+        ),
+      ),
+    );
+  }
+}
+
+/// Player hand display
+class _PlayerHand extends StatelessWidget {
+  final GameState state;
+  final GameEngine engine;
+
+  const _PlayerHand({
+    required this.state,
+    required this.engine,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Create sorted indices based on card rank (lowest to highest)
+    final sortedIndices = List<int>.generate(state.playerHand.length, (i) => i);
+    sortedIndices.sort((a, b) {
+      final cardA = state.playerHand[a];
+      final cardB = state.playerHand[b];
+      // First compare by rank index, then by suit for consistent ordering
+      final rankComparison = cardA.rank.index.compareTo(cardB.rank.index);
+      if (rankComparison != 0) return rankComparison;
+      return cardA.suit.index.compareTo(cardB.suit.index);
+    });
+
+    return SizedBox(
+      height: CardConstants.playerHandHeight,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        itemCount: sortedIndices.length,
+        itemBuilder: (context, displayIndex) {
+          // Get the original index from the sorted list
+          final originalIndex = sortedIndices[displayIndex];
+          final card = state.playerHand[originalIndex];
+          final isSelected = state.selectedCards.contains(originalIndex);
+          final isPlayed = state.playerCardsPlayed.contains(originalIndex);
+          final isPlayable = state.currentPhase == GamePhase.pegging &&
+              state.isPlayerTurn &&
+              !isPlayed &&
+              (state.peggingCount + card.value <= 31);
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: CardConstants.cardHorizontalSpacing),
+            child: _PlayingCard(
+              card: card,
+              isSelected: isSelected,
+              isPlayed: isPlayed,
+              isPlayable: isPlayable,
+              onTap: () {
+                if (state.currentPhase == GamePhase.cribSelection) {
+                  engine.toggleCardSelection(originalIndex);
+                } else if (state.currentPhase == GamePhase.pegging && state.isPlayerTurn && !isPlayed) {
+                  if (isPlayable) {
+                    engine.playCard(originalIndex);
+                  } else {
+                    // Card would exceed 31 - show feedback
+                    final wouldBeCount = state.peggingCount + card.value;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Cannot play ${card.label} - would exceed 31 (current: ${state.peggingCount}, would be: $wouldBeCount)',
+                        ),
+                        duration: const Duration(seconds: 2),
+                        backgroundColor: Colors.orange.shade700,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Playing card widget (larger, better styled)
+class _PlayingCard extends StatelessWidget {
+  final dynamic card;
+  final bool isSelected;
+  final bool isPlayed;
+  final bool isPlayable;
+  final VoidCallback onTap;
+
+  const _PlayingCard({
+    required this.card,
+    required this.isSelected,
+    required this.isPlayed,
+    required this.isPlayable,
+    required this.onTap,
+  });
+
+  Color _getSuitColor(String label) {
+    // Red for hearts (♥) and diamonds (♦), black for spades (♠) and clubs (♣)
+    if (label.contains('♥') || label.contains('♦')) {
+      return Colors.red.shade800;
+    }
+    return Colors.black;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = isPlayed
+        ? Colors.grey.shade400
+        : isSelected
+            ? Theme.of(context).colorScheme.primaryContainer
+            : isPlayable
+                ? Colors.white
+                : Colors.grey.shade200;
+
+    final borderColor = isSelected
+        ? Theme.of(context).colorScheme.primary
+        : isPlayable
+            ? Theme.of(context).colorScheme.tertiary
+            : Colors.grey.shade700;
+
+    final suitColor = _getSuitColor(card.label);
+
+    return GestureDetector(
+      onTap: !isPlayed ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: CardConstants.cardWidth,
+        height: CardConstants.cardHeight,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
+          border: Border.all(
+            color: borderColor,
+            width: isSelected ? CardConstants.selectedCardBorderWidth : CardConstants.cardBorderWidth,
+          ),
+          boxShadow: isPlayed
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+        ),
+        child: Center(
+          child: Text(
+            card.label,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isPlayed ? Colors.grey.shade600 : suitColor,
+                ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Cut cards display
+class _CutCardsDisplay extends StatelessWidget {
+  final GameState state;
+
+  const _CutCardsDisplay({required this.state});
+
+  Widget _buildCutCard(BuildContext context, dynamic card) {
+    final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
+        ? Colors.red.shade800
+        : Colors.black;
+
+    return Container(
+      width: CardConstants.cardWidth,
+      height: CardConstants.cardHeight,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: CardConstants.cardBorderWidth,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          card.label,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: suitColor,
+              ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!state.showCutForDealer ||
+        state.cutPlayerCard == null ||
+        state.cutOpponentCard == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Text(
+              'Cut for Dealer',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    const Text('You', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    _buildCutCard(context, state.cutPlayerCard!),
+                  ],
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('vs', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+                Column(
+                  children: [
+                    const Text('Opponent', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    _buildCutCard(context, state.cutOpponentCard!),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Pegging display - count and pile
+class _PeggingDisplay extends StatelessWidget {
+  final GameState state;
+
+  const _PeggingDisplay({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Pegging count
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            'Count: ${state.peggingCount}',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Turn indicator
+        Text(
+          state.isPlayerTurn ? 'Your turn' : "Opponent's turn",
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: state.isPlayerTurn
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.secondary,
+              ),
+        ),
+        // Pegging pile
+        if (state.peggingPile.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            height: CardConstants.smallCardHeight + 8,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              itemCount: state.peggingPile.length,
+              itemBuilder: (context, index) {
+                final card = state.peggingPile[index];
+                final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
+                    ? Colors.red.shade800
+                    : Colors.black;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Container(
+                    width: CardConstants.smallCardWidth,
+                    height: CardConstants.smallCardHeight,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius / 2),
+                      border: Border.all(
+                        color: Colors.grey.shade700,
+                        width: CardConstants.cardBorderWidth,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.25),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        card.label,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: suitColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Pending reset dialog
+class _PendingResetDialog extends StatelessWidget {
+  final GameState state;
+  final VoidCallback onDismiss;
+
+  const _PendingResetDialog({
+    required this.state,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pending = state.pendingReset!;
+    return Center(
+      child: Card(
+        margin: const EdgeInsets.all(32),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                pending.message,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              Text('Count: ${pending.finalCount}'),
+              Text('Points: ${pending.scoreAwarded}'),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: onDismiss,
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Winner modal
+class _WinnerModal extends StatelessWidget {
+  final WinnerModalData data;
+  final VoidCallback onDismiss;
+
+  const _WinnerModal({
+    required this.data,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Card(
+        margin: const EdgeInsets.all(32),
+        color: data.playerWon ? Colors.green.shade700 : Colors.red.shade700,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                data.playerWon ? 'You Won!' : 'Opponent Won',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Final: ${data.playerScore} - ${data.opponentScore}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              if (data.wasSkunk)
+                const Text(
+                  'Skunk!',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              const SizedBox(height: 8),
+              Text(
+                'Record: ${data.gamesWon}-${data.gamesLost}',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: onDismiss,
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

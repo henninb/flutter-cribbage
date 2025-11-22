@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="/">
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta name="description" content="Cribbage game implemented in Flutter" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cribbage</title>
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <script src="flutter.js" defer></script>
+    <script>
+      window.addEventListener('load', function () {
+        _flutter.loader.loadEntrypoint({}).then(function (engine) {
+          return engine.initializeEngine();
+        }).then(function (appRunner) {
+          return appRunner.runApp();
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+*.iml
+.DS_Store
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build
+**/build/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/App.framework
+**/ios/.symlinks/
+**/ios/Pods/
+**/ios/Runner.xcworkspace/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+android/.gradle/
+android/local.properties
+android/.settings/
+android/.project
+android/.classpath
+.vscode/
+.idea/
+.metadata
+.gradle/
+android_gradlew_tmp/
+
+# Signing keys (NEVER commit these!)
+*.jks
+*.keystore
+keystore.properties
+
+# Backup files
+*.bak
+*~
+testers.csv
+
+# Xcode user state (per-user noise)
+*.xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+android/key.properties

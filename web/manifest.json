@@ -1,0 +1,10 @@
+{
+  "name": "Cribbage",
+  "short_name": "Cribbage",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#00695c",
+  "description": "Play a full cribbage game built with Flutter",
+  "icons": []
+}
