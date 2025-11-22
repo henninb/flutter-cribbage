@@ -1,5 +1,5 @@
 name: cribbage
-version: 1.0.73+73
+version: 1.0.75+75
 description: Flutter implementation of the Cribbage game with full gameplay loop.
 publish_to: 'none'
 
@@ -13,14 +13,23 @@ dependencies:
   provider: ^6.1.2
   shared_preferences: ^2.2.3
   intl: ^0.20.2
+  path_provider: ^2.1.5
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.2
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/cribbage_icon.png"
+  adaptive_icon_background: "#2E7D32"
+  adaptive_icon_foreground: "assets/cribbage_icon_foreground.png"

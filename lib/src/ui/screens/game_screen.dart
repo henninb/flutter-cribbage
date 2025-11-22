@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../game/engine/game_engine.dart';
 import '../../game/engine/game_state.dart';
+import '../../game/models/card.dart';
 import '../../models/theme_models.dart';
 import '../../models/game_settings.dart';
 import '../widgets/cribbage_board.dart';
@@ -464,6 +465,13 @@ class _GameContent extends StatelessWidget {
       case GamePhase.pegging:
         return _PeggingDisplay(state: state);
 
+      case GamePhase.handCounting:
+        // Show pegging pile until user clicks "Count Hands"
+        if (!state.isInHandCountingPhase) {
+          return _PeggingDisplay(state: state);
+        }
+        return const SizedBox.shrink();
+
       default:
         return const SizedBox.shrink();
     }
@@ -828,14 +836,90 @@ class _CutCardsDisplay extends StatelessWidget {
   }
 }
 
-/// Pegging display - count and pile
-class _PeggingDisplay extends StatelessWidget {
+/// Pegging display - count and pile with history
+class _PeggingDisplay extends StatefulWidget {
   final GameState state;
 
   const _PeggingDisplay({required this.state});
 
   @override
+  State<_PeggingDisplay> createState() => _PeggingDisplayState();
+}
+
+class _PeggingDisplayState extends State<_PeggingDisplay> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(_PeggingDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Auto-scroll to end when a card is played
+    if (widget.state.peggingPile.length != oldWidget.state.peggingPile.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+  }
+
+  Widget _buildCard({
+    required PlayingCard card,
+    required double width,
+    required double height,
+    required double fontSize,
+    double opacity = 1.0,
+  }) {
+    final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
+        ? Colors.red.shade800
+        : Colors.black;
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(opacity),
+        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius / 2),
+        border: Border.all(
+          color: Colors.grey.shade700.withOpacity(opacity),
+          width: CardConstants.cardBorderWidth,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15 * opacity),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          card.label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: fontSize,
+            color: suitColor.withOpacity(opacity),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final completedRounds = widget.state.peggingManager?.completedRounds ?? [];
+    final hasHistory = completedRounds.isNotEmpty;
+    final hasCurrentCards = widget.state.peggingPile.isNotEmpty;
+
     return Column(
       children: [
         // Pegging count
@@ -846,7 +930,7 @@ class _PeggingDisplay extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            'Count: ${state.peggingCount}',
+            'Count: ${widget.state.peggingCount}',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -855,60 +939,76 @@ class _PeggingDisplay extends StatelessWidget {
         const SizedBox(height: 8),
         // Turn indicator
         Text(
-          state.isPlayerTurn ? 'Your turn' : "Opponent's turn",
+          widget.state.isPlayerTurn ? 'Your turn' : "Opponent's turn",
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: state.isPlayerTurn
+                color: widget.state.isPlayerTurn
                     ? Theme.of(context).colorScheme.primary
                     : Theme.of(context).colorScheme.secondary,
               ),
         ),
-        // Pegging pile
-        if (state.peggingPile.isNotEmpty) ...[
+        // Pegging pile with history
+        if (hasHistory || hasCurrentCards) ...[
           const SizedBox(height: 8),
           SizedBox(
             height: CardConstants.smallCardHeight + 8,
-            child: ListView.builder(
+            child: ListView(
+              controller: _scrollController,
               scrollDirection: Axis.horizontal,
               shrinkWrap: true,
-              itemCount: state.peggingPile.length,
-              itemBuilder: (context, index) {
-                final card = state.peggingPile[index];
-                final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
-                    ? Colors.red.shade800
-                    : Colors.black;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: Container(
-                    width: CardConstants.smallCardWidth,
-                    height: CardConstants.smallCardHeight,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius / 2),
-                      border: Border.all(
-                        color: Colors.grey.shade700,
-                        width: CardConstants.cardBorderWidth,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        card.label,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: suitColor,
+              children: [
+                // Previous completed rounds (condensed and greyed)
+                ...completedRounds.map((round) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Cards in this round (overlapped)
+                      ...List.generate(round.cards.length, (index) {
+                        final card = round.cards[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            left: index == 0 ? 4.0 : 0.0,
+                            right: index == round.cards.length - 1 ? 0.0 : 8.0,
+                          ),
+                          child: _buildCard(
+                            card: card,
+                            width: 30.0,
+                            height: 42.0,
+                            fontSize: 9.0,
+                            opacity: 0.4,
+                          ),
+                        );
+                      }),
+                      // Round separator
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Container(
+                          width: 2,
+                          height: 42.0,
+                          color: Colors.grey.shade400,
                         ),
                       ),
-                    ),
+                    ],
+                  );
+                }),
+                // Current round (full size)
+                if (hasCurrentCards)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: widget.state.peggingPile.map((card) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: _buildCard(
+                          card: card,
+                          width: CardConstants.smallCardWidth,
+                          height: CardConstants.smallCardHeight,
+                          fontSize: 12.0,
+                          opacity: 1.0,
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              },
+                const SizedBox(width: 8),
+              ],
             ),
           ),
         ],

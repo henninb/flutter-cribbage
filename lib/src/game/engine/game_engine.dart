@@ -420,6 +420,19 @@ class GameEngine extends ChangeNotifier {
       return;
     }
 
+    // Clear pegging history and pile now that user is moving to hand counting
+    final mgr = _peggingManager;
+    if (mgr != null) {
+      mgr.completedRounds.clear();
+      mgr.peggingPile.clear();
+    }
+
+    // Clear pegging pile in state as well
+    _state = _state.copyWith(
+      peggingPile: const [],
+      peggingCount: 0,
+    );
+
     // Debug: Check hand sizes
     debugPrint('[COUNTING DEBUG] Player hand size: ${_state.playerHand.length}, Opponent hand size: ${_state.opponentHand.length}');
     debugPrint('[COUNTING DEBUG] Player hand: ${_state.playerHand.map((c) => c.label).join(", ")}');

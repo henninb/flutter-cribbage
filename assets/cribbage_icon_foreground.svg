@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Playing Cards (foreground only) -->
+  <g transform="translate(512, 420)">
+    <!-- Left card -->
+    <g transform="translate(-160, 40) rotate(-18)">
+          <g filter="url(#shadow)">
+      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
+      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
+            fill="#000000" text-anchor="middle" dominant-baseline="middle">A♠</text>
+    </g>
+    </g>
+
+    <!-- Center card -->
+    <g transform="translate(0, -20)">
+          <g filter="url(#shadow)">
+      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
+      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
+            fill="#C62828" text-anchor="middle" dominant-baseline="middle">5♥</text>
+    </g>
+    </g>
+
+    <!-- Right card -->
+    <g transform="translate(160, 40) rotate(18)">
+          <g filter="url(#shadow)">
+      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
+      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
+            fill="#000000" text-anchor="middle" dominant-baseline="middle">J♣</text>
+    </g>
+    </g>
+  </g>
+
+  <!-- Cribbage Pegs -->
+  <g transform="translate(512, 720)">
+        <g transform="translate(-90.0, 0)">
+      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
+      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#C62828" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+    </g>
+        <g transform="translate(-30.0, 0)">
+      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
+      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#1565C0" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+    </g>
+        <g transform="translate(30.0, 0)">
+      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
+      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#F9A825" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+    </g>
+        <g transform="translate(90.0, 0)">
+      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
+      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#EF6C00" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+    </g>
+  </g>
+</svg>
