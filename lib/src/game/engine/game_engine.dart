@@ -161,15 +161,26 @@ class GameEngine extends ChangeNotifier {
     var playerScore = _state.playerScore;
     var opponentScore = _state.opponentScore;
     var status = 'Starter card: ${starter?.label ?? '?'}';
+    ScoreAnimation? hisHeelsAnimation;
     if (starter?.rank == Rank.jack) {
       if (_state.isPlayerDealer) {
         playerScore += 2;
         status += '\nYou scored 2 for His Heels!';
         debugPrint('[SCORE] His Heels: Player (dealer) scored 2 for Jack starter (${_state.playerScore} -> $playerScore)');
+        hisHeelsAnimation = ScoreAnimation(
+          points: 2,
+          isPlayer: true,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
       } else {
         opponentScore += 2;
         status += '\nOpponent scored 2 for His Heels!';
         debugPrint('[SCORE] His Heels: Opponent (dealer) scored 2 for Jack starter (${_state.opponentScore} -> $opponentScore)');
+        hisHeelsAnimation = ScoreAnimation(
+          points: 2,
+          isPlayer: false,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
       }
     }
 
@@ -194,6 +205,8 @@ class GameEngine extends ChangeNotifier {
       opponentScore: opponentScore,
       gameStatus: status + (_state.isPlayerDealer ? '\nOpponent plays first.' : '\nYour turn to play.'),
       peggingManager: _peggingManager,
+      playerScoreAnimation: hisHeelsAnimation?.isPlayer == true ? hisHeelsAnimation : null,
+      opponentScoreAnimation: hisHeelsAnimation?.isPlayer == false ? hisHeelsAnimation : null,
     );
     notifyListeners();
     _maybeAutoplayOpponent();
@@ -233,6 +246,7 @@ class GameEngine extends ChangeNotifier {
     var status = _state.gameStatus;
     var playerScore = _state.playerScore;
     var opponentScore = _state.opponentScore;
+    ScoreAnimation? peggingAnimation;
 
     if (points.total > 0) {
       final breakdown = [];
@@ -245,10 +259,20 @@ class GameEngine extends ChangeNotifier {
         playerScore += points.total;
         status += '\nYou scored ${points.total}.';
         debugPrint('[SCORE] Pegging: Player scored ${points.total} [${breakdown.join(", ")}] (${_state.playerScore} -> $playerScore)');
+        peggingAnimation = ScoreAnimation(
+          points: points.total,
+          isPlayer: true,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
       } else {
         opponentScore += points.total;
         status += '\nOpponent scored ${points.total}.';
         debugPrint('[SCORE] Pegging: Opponent scored ${points.total} [${breakdown.join(", ")}] (${_state.opponentScore} -> $opponentScore)');
+        peggingAnimation = ScoreAnimation(
+          points: points.total,
+          isPlayer: false,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
       }
     } else {
       debugPrint('[PEGGING] No points scored');
@@ -265,6 +289,8 @@ class GameEngine extends ChangeNotifier {
       opponentScore: opponentScore,
       gameStatus: status,
       peggingManager: mgr,
+      playerScoreAnimation: peggingAnimation?.isPlayer == true ? peggingAnimation : null,
+      opponentScoreAnimation: peggingAnimation?.isPlayer == false ? peggingAnimation : null,
     );
     notifyListeners();
 
@@ -306,14 +332,25 @@ class GameEngine extends ChangeNotifier {
       var playerScore = _state.playerScore;
       var opponentScore = _state.opponentScore;
       var scoreAwarded = 0;
+      ScoreAnimation? goAnimation;
       if (reset.goPointTo == Player.player) {
         playerScore += 1;
         scoreAwarded = 1;
         debugPrint('[SCORE] Go: Player scored 1 (${_state.playerScore} -> $playerScore)');
+        goAnimation = ScoreAnimation(
+          points: 1,
+          isPlayer: true,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
       } else if (reset.goPointTo == Player.opponent) {
         opponentScore += 1;
         scoreAwarded = 1;
         debugPrint('[SCORE] Go: Opponent scored 1 (${_state.opponentScore} -> $opponentScore)');
+        goAnimation = ScoreAnimation(
+          points: 1,
+          isPlayer: false,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
       }
 
       // Show pending reset dialog for Go (similar to 31)
@@ -330,6 +367,8 @@ class GameEngine extends ChangeNotifier {
           scoreAwarded: scoreAwarded,
           message: 'Go! Pile reset.',
         ),
+        playerScoreAnimation: goAnimation?.isPlayer == true ? goAnimation : null,
+        opponentScoreAnimation: goAnimation?.isPlayer == false ? goAnimation : null,
       );
       notifyListeners();
       _checkPeggingComplete();
@@ -383,17 +422,8 @@ class GameEngine extends ChangeNotifier {
     debugPrint('[COUNTING] Breakdown total: ${breakdown.totalScore}, entries: ${breakdown.entries.length}');
     debugPrint('[COUNTING] Breakdown: ${breakdown.entries.map((e) => "${e.type} ${e.cards.map((c) => c.label).join(",")} = ${e.points}").join(" | ")}');
 
-    var playerScore = _state.playerScore;
-    var opponentScore = _state.opponentScore;
-    if (_state.isPlayerDealer) {
-      opponentScore += breakdown.totalScore;
-      debugPrint('[SCORE] Non-Dealer Hand: Opponent scored ${breakdown.totalScore}');
-    } else {
-      playerScore += breakdown.totalScore;
-      debugPrint('[SCORE] Non-Dealer Hand: Player scored ${breakdown.totalScore}');
-    }
-
     // Set state with breakdown BEFORE showing dialog
+    // DON'T update scores or create animations yet - wait for user to click Continue
     _state = _state.copyWith(
       isInHandCountingPhase: true,
       countingPhase: CountingPhase.nonDealer,
@@ -401,8 +431,6 @@ class GameEngine extends ChangeNotifier {
         nonDealerScore: breakdown.totalScore,
         nonDealerBreakdown: breakdown,
       ),
-      playerScore: playerScore,
-      opponentScore: opponentScore,
     );
 
     debugPrint('[COUNTING DEBUG] After state update - handScores.nonDealerBreakdown entries: ${_state.handScores.nonDealerBreakdown?.entries.length}');
@@ -421,21 +449,39 @@ class GameEngine extends ChangeNotifier {
 
     switch (phase) {
       case CountingPhase.nonDealer:
-        // Advance to dealer phase and calculate
+        // Apply non-dealer score and create animation NOW (user clicked Continue)
+        var playerScore = _state.playerScore;
+        var opponentScore = _state.opponentScore;
+        final nonDealerScore = _state.handScores.nonDealerScore;
+        ScoreAnimation? nonDealerAnimation;
+
+        if (_state.isPlayerDealer) {
+          opponentScore += nonDealerScore;
+          debugPrint('[SCORE] Non-Dealer Hand: Opponent scored $nonDealerScore (${_state.opponentScore} -> $opponentScore)');
+          if (nonDealerScore > 0) {
+            nonDealerAnimation = ScoreAnimation(
+              points: nonDealerScore,
+              isPlayer: false,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        } else {
+          playerScore += nonDealerScore;
+          debugPrint('[SCORE] Non-Dealer Hand: Player scored $nonDealerScore (${_state.playerScore} -> $playerScore)');
+          if (nonDealerScore > 0) {
+            nonDealerAnimation = ScoreAnimation(
+              points: nonDealerScore,
+              isPlayer: true,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        }
+
+        // Now calculate dealer phase and store breakdown (but don't apply score yet)
         final hand = _state.isPlayerDealer ? _state.playerHand : _state.opponentHand;
         final breakdown = CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
         debugPrint('[COUNTING] Dealer Hand: ${hand.map((c) => c.label).join(", ")} + Starter: ${starter.label}');
         debugPrint('[COUNTING] Breakdown: ${breakdown.entries.map((e) => "${e.type} ${e.cards.map((c) => c.label).join(",")} = ${e.points}").join(" | ")}');
-
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        if (_state.isPlayerDealer) {
-          playerScore += breakdown.totalScore;
-          debugPrint('[SCORE] Dealer Hand: Player scored ${breakdown.totalScore}');
-        } else {
-          opponentScore += breakdown.totalScore;
-          debugPrint('[SCORE] Dealer Hand: Opponent scored ${breakdown.totalScore}');
-        }
 
         _state = _state.copyWith(
           handScores: _state.handScores.copyWith(
@@ -445,11 +491,41 @@ class GameEngine extends ChangeNotifier {
           countingPhase: CountingPhase.dealer,
           playerScore: playerScore,
           opponentScore: opponentScore,
+          playerScoreAnimation: nonDealerAnimation != null && nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
+          opponentScoreAnimation: nonDealerAnimation != null && !nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
         );
         break;
 
       case CountingPhase.dealer:
-        // Advance to crib phase and calculate
+        // Apply dealer score and create animation NOW (user clicked Continue)
+        var playerScore = _state.playerScore;
+        var opponentScore = _state.opponentScore;
+        final dealerScore = _state.handScores.dealerScore;
+        ScoreAnimation? dealerAnimation;
+
+        if (_state.isPlayerDealer) {
+          playerScore += dealerScore;
+          debugPrint('[SCORE] Dealer Hand: Player scored $dealerScore (${_state.playerScore} -> $playerScore)');
+          if (dealerScore > 0) {
+            dealerAnimation = ScoreAnimation(
+              points: dealerScore,
+              isPlayer: true,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        } else {
+          opponentScore += dealerScore;
+          debugPrint('[SCORE] Dealer Hand: Opponent scored $dealerScore (${_state.opponentScore} -> $opponentScore)');
+          if (dealerScore > 0) {
+            dealerAnimation = ScoreAnimation(
+              points: dealerScore,
+              isPlayer: false,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        }
+
+        // Now calculate crib phase and store breakdown (but don't apply score yet)
         final breakdown = CribbageScorer.scoreHandWithBreakdown(
           _state.cribHand,
           starter,
@@ -457,16 +533,6 @@ class GameEngine extends ChangeNotifier {
         );
         debugPrint('[COUNTING] Crib: ${_state.cribHand.map((c) => c.label).join(", ")} + Starter: ${starter.label}');
         debugPrint('[COUNTING] Breakdown: ${breakdown.entries.map((e) => "${e.type} ${e.cards.map((c) => c.label).join(",")} = ${e.points}").join(" | ")}');
-
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        if (_state.isPlayerDealer) {
-          playerScore += breakdown.totalScore;
-          debugPrint('[SCORE] Crib: Player (dealer) scored ${breakdown.totalScore}');
-        } else {
-          opponentScore += breakdown.totalScore;
-          debugPrint('[SCORE] Crib: Opponent (dealer) scored ${breakdown.totalScore}');
-        }
 
         _state = _state.copyWith(
           handScores: _state.handScores.copyWith(
@@ -476,15 +542,49 @@ class GameEngine extends ChangeNotifier {
           countingPhase: CountingPhase.crib,
           playerScore: playerScore,
           opponentScore: opponentScore,
+          playerScoreAnimation: dealerAnimation != null && dealerAnimation.isPlayer ? dealerAnimation : null,
+          opponentScoreAnimation: dealerAnimation != null && !dealerAnimation.isPlayer ? dealerAnimation : null,
         );
         break;
 
       case CountingPhase.crib:
+        // Apply crib score and create animation NOW (user clicked Continue)
+        var playerScore = _state.playerScore;
+        var opponentScore = _state.opponentScore;
+        final cribScore = _state.handScores.cribScore;
+        ScoreAnimation? cribAnimation;
+
+        if (_state.isPlayerDealer) {
+          playerScore += cribScore;
+          debugPrint('[SCORE] Crib: Player (dealer) scored $cribScore (${_state.playerScore} -> $playerScore)');
+          if (cribScore > 0) {
+            cribAnimation = ScoreAnimation(
+              points: cribScore,
+              isPlayer: true,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        } else {
+          opponentScore += cribScore;
+          debugPrint('[SCORE] Crib: Opponent (dealer) scored $cribScore (${_state.opponentScore} -> $opponentScore)');
+          if (cribScore > 0) {
+            cribAnimation = ScoreAnimation(
+              points: cribScore,
+              isPlayer: false,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        }
+
         // Complete counting phase
-        debugPrint('[SCORE] Round complete. Final scores: Player=${_state.playerScore}, Opponent=${_state.opponentScore}');
+        debugPrint('[SCORE] Round complete. Final scores: Player=$playerScore, Opponent=$opponentScore');
         _state = _state.copyWith(
           countingPhase: CountingPhase.completed,
           isInHandCountingPhase: false,
+          playerScore: playerScore,
+          opponentScore: opponentScore,
+          playerScoreAnimation: cribAnimation != null && cribAnimation.isPlayer ? cribAnimation : null,
+          opponentScoreAnimation: cribAnimation != null && !cribAnimation.isPlayer ? cribAnimation : null,
         );
         _checkGameOver();
         if (!_state.gameOver) {
@@ -503,6 +603,15 @@ class GameEngine extends ChangeNotifier {
 
   void dismissWinnerModal() {
     _state = _state.copyWith(showWinnerModal: false);
+    notifyListeners();
+  }
+
+  void clearScoreAnimation(bool isPlayer) {
+    if (isPlayer) {
+      _state = _state.copyWith(clearPlayerScoreAnimation: true);
+    } else {
+      _state = _state.copyWith(clearOpponentScoreAnimation: true);
+    }
     notifyListeners();
   }
 
@@ -559,6 +668,7 @@ class GameEngine extends ChangeNotifier {
       var playerScore = _state.playerScore;
       var opponentScore = _state.opponentScore;
       var status = _state.gameStatus;
+      ScoreAnimation? lastCardAnimation;
 
       final mgr = _peggingManager;
       if (mgr != null && mgr.peggingCount > 0 && mgr.peggingCount != 31) {
@@ -567,10 +677,20 @@ class GameEngine extends ChangeNotifier {
           playerScore += 1;
           status += '\nYou scored 1 for last card.';
           debugPrint('[SCORE] Last Card: Player scored 1 (${_state.playerScore} -> $playerScore)');
+          lastCardAnimation = ScoreAnimation(
+            points: 1,
+            isPlayer: true,
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          );
         } else if (mgr.lastPlayerWhoPlayed == Player.opponent) {
           opponentScore += 1;
           status += '\nOpponent scored 1 for last card.';
           debugPrint('[SCORE] Last Card: Opponent scored 1 (${_state.opponentScore} -> $opponentScore)');
+          lastCardAnimation = ScoreAnimation(
+            points: 1,
+            isPlayer: false,
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          );
         }
       }
 
@@ -581,6 +701,8 @@ class GameEngine extends ChangeNotifier {
         isPlayerTurn: false,
         playerScore: playerScore,
         opponentScore: opponentScore,
+        playerScoreAnimation: lastCardAnimation?.isPlayer == true ? lastCardAnimation : null,
+        opponentScoreAnimation: lastCardAnimation?.isPlayer == false ? lastCardAnimation : null,
       );
       notifyListeners();
     }

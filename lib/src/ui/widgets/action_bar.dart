@@ -152,7 +152,7 @@ class ActionBar extends StatelessWidget {
       buttons.add(
         Expanded(
           child: FilledButton(
-            onPressed: onStartGame,
+            onPressed: state.showWinnerModal ? null : onStartGame,
             child: const Text('New Game'),
           ),
         ),

@@ -9,6 +9,7 @@ import '../widgets/welcome_screen.dart';
 import '../widgets/action_bar.dart';
 import '../widgets/hand_counting_dialog.dart';
 import '../widgets/card_constants.dart';
+import '../widgets/score_animation.dart';
 import 'settings_screen.dart';
 
 /// Main game screen with zone-based layout (NO SCROLLING)
@@ -75,7 +76,11 @@ class _GameScreenState extends State<GameScreen> {
             child: Column(
               children: [
                 // Zone 1: Score Header (only when game started)
-                if (state.gameStarted) _ScoreHeader(state: state),
+                if (state.gameStarted)
+                  _ScoreHeader(
+                    state: state,
+                    engine: widget.engine,
+                  ),
 
                 // Zone 2: Game Area (flexible, NO SCROLL)
                 Expanded(
@@ -113,8 +118,12 @@ class _GameScreenState extends State<GameScreen> {
 /// Score header showing scores and stats
 class _ScoreHeader extends StatelessWidget {
   final GameState state;
+  final GameEngine engine;
 
-  const _ScoreHeader({required this.state});
+  const _ScoreHeader({
+    required this.state,
+    required this.engine,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -132,23 +141,55 @@ class _ScoreHeader extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Stack(
         children: [
-          _ScoreColumn(
-            label: 'You',
-            score: state.playerScore,
-            subtitle: state.isPlayerDealer ? 'Dealer' : 'Pone',
-            isDealer: state.currentPhase != GamePhase.cutForDealer && state.isPlayerDealer,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _ScoreColumn(
+                label: 'You',
+                score: state.playerScore,
+                subtitle: state.isPlayerDealer ? 'Dealer' : 'Pone',
+                isDealer: state.currentPhase != GamePhase.cutForDealer && state.isPlayerDealer,
+              ),
+              if (state.starterCard != null)
+                _StarterCard(card: state.starterCard!),
+              _ScoreColumn(
+                label: 'Opponent',
+                score: state.opponentScore,
+                subtitle: state.isPlayerDealer ? 'Pone' : 'Dealer',
+                isDealer: state.currentPhase != GamePhase.cutForDealer && !state.isPlayerDealer,
+              ),
+            ],
           ),
-          if (state.starterCard != null)
-            _StarterCard(card: state.starterCard!),
-          _ScoreColumn(
-            label: 'Opponent',
-            score: state.opponentScore,
-            subtitle: state.isPlayerDealer ? 'Pone' : 'Dealer',
-            isDealer: state.currentPhase != GamePhase.cutForDealer && !state.isPlayerDealer,
-          ),
+          // Player score animation overlay
+          if (state.playerScoreAnimation != null)
+            Positioned(
+              left: 100,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: ScoreAnimationWidget(
+                  points: state.playerScoreAnimation!.points,
+                  isPlayer: state.playerScoreAnimation!.isPlayer,
+                  onAnimationComplete: () => engine.clearScoreAnimation(true),
+                ),
+              ),
+            ),
+          // Opponent score animation overlay
+          if (state.opponentScoreAnimation != null)
+            Positioned(
+              right: 100,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: ScoreAnimationWidget(
+                  points: state.opponentScoreAnimation!.points,
+                  isPlayer: state.opponentScoreAnimation!.isPlayer,
+                  onAnimationComplete: () => engine.clearScoreAnimation(false),
+                ),
+              ),
+            ),
         ],
       ),
     );

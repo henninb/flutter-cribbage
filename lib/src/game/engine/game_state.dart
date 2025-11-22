@@ -93,6 +93,19 @@ class WinnerModalData {
 }
 
 @immutable
+class ScoreAnimation {
+  const ScoreAnimation({
+    required this.points,
+    required this.isPlayer,
+    required this.timestamp,
+  });
+
+  final int points;
+  final bool isPlayer;
+  final int timestamp;
+}
+
+@immutable
 class GameState {
   const GameState({
     this.gameStarted = false,
@@ -131,6 +144,8 @@ class GameState {
     this.winnerModalData,
     this.peggingManager,
     this.showCutCardDisplay = false,
+    this.playerScoreAnimation,
+    this.opponentScoreAnimation,
   });
 
   final bool gameStarted;
@@ -169,6 +184,8 @@ class GameState {
   final WinnerModalData? winnerModalData;
   final PeggingRoundManager? peggingManager;
   final bool showCutCardDisplay;
+  final ScoreAnimation? playerScoreAnimation;
+  final ScoreAnimation? opponentScoreAnimation;
 
   GameState copyWith({
     bool? gameStarted,
@@ -209,6 +226,10 @@ class GameState {
     WinnerModalData? winnerModalData,
     PeggingRoundManager? peggingManager,
     bool? showCutCardDisplay,
+    ScoreAnimation? playerScoreAnimation,
+    ScoreAnimation? opponentScoreAnimation,
+    bool clearPlayerScoreAnimation = false,
+    bool clearOpponentScoreAnimation = false,
   }) {
     return GameState(
       gameStarted: gameStarted ?? this.gameStarted,
@@ -248,6 +269,12 @@ class GameState {
       winnerModalData: winnerModalData ?? this.winnerModalData,
       peggingManager: peggingManager ?? this.peggingManager,
       showCutCardDisplay: showCutCardDisplay ?? this.showCutCardDisplay,
+      playerScoreAnimation: clearPlayerScoreAnimation
+          ? null
+          : (playerScoreAnimation ?? this.playerScoreAnimation),
+      opponentScoreAnimation: clearOpponentScoreAnimation
+          ? null
+          : (opponentScoreAnimation ?? this.opponentScoreAnimation),
     );
   }
 }
