@@ -9,17 +9,17 @@ class ThemeDefinitions {
     type: ThemeType.spring,
     name: 'Spring Renewal',
     colors: ThemeColors(
-      primary: Color(0xFF388E3C), // Fresh green (darker for better contrast)
-      primaryVariant: Color(0xFF2E7D32), // Dark green
-      secondary: Color(0xFFF9A825), // Yellow (sunshine)
-      secondaryVariant: Color(0xFFF57F17), // Golden
-      background: Color(0xFFF9FBE7), // Very light green background
-      surface: Color(0xFFFFFFFF), // White
+      primary: Color(0xFF66BB6A), // Fresh spring green
+      primaryVariant: Color(0xFF388E3C), // Medium green
+      secondary: Color(0xFFFFEB3B), // Sunshine yellow
+      secondaryVariant: Color(0xFFF9A825), // Golden
+      background: Color(0xFFE8F5E9), // Soft pastel green
+      surface: Color(0xFFF1F8E9), // Light lime surface
       cardBack: Color(0xFFAED581), // Light green
       boardPrimary: Color(0xFF66BB6A), // Medium green
       boardSecondary: Color(0xFF81C784), // Light green
       accentLight: Color(0xFFFFCDD2), // Pink (flowers)
-      accentDark: Color(0xFF689F38), // Lime green
+      accentDark: Color(0xFF2E7D32), // Deep green
     ),
     icon: '🌸', // Cherry blossom
   );
@@ -28,12 +28,12 @@ class ThemeDefinitions {
     type: ThemeType.summer,
     name: 'Summer Sun',
     colors: ThemeColors(
-      primary: Color(0xFFF9A825), // Amber (sun) - darker for contrast
+      primary: Color(0xFFFFB300), // Bright golden sun
       primaryVariant: Color(0xFFF57F17), // Dark amber
-      secondary: Color(0xFF0277BD), // Sky blue - darker for contrast
+      secondary: Color(0xFF0288D1), // Sky blue
       secondaryVariant: Color(0xFF01579B), // Ocean blue
-      background: Color(0xFFFFFDE7), // Very light yellow
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFFFFF9C4), // Warm sunny yellow
+      surface: Color(0xFFFFF59D), // Light golden surface
       cardBack: Color(0xFFFFD54F), // Yellow
       boardPrimary: Color(0xFFFFCA28), // Bright yellow
       boardSecondary: Color(0xFF4FC3F7), // Light blue
@@ -89,14 +89,14 @@ class ThemeDefinitions {
     colors: ThemeColors(
       primary: Color(0xFFFFD700), // Gold
       primaryVariant: Color(0xFFDAA520), // Goldenrod
-      secondary: Color(0xFF9C27B0), // Purple
+      secondary: Color(0xFFAB47BC), // Vibrant purple
       secondaryVariant: Color(0xFF7B1FA2), // Dark purple
-      background: Color(0xFFFFF8E1), // Light gold
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFF1A1A2E), // Deep midnight blue
+      surface: Color(0xFF2C2C54), // Rich purple-blue
       cardBack: Color(0xFFFFE082), // Light gold
       boardPrimary: Color(0xFFFFD54F), // Gold
       boardSecondary: Color(0xFFBA68C8), // Purple
-      accentLight: Color(0xFFFFFFFF), // White (confetti)
+      accentLight: Color(0xFFFFD700), // Gold (confetti)
       accentDark: Color(0xFF311B92), // Deep purple
     ),
     icon: '🎉', // Party popper
@@ -106,17 +106,17 @@ class ThemeDefinitions {
     type: ThemeType.mlkDay,
     name: 'MLK Day - Equality',
     colors: ThemeColors(
-      primary: Color(0xFF1976D2), // Blue (equality)
-      primaryVariant: Color(0xFF0D47A1), // Navy blue
-      secondary: Color(0xFF757575), // Grey (unity)
-      secondaryVariant: Color(0xFF424242), // Dark grey
-      background: Color(0xFFE3F2FD), // Light blue
-      surface: Color(0xFFFFFFFF), // White
+      primary: Color(0xFF42A5F5), // Hope blue
+      primaryVariant: Color(0xFF1976D2), // Medium blue
+      secondary: Color(0xFF9E9E9E), // Grey (unity)
+      secondaryVariant: Color(0xFF616161), // Medium grey
+      background: Color(0xFF263238), // Deep blue-grey
+      surface: Color(0xFF37474F), // Slate grey
       cardBack: Color(0xFF90CAF9), // Sky blue
       boardPrimary: Color(0xFF1E88E5), // Blue
       boardSecondary: Color(0xFF9E9E9E), // Grey
-      accentLight: Color(0xFFFFFFFF), // White
-      accentDark: Color(0xFF000000), // Black
+      accentLight: Color(0xFFE1F5FE), // Light blue
+      accentDark: Color(0xFF0D47A1), // Deep blue
     ),
     icon: '✊', // Raised fist
   );
@@ -125,16 +125,16 @@ class ThemeDefinitions {
     type: ThemeType.valentinesDay,
     name: 'Valentine\'s Hearts',
     colors: ThemeColors(
-      primary: Color(0xFFE91E63), // Pink
-      primaryVariant: Color(0xFFC2185B), // Dark pink
-      secondary: Color(0xFFF44336), // Red
+      primary: Color(0xFFEC407A), // Bright romantic pink
+      primaryVariant: Color(0xFFC2185B), // Deep pink
+      secondary: Color(0xFFEF5350), // Passionate red
       secondaryVariant: Color(0xFFD32F2F), // Dark red
-      background: Color(0xFFFCE4EC), // Light pink
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFFF8BBD0), // Soft rose pink
+      surface: Color(0xFFFCE4EC), // Blush pink
       cardBack: Color(0xFFF8BBD0), // Rose
       boardPrimary: Color(0xFFEC407A), // Pink
       boardSecondary: Color(0xFFEF5350), // Red
-      accentLight: Color(0xFFFFFFFF), // White
+      accentLight: Color(0xFFFFF0F5), // Lavender blush
       accentDark: Color(0xFF880E4F), // Burgundy
     ),
     icon: '💕', // Two hearts
@@ -144,16 +144,16 @@ class ThemeDefinitions {
     type: ThemeType.presidentsDay,
     name: 'Presidents\' Day',
     colors: ThemeColors(
-      primary: Color(0xFF1565C0), // Presidential blue
+      primary: Color(0xFF1976D2), // Presidential blue
       primaryVariant: Color(0xFF0D47A1), // Navy
-      secondary: Color(0xFFD32F2F), // Red
+      secondary: Color(0xFFE53935), // Bold red
       secondaryVariant: Color(0xFFB71C1C), // Dark red
-      background: Color(0xFFF5F5F5), // Light grey
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFF1C3A5A), // Deep navy blue
+      surface: Color(0xFF2C4F70), // Colonial blue
       cardBack: Color(0xFF90CAF9), // Light blue
       boardPrimary: Color(0xFF1976D2), // Blue
       boardSecondary: Color(0xFFE57373), // Red
-      accentLight: Color(0xFFFFFFFF), // White
+      accentLight: Color(0xFFE8EAF6), // Parchment white
       accentDark: Color(0xFF0D47A1), // Navy
     ),
     icon: '🇺🇸', // US Flag
@@ -163,16 +163,16 @@ class ThemeDefinitions {
     type: ThemeType.piDay,
     name: 'Pi Day 3.14159...',
     colors: ThemeColors(
-      primary: Color(0xFF1976D2), // Math blue
-      primaryVariant: Color(0xFF0D47A1), // Dark blue
-      secondary: Color(0xFFFF6F00), // Orange (circle)
+      primary: Color(0xFF42A5F5), // Bright math blue
+      primaryVariant: Color(0xFF1976D2), // Medium blue
+      secondary: Color(0xFFFFB74D), // Warm pie orange
       secondaryVariant: Color(0xFFE65100), // Dark orange
-      background: Color(0xFFE3F2FD), // Light blue
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFFBBDEFB), // Sky blue
+      surface: Color(0xFFE3F2FD), // Light blue
       cardBack: Color(0xFF90CAF9), // Light blue
       boardPrimary: Color(0xFF42A5F5), // Blue
       boardSecondary: Color(0xFFFFB74D), // Light orange
-      accentLight: Color(0xFFFFFFFF), // White
+      accentLight: Color(0xFFFFF3E0), // Cream
       accentDark: Color(0xFF01579B), // Navy blue
     ),
     icon: '🥧', // Pie
@@ -182,12 +182,12 @@ class ThemeDefinitions {
     type: ThemeType.idesOfMarch,
     name: 'Ides of March - Beware!',
     colors: ThemeColors(
-      primary: Color(0xFF8E24AA), // Imperial purple
+      primary: Color(0xFFAB47BC), // Royal purple
       primaryVariant: Color(0xFF6A1B9A), // Dark purple
-      secondary: Color(0xFFD32F2F), // Roman red (blood)
+      secondary: Color(0xFFEF5350), // Roman red (blood)
       secondaryVariant: Color(0xFFB71C1C), // Dark red
-      background: Color(0xFFF3E5F5), // Light purple
-      surface: Color(0xFFFFFFFF), // White (marble)
+      background: Color(0xFFCE93D8), // Soft imperial purple
+      surface: Color(0xFFE1BEE7), // Light purple marble
       cardBack: Color(0xFFCE93D8), // Light purple
       boardPrimary: Color(0xFFAB47BC), // Purple
       boardSecondary: Color(0xFFEF5350), // Light red
@@ -201,16 +201,16 @@ class ThemeDefinitions {
     type: ThemeType.stPatricksDay,
     name: 'St. Patrick\'s Green',
     colors: ThemeColors(
-      primary: Color(0xFF43A047), // Green
+      primary: Color(0xFF66BB6A), // Vibrant Irish green
       primaryVariant: Color(0xFF2E7D32), // Dark green
-      secondary: Color(0xFFFFD700), // Gold
+      secondary: Color(0xFFFFD700), // Pot of gold
       secondaryVariant: Color(0xFFDAA520), // Goldenrod
-      background: Color(0xFFC8E6C9), // Light green
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFF81C784), // Medium green
+      surface: Color(0xFFA5D6A7), // Light shamrock green
       cardBack: Color(0xFF81C784), // Green
       boardPrimary: Color(0xFF66BB6A), // Medium green
       boardSecondary: Color(0xFFFFE082), // Gold
-      accentLight: Color(0xFFFFFFFF), // White
+      accentLight: Color(0xFFE8F5E9), // Pale green
       accentDark: Color(0xFF1B5E20), // Deep green
     ),
     icon: '☘️', // Shamrock
@@ -220,17 +220,17 @@ class ThemeDefinitions {
     type: ThemeType.memorialDay,
     name: 'Memorial Day',
     colors: ThemeColors(
-      primary: Color(0xFF1565C0), // Blue
+      primary: Color(0xFF1976D2), // Honor blue
       primaryVariant: Color(0xFF0D47A1), // Navy
-      secondary: Color(0xFFD32F2F), // Red
+      secondary: Color(0xFFE53935), // Memorial red
       secondaryVariant: Color(0xFFB71C1C), // Dark red
-      background: Color(0xFFECEFF1), // Light grey
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFF455A64), // Solemn blue-grey
+      surface: Color(0xFF546E7A), // Steel grey
       cardBack: Color(0xFF90CAF9), // Light blue
       boardPrimary: Color(0xFF1976D2), // Blue
       boardSecondary: Color(0xFFE57373), // Light red
-      accentLight: Color(0xFFFFFFFF), // White
-      accentDark: Color(0xFF37474F), // Blue grey
+      accentLight: Color(0xFFECEFF1), // Light grey
+      accentDark: Color(0xFF263238), // Dark blue grey
     ),
     icon: '🎖️', // Military medal
   );
@@ -239,16 +239,16 @@ class ThemeDefinitions {
     type: ThemeType.independenceDay,
     name: '4th of July',
     colors: ThemeColors(
-      primary: Color(0xFF1565C0), // Blue
+      primary: Color(0xFF1976D2), // Patriotic blue
       primaryVariant: Color(0xFF0D47A1), // Navy
-      secondary: Color(0xFFD32F2F), // Red
+      secondary: Color(0xFFE53935), // Bold red
       secondaryVariant: Color(0xFFB71C1C), // Dark red
-      background: Color(0xFFF5F5F5), // White
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFF1A3A5C), // Deep navy
+      surface: Color(0xFF2C5282), // Colonial blue
       cardBack: Color(0xFF90CAF9), // Light blue
       boardPrimary: Color(0xFF1976D2), // Blue
       boardSecondary: Color(0xFFE57373), // Light red
-      accentLight: Color(0xFFFFFFFF), // White
+      accentLight: Color(0xFFF5F5F5), // Star white
       accentDark: Color(0xFFB71C1C), // Dark red
     ),
     icon: '🎆', // Fireworks
@@ -258,17 +258,17 @@ class ThemeDefinitions {
     type: ThemeType.laborDay,
     name: 'Labor Day',
     colors: ThemeColors(
-      primary: Color(0xFF455A64), // Blue grey (working)
+      primary: Color(0xFF546E7A), // Working blue-grey
       primaryVariant: Color(0xFF263238), // Dark blue grey
-      secondary: Color(0xFFFFB300), // Amber (sunset)
+      secondary: Color(0xFFFFB300), // Sunset amber
       secondaryVariant: Color(0xFFF57C00), // Orange
-      background: Color(0xFFECEFF1), // Light grey
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFF78909C), // Medium grey-blue
+      surface: Color(0xFF90A4AE), // Steel grey
       cardBack: Color(0xFF90A4AE), // Grey blue
       boardPrimary: Color(0xFF546E7A), // Blue grey
       boardSecondary: Color(0xFFFFCC80), // Light orange
-      accentLight: Color(0xFFFFFFFF), // White
-      accentDark: Color(0xFF37474F), // Dark blue grey
+      accentLight: Color(0xFFECEFF1), // Light grey
+      accentDark: Color(0xFF263238), // Dark blue grey
     ),
     icon: '⚒️', // Hammer and pick
   );
@@ -296,16 +296,16 @@ class ThemeDefinitions {
     type: ThemeType.thanksgiving,
     name: 'Thanksgiving Harvest',
     colors: ThemeColors(
-      primary: Color(0xFFD84315), // Burnt orange
+      primary: Color(0xFFFF7043), // Warm harvest orange
       primaryVariant: Color(0xFFBF360C), // Dark orange
-      secondary: Color(0xFF8D6E63), // Brown
+      secondary: Color(0xFFA1887F), // Earthy brown
       secondaryVariant: Color(0xFF5D4037), // Dark brown
-      background: Color(0xFFFBE9E7), // Light orange
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFFD7CCC8), // Warm beige
+      surface: Color(0xFFEFEBE9), // Cream surface
       cardBack: Color(0xFFFFAB91), // Peach
       boardPrimary: Color(0xFFFF7043), // Coral
       boardSecondary: Color(0xFFA1887F), // Brown grey
-      accentLight: Color(0xFFFFE0B2), // Cream
+      accentLight: Color(0xFFFFE0B2), // Light cream
       accentDark: Color(0xFF6D4C41), // Deep brown
     ),
     icon: '🦃', // Turkey
@@ -315,16 +315,16 @@ class ThemeDefinitions {
     type: ThemeType.christmas,
     name: 'Christmas Cheer',
     colors: ThemeColors(
-      primary: Color(0xFFC62828), // Christmas red
+      primary: Color(0xFFE53935), // Bright Christmas red
       primaryVariant: Color(0xFFB71C1C), // Dark red
-      secondary: Color(0xFF2E7D32), // Christmas green
+      secondary: Color(0xFF43A047), // Christmas green
       secondaryVariant: Color(0xFF1B5E20), // Dark green
-      background: Color(0xFFFAFAFA), // Snow white
-      surface: Color(0xFFFFFFFF), // White
+      background: Color(0xFF1B5E20), // Deep evergreen
+      surface: Color(0xFF2E7D32), // Forest green
       cardBack: Color(0xFFEF9A9A), // Light red
       boardPrimary: Color(0xFFE53935), // Red
       boardSecondary: Color(0xFF43A047), // Green
-      accentLight: Color(0xFFFFFFFF), // White (snow)
+      accentLight: Color(0xFFFAFAFA), // Snow white
       accentDark: Color(0xFFFFD700), // Gold
     ),
     icon: '🎄', // Christmas tree

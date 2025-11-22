@@ -23,9 +23,10 @@ class WelcomeScreen extends StatelessWidget {
                 width: 120,
                 height: 120,
                 alignment: Alignment.center,
-                child: const Text(
-                  '🃏',
-                  style: TextStyle(fontSize: 72),
+                padding: const EdgeInsets.all(12),
+                child: Image.asset(
+                  'assets/cribbage_icon.png',
+                  fit: BoxFit.contain,
                 ),
               ),
             ),

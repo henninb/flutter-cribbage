@@ -235,13 +235,14 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
               ),
             ],
           ),
-          // Player score animation overlay
+          // Player score animation overlay (positioned to the right of player score)
           if (widget.state.playerScoreAnimation != null)
             Positioned(
-              left: 100,
+              left: 120,
               top: 0,
               bottom: 0,
-              child: Center(
+              child: Align(
+                alignment: Alignment.centerLeft,
                 child: ScoreAnimationWidget(
                   points: widget.state.playerScoreAnimation!.points,
                   isPlayer: widget.state.playerScoreAnimation!.isPlayer,
@@ -249,13 +250,14 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
                 ),
               ),
             ),
-          // Opponent score animation overlay
+          // Opponent score animation overlay (positioned to the left of opponent score)
           if (widget.state.opponentScoreAnimation != null)
             Positioned(
-              right: 100,
+              right: 120,
               top: 0,
               bottom: 0,
-              child: Center(
+              child: Align(
+                alignment: Alignment.centerRight,
                 child: ScoreAnimationWidget(
                   points: widget.state.opponentScoreAnimation!.points,
                   isPlayer: widget.state.opponentScoreAnimation!.isPlayer,

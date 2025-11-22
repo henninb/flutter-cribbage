@@ -57,7 +57,7 @@ class HandCountingDialog extends StatelessWidget {
             ),
 
             // Fixed bottom button
-            _buildAcceptButton(context),
+            _buildAcceptButton(context, dialogData.breakdown),
           ],
         ),
       ),
@@ -302,46 +302,17 @@ class HandCountingDialog extends StatelessWidget {
                       ),
                     ],
                   ),
-                )),
-
-            const Divider(height: 20, thickness: 2),
-
-            // Total
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total Points',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimaryContainer,
-                        ),
-                  ),
-                  Text(
-                    '${breakdown.totalScore}',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
-                ],
-              ),
-            ),
+                ),),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAcceptButton(BuildContext context) {
+  Widget _buildAcceptButton(BuildContext context, DetailedScoreBreakdown? breakdown) {
+    final points = breakdown?.totalScore ?? 0;
+    final pointsText = points == 1 ? 'point' : 'points';
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: SizedBox(
@@ -351,7 +322,7 @@ class HandCountingDialog extends StatelessWidget {
           onPressed: onContinue,
           icon: const Icon(Icons.check_circle, size: 24),
           label: Text(
-            'Accept',
+            'Accept ($points $pointsText)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),

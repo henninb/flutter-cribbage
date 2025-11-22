@@ -502,6 +502,22 @@ class GameEngine extends ChangeNotifier {
           }
         }
 
+        // Check if game is over after non-dealer score
+        if (playerScore > 120 || opponentScore > 120) {
+          debugPrint('[SCORE] Game over after non-dealer hand. Player=$playerScore, Opponent=$opponentScore');
+          _state = _state.copyWith(
+            countingPhase: CountingPhase.completed,
+            isInHandCountingPhase: false,
+            playerScore: playerScore,
+            opponentScore: opponentScore,
+            playerScoreAnimation: nonDealerAnimation != null && nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
+            opponentScoreAnimation: nonDealerAnimation != null && !nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
+          );
+          _checkGameOver();
+          notifyListeners();
+          return;
+        }
+
         // Now calculate dealer phase and store breakdown (but don't apply score yet)
         final hand = _state.isPlayerDealer ? _state.playerHand : _state.opponentHand;
         final breakdown = CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
@@ -548,6 +564,22 @@ class GameEngine extends ChangeNotifier {
               timestamp: DateTime.now().millisecondsSinceEpoch,
             );
           }
+        }
+
+        // Check if game is over after dealer score
+        if (playerScore > 120 || opponentScore > 120) {
+          debugPrint('[SCORE] Game over after dealer hand. Player=$playerScore, Opponent=$opponentScore');
+          _state = _state.copyWith(
+            countingPhase: CountingPhase.completed,
+            isInHandCountingPhase: false,
+            playerScore: playerScore,
+            opponentScore: opponentScore,
+            playerScoreAnimation: dealerAnimation != null && dealerAnimation.isPlayer ? dealerAnimation : null,
+            opponentScoreAnimation: dealerAnimation != null && !dealerAnimation.isPlayer ? dealerAnimation : null,
+          );
+          _checkGameOver();
+          notifyListeners();
+          return;
         }
 
         // Now calculate crib phase and store breakdown (but don't apply score yet)
