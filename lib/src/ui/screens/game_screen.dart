@@ -35,6 +35,7 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   bool _showSettings = false;
+  bool _showDebugDialog = false;
 
   @override
   Widget build(BuildContext context) {
@@ -73,13 +74,20 @@ class _GameScreenState extends State<GameScreen> {
             ],
           ),
           body: SafeArea(
-            child: Column(
+            child: Stack(
               children: [
+                Column(
+                  children: [
                 // Zone 1: Score Header (only when game started)
                 if (state.gameStarted)
                   _ScoreHeader(
                     state: state,
                     engine: widget.engine,
+                    onTripleTap: () {
+                      setState(() {
+                        _showDebugDialog = true;
+                      });
+                    },
                   ),
 
                 // Zone 2: Game Area (flexible, NO SCROLL)
@@ -106,6 +114,29 @@ class _GameScreenState extends State<GameScreen> {
                   playerScore: state.playerScore,
                   opponentScore: state.opponentScore,
                 ),
+                  ],
+                ),
+                // Debug score dialog overlay (full screen)
+                if (_showDebugDialog)
+                  Positioned.fill(
+                    child: _DebugScoreDialog(
+                      currentPlayerScore: state.playerScore,
+                      currentOpponentScore: state.opponentScore,
+                      onAdjustPlayerScore: (adjustment) {
+                        final newScore = (state.playerScore + adjustment).clamp(0, 200);
+                        widget.engine.updateScores(newScore, state.opponentScore);
+                      },
+                      onAdjustOpponentScore: (adjustment) {
+                        final newScore = (state.opponentScore + adjustment).clamp(0, 200);
+                        widget.engine.updateScores(state.playerScore, newScore);
+                      },
+                      onDismiss: () {
+                        setState(() {
+                          _showDebugDialog = false;
+                        });
+                      },
+                    ),
+                  ),
               ],
             ),
           ),
@@ -116,21 +147,62 @@ class _GameScreenState extends State<GameScreen> {
 }
 
 /// Score header showing scores and stats
-class _ScoreHeader extends StatelessWidget {
+class _ScoreHeader extends StatefulWidget {
   final GameState state;
   final GameEngine engine;
+  final VoidCallback onTripleTap;
 
   const _ScoreHeader({
     required this.state,
     required this.engine,
+    required this.onTripleTap,
   });
+
+  @override
+  State<_ScoreHeader> createState() => _ScoreHeaderState();
+}
+
+class _ScoreHeaderState extends State<_ScoreHeader> {
+  int _tapCount = 0;
+  int _lastTapTime = 0;
+
+  void _handleTap() {
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    if (currentTime - _lastTapTime < 500) {
+      setState(() {
+        _tapCount++;
+        if (_tapCount >= 3) {
+          widget.onTripleTap();
+          _tapCount = 0;
+        }
+      });
+    } else {
+      setState(() {
+        _tapCount = 1;
+      });
+    }
+    setState(() {
+      _lastTapTime = currentTime;
+    });
+
+    // Reset tap count after 1 second
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted && DateTime.now().millisecondsSinceEpoch - _lastTapTime >= 1000) {
+        setState(() {
+          _tapCount = 0;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     // Debug: Print scores being displayed
-    debugPrint('[UI] ScoreHeader displaying - Player: ${state.playerScore}, Opponent: ${state.opponentScore}');
+    debugPrint('[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}');
 
-    return Container(
+    return GestureDetector(
+      onTap: _handleTap,
+      child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -148,49 +220,50 @@ class _ScoreHeader extends StatelessWidget {
             children: [
               _ScoreColumn(
                 label: 'You',
-                score: state.playerScore,
-                subtitle: state.isPlayerDealer ? 'Dealer' : 'Pone',
-                isDealer: state.currentPhase != GamePhase.cutForDealer && state.isPlayerDealer,
+                score: widget.state.playerScore,
+                subtitle: widget.state.isPlayerDealer ? 'Dealer' : 'Pone',
+                isDealer: widget.state.currentPhase != GamePhase.cutForDealer && widget.state.isPlayerDealer,
               ),
-              if (state.starterCard != null)
-                _StarterCard(card: state.starterCard!),
+              if (widget.state.starterCard != null)
+                _StarterCard(card: widget.state.starterCard!),
               _ScoreColumn(
                 label: 'Opponent',
-                score: state.opponentScore,
-                subtitle: state.isPlayerDealer ? 'Pone' : 'Dealer',
-                isDealer: state.currentPhase != GamePhase.cutForDealer && !state.isPlayerDealer,
+                score: widget.state.opponentScore,
+                subtitle: widget.state.isPlayerDealer ? 'Pone' : 'Dealer',
+                isDealer: widget.state.currentPhase != GamePhase.cutForDealer && !widget.state.isPlayerDealer,
               ),
             ],
           ),
           // Player score animation overlay
-          if (state.playerScoreAnimation != null)
+          if (widget.state.playerScoreAnimation != null)
             Positioned(
               left: 100,
               top: 0,
               bottom: 0,
               child: Center(
                 child: ScoreAnimationWidget(
-                  points: state.playerScoreAnimation!.points,
-                  isPlayer: state.playerScoreAnimation!.isPlayer,
-                  onAnimationComplete: () => engine.clearScoreAnimation(true),
+                  points: widget.state.playerScoreAnimation!.points,
+                  isPlayer: widget.state.playerScoreAnimation!.isPlayer,
+                  onAnimationComplete: () => widget.engine.clearScoreAnimation(true),
                 ),
               ),
             ),
           // Opponent score animation overlay
-          if (state.opponentScoreAnimation != null)
+          if (widget.state.opponentScoreAnimation != null)
             Positioned(
               right: 100,
               top: 0,
               bottom: 0,
               child: Center(
                 child: ScoreAnimationWidget(
-                  points: state.opponentScoreAnimation!.points,
-                  isPlayer: state.opponentScoreAnimation!.isPlayer,
-                  onAnimationComplete: () => engine.clearScoreAnimation(false),
+                  points: widget.state.opponentScoreAnimation!.points,
+                  isPlayer: widget.state.opponentScoreAnimation!.isPlayer,
+                  onAnimationComplete: () => widget.engine.clearScoreAnimation(false),
                 ),
               ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -924,6 +997,194 @@ class _WinnerModal extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Debug Score Dialog - Hidden troubleshooting feature
+/// Activated by triple-tapping the score header
+class _DebugScoreDialog extends StatelessWidget {
+  final int currentPlayerScore;
+  final int currentOpponentScore;
+  final Function(int) onAdjustPlayerScore;
+  final Function(int) onAdjustOpponentScore;
+  final VoidCallback onDismiss;
+
+  const _DebugScoreDialog({
+    required this.currentPlayerScore,
+    required this.currentOpponentScore,
+    required this.onAdjustPlayerScore,
+    required this.onAdjustOpponentScore,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black54,
+      child: Center(
+        child: Card(
+          margin: const EdgeInsets.all(24),
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'DEBUG SCORE',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Testing feature - hidden',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
+                ),
+                const SizedBox(height: 24),
+
+                // Player score controls
+                _ScoreAdjustmentRow(
+                  label: 'You',
+                  currentScore: currentPlayerScore,
+                  onAdjust: onAdjustPlayerScore,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(height: 16),
+
+                // Opponent score controls
+                _ScoreAdjustmentRow(
+                  label: 'Opponent',
+                  currentScore: currentOpponentScore,
+                  onAdjust: onAdjustOpponentScore,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                const SizedBox(height: 24),
+
+                // Close button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: onDismiss,
+                    child: const Text('CLOSE'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Score adjustment row with +/- buttons
+class _ScoreAdjustmentRow extends StatelessWidget {
+  final String label;
+  final int currentScore;
+  final Function(int) onAdjust;
+  final Color color;
+
+  const _ScoreAdjustmentRow({
+    required this.label,
+    required this.currentScore,
+    required this.onAdjust,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '$currentScore',
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // -10 button
+            _QuickAdjustButton(
+              text: '-10',
+              onPressed: () => onAdjust(-10),
+            ),
+            const SizedBox(width: 8),
+
+            // -1 button
+            IconButton(
+              onPressed: () => onAdjust(-1),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.red.shade100,
+              ),
+              icon: const Icon(Icons.remove),
+            ),
+            const SizedBox(width: 8),
+
+            // +1 button
+            IconButton(
+              onPressed: () => onAdjust(1),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.green.shade100,
+              ),
+              icon: const Icon(Icons.add),
+            ),
+            const SizedBox(width: 8),
+
+            // +10 button
+            _QuickAdjustButton(
+              text: '+10',
+              onPressed: () => onAdjust(10),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Quick adjustment button (+/-10)
+class _QuickAdjustButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+
+  const _QuickAdjustButton({
+    required this.text,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
       ),
     );

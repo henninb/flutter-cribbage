@@ -73,6 +73,18 @@ class GameEngine extends ChangeNotifier {
       handScores: const HandScores(),
       countingPhase: CountingPhase.none,
       isInHandCountingPhase: false,
+      // Reset pegging-related state
+      playerCardsPlayed: const {},
+      opponentCardsPlayed: const {},
+      peggingCount: 0,
+      peggingPile: const [],
+      consecutiveGoes: 0,
+      lastPlayerWhoPlayed: null,
+      clearPendingReset: true,
+      isOpponentActionInProgress: false,
+      showCutCardDisplay: false,
+      clearPlayerScoreAnimation: true,
+      clearOpponentScoreAnimation: true,
     );
     notifyListeners();
   }
@@ -435,7 +447,7 @@ class GameEngine extends ChangeNotifier {
 
     debugPrint('[COUNTING DEBUG] After state update - handScores.nonDealerBreakdown entries: ${_state.handScores.nonDealerBreakdown?.entries.length}');
 
-    _checkGameOver();
+    // Don't check for game over yet - wait until all hands are counted (crib case handles this)
     notifyListeners();
     debugPrint('[COUNTING DEBUG] notifyListeners() called');
   }
@@ -545,6 +557,7 @@ class GameEngine extends ChangeNotifier {
           playerScoreAnimation: dealerAnimation != null && dealerAnimation.isPlayer ? dealerAnimation : null,
           opponentScoreAnimation: dealerAnimation != null && !dealerAnimation.isPlayer ? dealerAnimation : null,
         );
+        debugPrint('[COUNTING DEBUG] After dealer phase - countingPhase: ${_state.countingPhase}, isInHandCountingPhase: ${_state.isInHandCountingPhase}, playerScore: $playerScore, opponentScore: $opponentScore');
         break;
 
       case CountingPhase.crib:
@@ -597,7 +610,7 @@ class GameEngine extends ChangeNotifier {
         return;
     }
 
-    _checkGameOver();
+    // Don't check for game over yet - wait until all hands are counted (crib case handles this)
     notifyListeners();
   }
 
@@ -612,6 +625,41 @@ class GameEngine extends ChangeNotifier {
     } else {
       _state = _state.copyWith(clearOpponentScoreAnimation: true);
     }
+    notifyListeners();
+  }
+
+  void updateScores(int newPlayerScore, int newOpponentScore) {
+    debugPrint('[DEBUG SCORE] Updating scores: Player ${_state.playerScore} -> $newPlayerScore, Opponent ${_state.opponentScore} -> $newOpponentScore');
+
+    // Calculate deltas to create animations
+    final playerDelta = newPlayerScore - _state.playerScore;
+    final opponentDelta = newOpponentScore - _state.opponentScore;
+
+    ScoreAnimation? playerAnimation;
+    ScoreAnimation? opponentAnimation;
+
+    // Create animations for positive deltas
+    if (playerDelta > 0) {
+      playerAnimation = ScoreAnimation(
+        points: playerDelta,
+        isPlayer: true,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+    }
+    if (opponentDelta > 0) {
+      opponentAnimation = ScoreAnimation(
+        points: opponentDelta,
+        isPlayer: false,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+    }
+
+    _state = _state.copyWith(
+      playerScore: newPlayerScore,
+      opponentScore: newOpponentScore,
+      playerScoreAnimation: playerAnimation,
+      opponentScoreAnimation: opponentAnimation,
+    );
     notifyListeners();
   }
 
@@ -783,9 +831,7 @@ class GameEngine extends ChangeNotifier {
       // Don't autoplay while showing pending reset dialog
       return;
     }
-    if (_state.opponentCardsPlayed.length == _state.opponentHand.length) {
-      return;
-    }
+    // Don't check if opponent has played all cards here - they still need to say Go if needed
     if (_opponentAutoplayScheduled) {
       return;
     }
@@ -807,6 +853,7 @@ class GameEngine extends ChangeNotifier {
         opponentCardsRemaining: _state.playerHand.length - _state.playerCardsPlayed.length,
       );
       if (move == null) {
+        debugPrint('[OPPONENT AI] No legal move - saying Go');
         handleGo(fromPlayer: false);
       } else {
         playCard(move.index, isPlayer: false);
