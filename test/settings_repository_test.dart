@@ -31,5 +31,13 @@ void main() {
 
       expect(loaded, custom);
     });
+
+    test('loadSettings tolerates corrupted json payloads', () async {
+      SharedPreferences.setMockInitialValues({'game_settings': 'not-json'});
+      repository = SettingsRepository();
+
+      final settings = await repository.loadSettings();
+      expect(settings, const GameSettings());
+    });
   });
 }

@@ -30,5 +30,47 @@ void main() {
       expect(points.runPoints, 3);
       expect(points.total, 3);
     });
+
+    test('flush scoring respects crib rules', () {
+      final hand = [
+        const PlayingCard(rank: Rank.four, suit: Suit.hearts),
+        const PlayingCard(rank: Rank.six, suit: Suit.hearts),
+        const PlayingCard(rank: Rank.nine, suit: Suit.hearts),
+        const PlayingCard(rank: Rank.jack, suit: Suit.hearts),
+      ];
+      const starterHeart = PlayingCard(rank: Rank.two, suit: Suit.hearts);
+      const starterClub = PlayingCard(rank: Rank.king, suit: Suit.clubs);
+
+      final regular = CribbageScorer.scoreHandWithBreakdown(hand, starterHeart, false);
+      expect(
+        regular.entries.where((e) => e.type.contains('Flush')).single.points,
+        5,
+      );
+
+      final cribNoStarter = CribbageScorer.scoreHandWithBreakdown(hand, starterClub, true);
+      expect(cribNoStarter.entries.where((e) => e.type.contains('Flush')), isEmpty);
+
+      final cribAllMatch = CribbageScorer.scoreHandWithBreakdown(hand, starterHeart, true);
+      expect(
+        cribAllMatch.entries.where((e) => e.type.contains('Flush')).single.points,
+        5,
+      );
+    });
+
+    test('his nobs awards a single point when jack matches starter suit', () {
+      final hand = [
+        const PlayingCard(rank: Rank.jack, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.three, suit: Suit.hearts),
+        const PlayingCard(rank: Rank.five, suit: Suit.spades),
+        const PlayingCard(rank: Rank.ten, suit: Suit.diamonds),
+      ];
+      const starter = PlayingCard(rank: Rank.seven, suit: Suit.clubs);
+
+      final breakdown = CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
+      expect(
+        breakdown.entries.where((e) => e.type == 'His Nobs').single.points,
+        1,
+      );
+    });
   });
 }
