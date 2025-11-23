@@ -40,5 +40,15 @@ class CardConstants {
   /// Opponent hand container height (card height + padding)
   static const double opponentHandHeight = 90.0;
 
+  /// Active pegging card width (larger for better visibility)
+  static const double activePeggingCardWidth = 52.0;
+
+  /// Active pegging card height (maintains 5:7 ratio)
+  static const double activePeggingCardHeight = 72.8;
+
+  /// Overlap offset for fanned active pegging cards
+  /// Shows this much of each card before it's overlapped by the next
+  static const double peggingCardOverlap = 22.0;
+
   CardConstants._(); // Private constructor to prevent instantiation
 }

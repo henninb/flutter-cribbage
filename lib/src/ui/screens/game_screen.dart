@@ -823,6 +823,15 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
     }
   }
 
+  /// Calculate the total width needed for fanned/overlapped cards
+  /// Formula: (numCards - 1) × overlap + fullCardWidth
+  double _calculateFannedWidth(int numCards) {
+    if (numCards == 0) return 0;
+    if (numCards == 1) return CardConstants.activePeggingCardWidth;
+    return ((numCards - 1) * CardConstants.peggingCardOverlap) +
+        CardConstants.activePeggingCardWidth;
+  }
+
   Widget _buildCard({
     required PlayingCard card,
     required double width,
@@ -901,62 +910,77 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
         if (hasHistory || hasCurrentCards) ...[
           const SizedBox(height: 8),
           SizedBox(
-            height: CardConstants.smallCardHeight + 8,
+            height: CardConstants.activePeggingCardHeight + 8,
             child: ListView(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               shrinkWrap: true,
               children: [
-                // Previous completed rounds (condensed and greyed)
+                // Previous completed rounds (fanned and greyed)
                 ...completedRounds.map((round) {
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Cards in this round (overlapped)
-                      ...List.generate(round.cards.length, (index) {
-                        final card = round.cards[index];
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            left: index == 0 ? 4.0 : 0.0,
-                            right: index == round.cards.length - 1 ? 0.0 : 8.0,
+                      // Cards in this round (fanned/overlapped)
+                      SizedBox(
+                        width: _calculateFannedWidth(round.cards.length),
+                        height: CardConstants.activePeggingCardHeight,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: List.generate(
+                            round.cards.length,
+                            (index) {
+                              final card = round.cards[index];
+                              return Positioned(
+                                left: index * CardConstants.peggingCardOverlap,
+                                child: _buildCard(
+                                  card: card,
+                                  width: CardConstants.activePeggingCardWidth,
+                                  height: CardConstants.activePeggingCardHeight,
+                                  fontSize: 14.0,
+                                  opacity: 1.0,
+                                ),
+                              );
+                            },
                           ),
-                          child: _buildCard(
-                            card: card,
-                            width: 30.0,
-                            height: 42.0,
-                            fontSize: 9.0,
-                            opacity: 0.4,
-                          ),
-                        );
-                      }),
+                        ),
+                      ),
                       // Round separator
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Container(
                           width: 2,
-                          height: 42.0,
+                          height: CardConstants.activePeggingCardHeight,
                           color: Colors.grey.shade400,
                         ),
                       ),
                     ],
                   );
                 }),
-                // Current round (full size)
+                // Current round (full size, fanned/overlapped)
                 if (hasCurrentCards)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: widget.state.peggingPile.map((card) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: _buildCard(
-                          card: card,
-                          width: CardConstants.smallCardWidth,
-                          height: CardConstants.smallCardHeight,
-                          fontSize: 12.0,
-                          opacity: 1.0,
-                        ),
-                      );
-                    }).toList(),
+                  SizedBox(
+                    width: _calculateFannedWidth(widget.state.peggingPile.length),
+                    height: CardConstants.activePeggingCardHeight,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: List.generate(
+                        widget.state.peggingPile.length,
+                        (index) {
+                          final card = widget.state.peggingPile[index];
+                          return Positioned(
+                            left: index * CardConstants.peggingCardOverlap,
+                            child: _buildCard(
+                              card: card,
+                              width: CardConstants.activePeggingCardWidth,
+                              height: CardConstants.activePeggingCardHeight,
+                              fontSize: 14.0,
+                              opacity: 1.0,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 const SizedBox(width: 8),
               ],
