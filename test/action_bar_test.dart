@@ -16,6 +16,7 @@ void main() {
     required VoidCallback onConfirmCrib,
     required VoidCallback onGo,
     required VoidCallback onStartCounting,
+    required VoidCallback onAdvise,
   }) {
     return tester.pumpWidget(
       MaterialApp(
@@ -28,6 +29,7 @@ void main() {
             onConfirmCrib: onConfirmCrib,
             onGo: onGo,
             onStartCounting: onStartCounting,
+            onAdvise: onAdvise,
           ),
         ),
       ),
@@ -45,6 +47,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onAdvise: () {},
     );
 
     await tester.tap(find.text('Start New Game'));
@@ -65,6 +68,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onAdvise: () {},
     );
 
     await tester.tap(find.text('Cut for Dealer'));
@@ -87,6 +91,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onAdvise: () {},
     );
 
     await tester.tap(find.text('Deal Cards'));
@@ -98,6 +103,7 @@ void main() {
 
   testWidgets('crib selection enables confirm button only with two cards', (tester) async {
     var confirmed = false;
+    var advised = false;
     await _pumpBar(
       tester,
       state: GameState(
@@ -112,12 +118,16 @@ void main() {
       onConfirmCrib: () => confirmed = true,
       onGo: () {},
       onStartCounting: () {},
+      onAdvise: () => advised = true,
     );
 
     final button = find.widgetWithText(FilledButton, 'My Crib');
     expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
     await tester.tap(button);
     expect(confirmed, isTrue);
+
+    await tester.tap(find.text('Advise'));
+    expect(advised, isTrue);
   });
 
   testWidgets('pegging phase shows Go button when player cannot play', (tester) async {
@@ -139,6 +149,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () => went = true,
       onStartCounting: () {},
+      onAdvise: () {},
     );
 
     await tester.tap(find.text('Go'));
@@ -160,6 +171,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () => counted = true,
+      onAdvise: () {},
     );
 
     await tester.tap(find.text('Count Hands'));
@@ -181,6 +193,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onAdvise: () {},
     );
 
     await tester.tap(find.text('New Game'));

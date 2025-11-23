@@ -143,6 +143,429 @@ class GameEngine extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Get AI advice for which 2 cards to discard to the crib
+  /// Returns the indices of the cards to discard
+  List<int> getAdvice() {
+    if (_state.currentPhase != GamePhase.cribSelection || _state.playerHand.length != 6) {
+      return [];
+    }
+
+    // Generate all possible combinations
+    final combos = _generateCombinations(_state.playerHand);
+
+    // Evaluate each combination with game position awareness
+    combos.sort((a, b) {
+      final scoreA = _evaluateCribChoiceWithPosition(a.keep, a.discard, _state.isPlayerDealer);
+      final scoreB = _evaluateCribChoiceWithPosition(b.keep, b.discard, _state.isPlayerDealer);
+      return scoreB.compareTo(scoreA);
+    });
+
+    // Get the best choice
+    final bestChoice = combos.firstOrNull;
+    if (bestChoice == null) {
+      return [];
+    }
+
+    // Find the indices of the cards to discard
+    final indices = <int>[];
+    for (var i = 0; i < _state.playerHand.length; i++) {
+      if (bestChoice.discard.contains(_state.playerHand[i])) {
+        indices.add(i);
+        if (indices.length == 2) break;
+      }
+    }
+
+    return indices;
+  }
+
+  List<_CribChoice> _generateCombinations(List<PlayingCard> hand) {
+    final combos = <_CribChoice>[];
+    for (var i = 0; i < hand.length; i++) {
+      for (var j = i + 1; j < hand.length; j++) {
+        final discard = [hand[i], hand[j]];
+        final keep = hand
+            .asMap()
+            .entries
+            .where((entry) => entry.key != i && entry.key != j)
+            .map((entry) => entry.value)
+            .toList();
+        combos.add(_CribChoice(keep: keep, discard: discard));
+      }
+    }
+    return combos;
+  }
+
+  double _evaluateCribChoiceWithPosition(
+    List<PlayingCard> keep,
+    List<PlayingCard> discard,
+    bool isDealer,
+  ) {
+    // Use the AI's base evaluation
+    final handValue = _estimateHandValue(keep);
+    final rawCribValue = _estimateCribValue(discard);
+
+    // Calculate enhanced crib damage potential (cards that work well together)
+    final cribDamagePotential = _estimateCribDamagePotential(discard);
+
+    // Use enhanced crib evaluation
+    final cribValue = isDealer
+        ? rawCribValue
+        : -(rawCribValue + cribDamagePotential);
+
+    // Calculate game position factors
+    final scoreDiff = _state.playerScore - _state.opponentScore;
+    final playerDistanceFrom121 = 121 - _state.playerScore;
+    final opponentDistanceFrom121 = 121 - _state.opponentScore;
+
+    // Determine risk profile
+    final riskProfile = _calculateRiskProfile(
+      scoreDiff: scoreDiff,
+      playerDistanceFrom121: playerDistanceFrom121,
+      opponentDistanceFrom121: opponentDistanceFrom121,
+      isDealer: isDealer,
+    );
+
+    // Base weights - adjusted by risk profile
+    var handWeight = isDealer ? 3.5 : 4.0;
+    var cribWeight = isDealer ? 1.0 : 1.3;
+
+    // === CRITICAL ENDGAME SCENARIOS ===
+    // When both players are very close, counting order is EVERYTHING
+    if (playerDistanceFrom121 <= 15 && opponentDistanceFrom121 <= 15) {
+      if (!isDealer) {
+        // As pone, we count first - absolutely maximize hand value
+        handWeight += 2.5;
+        // And be EXTREMELY defensive about crib
+        cribWeight += 2.0;
+      } else {
+        // As dealer, we need both hand AND crib, but they count first
+        handWeight += 1.0;
+        cribWeight += 1.5;
+      }
+    }
+
+    // === OPPONENT WITHIN PEGGING DISTANCE ===
+    // If opponent could peg out (within ~15 points), be very careful
+    else if (opponentDistanceFrom121 <= 15) {
+      if (!isDealer) {
+        // Pone - we count first, so focus on hand but minimize crib damage
+        handWeight += 1.5;
+        cribWeight += 2.5; // VERY defensive
+      } else {
+        // Dealer - opponent counts first, so minimize their hand potential
+        handWeight += 0.5;
+        cribWeight += 1.0;
+      }
+    }
+
+    // === WE'RE WITHIN WINNING DISTANCE ===
+    else if (playerDistanceFrom121 <= 20) {
+      if (!isDealer) {
+        // Pone - counting order advantage is huge
+        handWeight += 1.8;
+        cribWeight += 1.0;
+      } else {
+        // Dealer - we have crib advantage
+        handWeight += 0.8;
+        cribWeight += 1.2;
+      }
+    }
+
+    // === APPLY RISK PROFILE ADJUSTMENTS ===
+    switch (riskProfile) {
+      case RiskProfile.aggressive:
+        // Behind significantly - take risks to maximize points
+        handWeight += 1.5;
+        // Still defend crib, but not as much as normal
+        cribWeight -= 0.3;
+
+      case RiskProfile.balanced:
+        // Close game - standard strategy
+        // No adjustments
+
+      case RiskProfile.conservative:
+        // Ahead - minimize variance and opponent's opportunities
+        if (!isDealer) {
+          // Pone - be VERY defensive about crib
+          cribWeight += 1.5;
+        } else {
+          // Dealer - maximize total value conservatively
+          handWeight += 0.3;
+          cribWeight += 0.5;
+        }
+
+      case RiskProfile.desperate:
+        // Way behind, opponent close to winning - swing for the fences
+        handWeight += 2.5;
+        // Accept some crib risk to maximize hand potential
+        cribWeight -= 0.8;
+    }
+
+    // === COUNTING ORDER ADVANTAGE (non-critical games) ===
+    if (playerDistanceFrom121 > 15 && playerDistanceFrom121 <= 30) {
+      if (!isDealer) {
+        // Pone advantage increases as we get closer to 121
+        final proximityBonus = (30 - playerDistanceFrom121) / 15.0;
+        handWeight += 0.5 + proximityBonus;
+      }
+    }
+
+    return handValue * handWeight + cribValue * cribWeight;
+  }
+
+  /// Estimates additional crib damage potential based on card synergy
+  /// Returns higher values for cards that work well together in opponent's crib
+  double _estimateCribDamagePotential(List<PlayingCard> cards) {
+    if (cards.length != 2) return 0.0;
+
+    var damage = 0.0;
+    final card1 = cards[0];
+    final card2 = cards[1];
+
+    // Pairs are devastating in crib (they often become multiple pairs with starter)
+    if (card1.rank == card2.rank) {
+      damage += 3.0; // Extra penalty for giving opponent a pair
+    }
+
+    // Cards that make 15 together are very strong
+    if (card1.value + card2.value == 15) {
+      damage += 2.5;
+    }
+
+    // Sequential cards have high run potential
+    final rankDiff = (card1.rank.index - card2.rank.index).abs();
+    if (rankDiff == 1) {
+      damage += 2.0; // Adjacent cards are dangerous
+    } else if (rankDiff == 2) {
+      damage += 1.0; // One-gapped cards still have potential
+    }
+
+    // Fives with face cards are excellent for opponent
+    if ((card1.rank == Rank.five && card2.value == 10) ||
+        (card2.rank == Rank.five && card1.value == 10)) {
+      damage += 2.0;
+    }
+
+    // Two fives is nightmare fuel
+    if (card1.rank == Rank.five && card2.rank == Rank.five) {
+      damage += 4.0;
+    }
+
+    // Same suit gives flush potential
+    if (card1.suit == card2.suit) {
+      damage += 1.5;
+    }
+
+    // Mid-range cards (4-9) together are versatile
+    if (card1.rank.index >= 3 && card1.rank.index <= 8 &&
+        card2.rank.index >= 3 && card2.rank.index <= 8) {
+      damage += 0.8;
+    }
+
+    // Two face cards together are actually weak (less damage than expected)
+    if (card1.value == 10 && card2.value == 10 && card1.rank != card2.rank) {
+      damage -= 1.5; // Actually safer to give opponent dead cards
+    }
+
+    return damage;
+  }
+
+  /// Calculates risk profile based on game situation
+  RiskProfile _calculateRiskProfile({
+    required int scoreDiff,
+    required int playerDistanceFrom121,
+    required int opponentDistanceFrom121,
+    required bool isDealer,
+  }) {
+    // Desperate: Way behind (20+) and opponent is close to winning (within 25)
+    if (scoreDiff <= -20 && opponentDistanceFrom121 <= 25) {
+      return RiskProfile.desperate;
+    }
+
+    // Aggressive: Behind significantly (10-20 points)
+    if (scoreDiff <= -10) {
+      return RiskProfile.aggressive;
+    }
+
+    // Conservative: Ahead significantly (15+) or ahead with opponent far from winning
+    if (scoreDiff >= 15 || (scoreDiff >= 8 && opponentDistanceFrom121 > 40)) {
+      return RiskProfile.conservative;
+    }
+
+    // Balanced: Close game
+    return RiskProfile.balanced;
+  }
+
+  double _estimateHandValue(List<PlayingCard> cards) {
+    var score = 0.0;
+
+    // Count pairs
+    var pairCount = 0;
+    for (var i = 0; i < cards.length; i++) {
+      for (var j = i + 1; j < cards.length; j++) {
+        if (cards[i].rank == cards[j].rank) {
+          score += 2;
+          pairCount++;
+        }
+      }
+    }
+
+    if (pairCount >= 2) {
+      score += 1.5;
+    }
+
+    // Count fifteens
+    final indices = List.generate(cards.length, (index) => index);
+    final combos = <List<int>>[];
+    for (var size = 1; size <= cards.length; size++) {
+      combos.addAll(_combinations(indices, size));
+    }
+    var fifteenCount = 0;
+    for (final combo in combos) {
+      final sum = combo.map((i) => cards[i].value).reduce((a, b) => a + b);
+      if (sum == 15) {
+        score += 2;
+        fifteenCount++;
+      }
+    }
+
+    if (fifteenCount >= 3) {
+      score += 1.0;
+    }
+
+    // Evaluate runs
+    final runLength = _findBestRun(cards);
+    if (runLength >= 3) {
+      score += runLength * 1.2;
+    }
+
+    // Flush potential
+    final suitCounts = cards.fold<Map<Suit, int>>(<Suit, int>{}, (acc, card) {
+      acc.update(card.suit, (value) => value + 1, ifAbsent: () => 1);
+      return acc;
+    });
+    if (suitCounts.values.any((count) => count == 4)) {
+      score += 4;
+    } else if (suitCounts.values.any((count) => count == 3)) {
+      score += 0.5;
+    }
+
+    // Fives are valuable
+    score += cards.where((card) => card.rank == Rank.five).length * 1.0;
+
+    // Middle-range cards are versatile
+    score += cards.where((card) => card.rank.index >= 3 && card.rank.index <= 8).length * 0.5;
+
+    // Aces are flexible
+    score += cards.where((card) => card.rank == Rank.ace).length * 0.3;
+
+    // Having both high and low cards
+    final hasLow = cards.any((card) => card.value <= 5);
+    final hasHigh = cards.any((card) => card.value >= 10);
+    if (hasLow && hasHigh) {
+      score += 0.8;
+    }
+
+    // Penalize too many face cards
+    final faceCardCount = cards.where((card) => card.value == 10).length;
+    if (faceCardCount >= 3) {
+      score -= 1.0;
+    }
+
+    return score;
+  }
+
+  double _estimateCribValue(List<PlayingCard> cards) {
+    var value = 0.0;
+
+    if (cards[0].rank == cards[1].rank) {
+      value += 5;
+    }
+
+    if (cards[0].value + cards[1].value == 15) {
+      value += 4;
+    }
+
+    value += cards.where((card) => card.rank == Rank.five).length * 3.0;
+
+    final rankDiff = (cards[0].rank.index - cards[1].rank.index).abs();
+    if (rankDiff == 1) {
+      value += 2.5;
+    } else if (rankDiff == 2) {
+      value += 1.5;
+    } else if (rankDiff == 3) {
+      value += 0.5;
+    }
+
+    if (cards[0].suit == cards[1].suit) {
+      value += 2.0;
+    }
+
+    final sum = cards[0].value + cards[1].value;
+    if (sum == 5) {
+      value += 2.0;
+    } else if (sum == 10) {
+      value += 1.5;
+    }
+
+    if (cards.every((card) => card.value == 10)) {
+      value -= 2.0;
+    }
+
+    value += cards.where((card) => card.rank == Rank.ace || card.rank == Rank.two).length * 0.8;
+
+    if (cards.any((card) => card.rank == Rank.king) &&
+        cards.any((card) => card.rank == Rank.queen)) {
+      value -= 1.5;
+    }
+
+    return value;
+  }
+
+  int _findBestRun(List<PlayingCard> cards) {
+    final sortedRanks = cards.map((card) => card.rank.index).toList()..sort();
+    for (var length = cards.length; length >= 3; length--) {
+      for (var i = 0; i <= sortedRanks.length - length; i++) {
+        final subset = sortedRanks.sublist(i, i + length);
+        var isRun = true;
+        for (var j = 0; j < subset.length - 1; j++) {
+          if (subset[j + 1] - subset[j] != 1) {
+            isRun = false;
+            break;
+          }
+        }
+        if (isRun) {
+          return length;
+        }
+      }
+    }
+    return 0;
+  }
+
+  List<List<int>> _combinations(List<int> items, int n) {
+    if (n == 0) {
+      return [<int>[]];
+    }
+    if (items.isEmpty) {
+      return [];
+    }
+    final result = <List<int>>[];
+    void generate(int start, List<int> current) {
+      if (current.length == n) {
+        result.add(List<int>.from(current));
+        return;
+      }
+      for (var i = start; i < items.length; i++) {
+        current.add(items[i]);
+        generate(i + 1, current);
+        current.removeLast();
+      }
+    }
+
+    generate(0, <int>[]);
+    return result;
+  }
+
   void confirmCribSelection() {
     if (_state.selectedCards.length != 2) {
       return;
@@ -925,4 +1348,30 @@ class GameEngine extends ChangeNotifier {
       }
     });
   }
+}
+
+extension<E> on List<E> {
+  E? get firstOrNull => isEmpty ? null : first;
+}
+
+class _CribChoice {
+  _CribChoice({required this.keep, required this.discard});
+
+  final List<PlayingCard> keep;
+  final List<PlayingCard> discard;
+}
+
+/// Risk profiles for different game situations
+enum RiskProfile {
+  /// Way behind, need to take big risks
+  desperate,
+
+  /// Behind, need to be more aggressive
+  aggressive,
+
+  /// Close game, use standard strategy
+  balanced,
+
+  /// Ahead, minimize variance and opponent opportunities
+  conservative,
 }

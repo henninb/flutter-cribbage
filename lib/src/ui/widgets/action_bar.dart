@@ -11,6 +11,7 @@ class ActionBar extends StatelessWidget {
   final VoidCallback onConfirmCrib;
   final VoidCallback onGo;
   final VoidCallback onStartCounting;
+  final VoidCallback onAdvise;
 
   const ActionBar({
     super.key,
@@ -21,6 +22,7 @@ class ActionBar extends StatelessWidget {
     required this.onConfirmCrib,
     required this.onGo,
     required this.onStartCounting,
+    required this.onAdvise,
   });
 
   @override
@@ -98,9 +100,19 @@ class ActionBar extends StatelessWidget {
     if (state.currentPhase == GamePhase.cribSelection) {
       buttons.add(
         Expanded(
+          flex: 2,
           child: FilledButton(
             onPressed: state.selectedCards.length == 2 ? onConfirmCrib : null,
             child: Text(state.isPlayerDealer ? 'My Crib' : "Opponent's Crib"),
+          ),
+        ),
+      );
+      buttons.add(const SizedBox(width: 8));
+      buttons.add(
+        Expanded(
+          child: OutlinedButton(
+            onPressed: onAdvise,
+            child: const Text('Advise'),
           ),
         ),
       );

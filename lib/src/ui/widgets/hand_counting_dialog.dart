@@ -176,24 +176,6 @@ class HandCountingDialog extends StatelessWidget {
             ),
           ],
         ),
-
-        const SizedBox(height: 12),
-
-        // Starter card (cut card)
-        if (state.starterCard != null)
-          Column(
-            children: [
-              Text(
-                'Cut Card',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              _HandCard(card: state.starterCard!),
-            ],
-          ),
       ],
     );
   }
