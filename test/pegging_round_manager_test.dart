@@ -8,8 +8,9 @@ void main() {
   test('resets after reaching 31', () {
     final mgr = PeggingRoundManager();
     mgr.onPlay(const PlayingCard(rank: Rank.ten, suit: Suit.clubs));
-    mgr.onPlay(const PlayingCard(rank: Rank.five, suit: Suit.clubs));
-    final outcome = mgr.onPlay(const PlayingCard(rank: Rank.six, suit: Suit.clubs));
+    mgr.onPlay(const PlayingCard(rank: Rank.nine, suit: Suit.hearts));
+    mgr.onPlay(const PlayingCard(rank: Rank.seven, suit: Suit.diamonds));
+    final outcome = mgr.onPlay(const PlayingCard(rank: Rank.five, suit: Suit.spades));
     expect(outcome.reset, isNotNull);
     expect(outcome.reset!.resetFor31, isTrue);
     expect(mgr.peggingCount, 0);

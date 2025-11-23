@@ -15,7 +15,8 @@ void main() {
       const starter = PlayingCard(rank: Rank.five, suit: Suit.spades);
 
       final breakdown = CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
-      expect(breakdown.totalScore, 20);
+      // 2 for fifteen, 6 for the three pairs, and 9 for the triple run = 17 total
+      expect(breakdown.totalScore, 17);
       expect(breakdown.entries.where((e) => e.type == 'Fifteen').length, greaterThan(0));
     });
 

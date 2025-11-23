@@ -7,12 +7,16 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:cribbage/src/app.dart';
 import 'package:cribbage/src/game/engine/game_engine.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   testWidgets('App builds initial screen', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
     final engine = GameEngine();
     await tester.pumpWidget(
       ChangeNotifierProvider<GameEngine>.value(
@@ -20,6 +24,8 @@ void main() {
         child: const CribbageApp(),
       ),
     );
+
+    await tester.pumpAndSettle();
 
     expect(find.text('Cribbage'), findsWidgets);
   });

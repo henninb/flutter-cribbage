@@ -37,6 +37,9 @@ keystore.properties
 *~
 testers.csv
 
+# Test coverage reports
+coverage/
+
 # Xcode user state (per-user noise)
 *.xcuserdata/
 *.xcuserstate
