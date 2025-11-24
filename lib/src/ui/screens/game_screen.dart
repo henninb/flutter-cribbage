@@ -11,6 +11,7 @@ import '../widgets/cribbage_board.dart';
 import '../widgets/welcome_screen.dart';
 import '../widgets/action_bar.dart';
 import '../widgets/hand_counting_dialog.dart';
+import '../widgets/manual_counting_dialog.dart';
 import '../widgets/card_constants.dart';
 import '../widgets/score_animation.dart';
 import 'settings_screen.dart';
@@ -427,6 +428,23 @@ class _StarterCard extends StatelessWidget {
   }
 }
 
+/// Helper function to determine if the current counting phase is for the player's hand/crib
+bool _isPlayerHandOrCrib(GameState state) {
+  switch (state.countingPhase) {
+    case CountingPhase.nonDealer:
+      // Non-dealer hand: player's hand if player is NOT dealer
+      return !state.isPlayerDealer;
+    case CountingPhase.dealer:
+      // Dealer hand: player's hand if player IS dealer
+      return state.isPlayerDealer;
+    case CountingPhase.crib:
+      // Crib: player's crib if player IS dealer (crib always belongs to dealer)
+      return state.isPlayerDealer;
+    default:
+      return false;
+  }
+}
+
 /// Game area - shows different content based on phase
 /// NO SCROLLING - everything must fit in available space
 class _GameArea extends StatelessWidget {
@@ -463,12 +481,25 @@ class _GameArea extends StatelessWidget {
       );
     }
 
-    // Show hand counting dialog
+    // Show hand counting dialog (manual or automatic based on settings)
     if (state.isInHandCountingPhase) {
-      return HandCountingDialog(
-        state: state,
-        onContinue: engine.proceedToNextCountingPhase,
-      );
+      // Determine if this is the player's hand/crib
+      final isPlayerHandOrCrib = _isPlayerHandOrCrib(state);
+
+      // Use manual counting only for player's hands/crib (not opponent's)
+      final useManualCounting = settings.countingMode == CountingMode.manual && isPlayerHandOrCrib;
+
+      if (useManualCounting) {
+        return ManualCountingDialog(
+          state: state,
+          onScoreSubmit: engine.proceedToNextCountingPhaseWithManualScore,
+        );
+      } else {
+        return HandCountingDialog(
+          state: state,
+          onContinue: engine.proceedToNextCountingPhase,
+        );
+      }
     }
 
     // Show game content based on phase

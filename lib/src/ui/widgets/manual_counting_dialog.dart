@@ -1,0 +1,770 @@
+import 'package:flutter/material.dart';
+import '../../game/engine/game_state.dart';
+import '../../game/logic/cribbage_scorer.dart';
+import 'card_constants.dart';
+
+/// Custom slider thumb that displays the score value inside the circle
+class _ScoreThumbShape extends SliderComponentShape {
+  final double thumbRadius;
+  final String text;
+
+  const _ScoreThumbShape({
+    required this.thumbRadius,
+    required this.text,
+  });
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size.fromRadius(thumbRadius);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final Canvas canvas = context.canvas;
+
+    // Draw the outer circle (thumb)
+    final paint = Paint()
+      ..color = sliderTheme.thumbColor ?? Colors.blue
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(center, thumbRadius, paint);
+
+    // Draw white border
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+
+    canvas.drawCircle(center, thumbRadius, borderPaint);
+
+    // Draw the text inside the circle
+    final textSpan = TextSpan(
+      text: text,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: thumbRadius * 0.7,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: textDirection,
+      textAlign: TextAlign.center,
+    );
+
+    textPainter.layout();
+
+    final textCenter = Offset(
+      center.dx - (textPainter.width / 2),
+      center.dy - (textPainter.height / 2),
+    );
+
+    textPainter.paint(canvas, textCenter);
+  }
+}
+
+/// Manual point counting dialog with slider for user input
+class ManualCountingDialog extends StatefulWidget {
+  final GameState state;
+  final Function(int) onScoreSubmit;
+
+  const ManualCountingDialog({
+    super.key,
+    required this.state,
+    required this.onScoreSubmit,
+  });
+
+  @override
+  State<ManualCountingDialog> createState() => _ManualCountingDialogState();
+}
+
+class _ManualCountingDialogState extends State<ManualCountingDialog> {
+  double _sliderValue = 0;
+  String? _errorMessage;
+  bool _showingBreakdown = false;
+
+  // Valid cribbage scores (0-29 except 19, 25, 26, 27)
+  // In cribbage, these scores are impossible in a hand
+  static const List<int> validScores = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+    // 19 is impossible
+    20, 21, 22, 23, 24,
+    // 25, 26, 27 are impossible
+    28, 29,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Reset slider to zero each time dialog is displayed
+    _sliderValue = 0;
+  }
+
+  @override
+  void didUpdateWidget(ManualCountingDialog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset slider when counting phase changes (new hand to count)
+    if (oldWidget.state.countingPhase != widget.state.countingPhase) {
+      setState(() {
+        _sliderValue = 0;
+        _errorMessage = null;
+      });
+    }
+  }
+
+  int get currentScore => validScores[_sliderValue.round()];
+
+  DetailedScoreBreakdown? _getBreakdown() {
+    final starter = widget.state.starterCard;
+    if (starter == null) return null;
+
+    final dialogData = _getDialogData();
+    if (dialogData == null) return null;
+
+    final isCrib = widget.state.countingPhase == CountingPhase.crib;
+    final breakdown = CribbageScorer.scoreHandWithBreakdown(
+      dialogData.hand.cast(),
+      starter,
+      isCrib,
+    );
+
+    return breakdown;
+  }
+
+  void _handleAccept() {
+    final breakdown = _getBreakdown();
+    if (breakdown == null) return;
+
+    if (currentScore != breakdown.totalScore) {
+      setState(() {
+        _errorMessage = 'Incorrect! Please try again.';
+      });
+      return;
+    }
+
+    // Score is correct, proceed
+    setState(() {
+      _errorMessage = null;
+    });
+    widget.onScoreSubmit(currentScore);
+  }
+
+  void _showBreakdown() {
+    setState(() {
+      _showingBreakdown = true;
+    });
+  }
+
+  void _hideBreakdown() {
+    setState(() {
+      _showingBreakdown = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dialogData = _getDialogData();
+    if (dialogData == null) return const SizedBox.shrink();
+
+    return Stack(
+      children: [
+        // Main dialog
+        Dialog(
+          insetPadding: const EdgeInsets.only(
+            top: 8,
+            left: 8,
+            right: 8,
+            bottom: 48,
+          ),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              children: [
+                // Fixed header
+                _buildHeader(context, dialogData.title),
+
+                // Scrollable content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        // Cards display
+                        _buildCardsSection(context, dialogData.hand),
+                        const SizedBox(height: 24),
+
+                        // Slider directly under cards
+                        _buildSlider(context),
+
+                        // Error message (if any)
+                        if (_errorMessage != null) ...[
+                          const SizedBox(height: 24),
+                          _buildErrorMessage(context),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Fixed bottom buttons
+                _buildBottomButtons(context),
+              ],
+            ),
+          ),
+        ),
+
+        // Breakdown overlay (when shown)
+        if (_showingBreakdown) _buildBreakdownOverlay(context),
+      ],
+    );
+  }
+
+  _DialogData? _getDialogData() {
+    switch (widget.state.countingPhase) {
+      case CountingPhase.nonDealer:
+        return _DialogData(
+          title: widget.state.isPlayerDealer
+              ? "${widget.state.opponentName}'s Hand"
+              : "${widget.state.playerName}'s Hand",
+          hand: widget.state.isPlayerDealer
+              ? widget.state.opponentHand
+              : widget.state.playerHand,
+        );
+
+      case CountingPhase.dealer:
+        return _DialogData(
+          title: widget.state.isPlayerDealer
+              ? "${widget.state.playerName}'s Hand"
+              : "${widget.state.opponentName}'s Hand",
+          hand: widget.state.isPlayerDealer
+              ? widget.state.playerHand
+              : widget.state.opponentHand,
+        );
+
+      case CountingPhase.crib:
+        return _DialogData(
+          title: widget.state.isPlayerDealer
+              ? "${widget.state.playerName}'s Crib"
+              : "${widget.state.opponentName}'s Crib",
+          hand: widget.state.cribHand,
+        );
+
+      default:
+        return null;
+    }
+  }
+
+  Widget _buildHeader(BuildContext context, String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            width: 2,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Spacer for symmetry
+          const SizedBox(width: 40),
+          // Title (centered)
+          Expanded(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Help icon button
+          IconButton(
+            onPressed: _showBreakdown,
+            icon: Icon(
+              Icons.help_outline,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            tooltip: 'Show answer',
+            iconSize: 28,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardsSection(BuildContext context, List<dynamic> hand) {
+    // Sort the hand by rank (lowest to highest)
+    final sortedHand = List<dynamic>.from(hand);
+    sortedHand.sort((a, b) {
+      final rankComparison = a.rank.index.compareTo(b.rank.index);
+      if (rankComparison != 0) return rankComparison;
+      return a.suit.index.compareTo(b.suit.index);
+    });
+
+    return Column(
+      children: [
+        Text(
+          'Hand',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: CardConstants.playerHandHeight,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(sortedHand.length, (index) {
+                final card = sortedHand[index];
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: index == 0 ? 0 : 4,
+                  ),
+                  child: _HandCard(card: card),
+                );
+              }),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSlider(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          // Slider with custom thumb showing score inside
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 8,
+              thumbShape: _ScoreThumbShape(
+                thumbRadius: 24,
+                text: '$currentScore',
+              ),
+              overlayShape: const RoundSliderOverlayShape(
+                overlayRadius: 32,
+              ),
+              activeTrackColor: Theme.of(context).colorScheme.primary,
+              inactiveTrackColor: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest,
+              thumbColor: Theme.of(context).colorScheme.primary,
+              overlayColor: Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withValues(alpha: 0.2),
+            ),
+            child: Slider(
+              value: _sliderValue,
+              min: 0,
+              max: (validScores.length - 1).toDouble(),
+              divisions: validScores.length - 1,
+              onChanged: (value) {
+                setState(() {
+                  _sliderValue = value;
+                  // Clear error when user changes the score
+                  _errorMessage = null;
+                });
+              },
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Score range indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '0',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              Text(
+                '29',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorMessage(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.red.shade700,
+          width: 2,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: Colors.red.shade700,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.red.shade900,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomButtons(BuildContext context) {
+    final pointsText = currentScore == 1 ? 'point' : 'points';
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: FilledButton.icon(
+          onPressed: _handleAccept,
+          icon: const Icon(Icons.check_circle, size: 24),
+          label: Text(
+            'Accept ($currentScore $pointsText)',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          style: FilledButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBreakdownOverlay(BuildContext context) {
+    final breakdown = _getBreakdown();
+    if (breakdown == null) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: _hideBreakdown,
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.7),
+        child: Center(
+          child: GestureDetector(
+            onTap: () {}, // Prevent tap from propagating to parent
+            child: Container(
+              margin: const EdgeInsets.all(32),
+              constraints: const BoxConstraints(maxWidth: 500),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Score Breakdown',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Breakdown content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: _buildScoreBreakdown(context, breakdown),
+                    ),
+                  ),
+
+                  // Dismiss hint
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'Tap anywhere to continue',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontStyle: FontStyle.italic,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScoreBreakdown(
+    BuildContext context,
+    DetailedScoreBreakdown breakdown,
+  ) {
+    if (breakdown.entries.isEmpty) {
+      return Card(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            'No points scored',
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Total score display
+        Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Total Score: ',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+              ),
+              Text(
+                '${breakdown.totalScore}',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+              ),
+            ],
+          ),
+        ),
+
+        // Breakdown table
+        Card(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Table header
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 13,
+                      child: Text(
+                        'Cards',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 10,
+                      child: Text(
+                        'Type',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Text(
+                        'Points',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Divider(height: 20, thickness: 1),
+
+                // Score entries
+                ...breakdown.entries.map((entry) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 13,
+                            child: Text(
+                              entry.cards.map((c) => c.label).join(' '),
+                              style:
+                                  Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 10,
+                            child: Text(
+                              entry.type,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 7,
+                            child: Text(
+                              '${entry.points}',
+                              style:
+                                  Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                      ),
+                              textAlign: TextAlign.end,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DialogData {
+  final String title;
+  final List<dynamic> hand;
+
+  _DialogData({
+    required this.title,
+    required this.hand,
+  });
+}
+
+/// Card display for manual counting dialog
+class _HandCard extends StatelessWidget {
+  final dynamic card;
+
+  const _HandCard({required this.card});
+
+  Color _getSuitColor(String label) {
+    // Red for hearts (♥) and diamonds (♦), black for spades (♠) and clubs (♣)
+    if (label.contains('♥') || label.contains('♦')) {
+      return Colors.red.shade800;
+    }
+    return Colors.black;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final suitColor = _getSuitColor(card.label);
+
+    return Container(
+      width: CardConstants.cardWidth,
+      height: CardConstants.cardHeight,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: CardConstants.cardBorderWidth,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          card.label,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: suitColor,
+              ),
+        ),
+      ),
+    );
+  }
+}

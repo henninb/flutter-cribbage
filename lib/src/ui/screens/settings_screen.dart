@@ -67,9 +67,9 @@ class SettingsScreen extends StatelessWidget {
             context,
             CountingMode.manual,
             'Manual',
-            'Enter points manually (Coming Soon)',
+            'Enter points manually',
             Icons.edit,
-            enabled: false, // Deferred feature
+            enabled: true,
           ),
         ],
       ),

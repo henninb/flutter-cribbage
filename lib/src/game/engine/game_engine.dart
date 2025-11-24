@@ -1107,6 +1107,199 @@ class GameEngine extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Process manual score input and proceed to next counting phase
+  void proceedToNextCountingPhaseWithManualScore(int manualScore) {
+    final phase = _state.countingPhase;
+    final starter = _state.starterCard;
+    if (starter == null) {
+      return;
+    }
+
+    switch (phase) {
+      case CountingPhase.nonDealer:
+        // Apply manual non-dealer score
+        var playerScore = _state.playerScore;
+        var opponentScore = _state.opponentScore;
+        ScoreAnimation? nonDealerAnimation;
+
+        if (_state.isPlayerDealer) {
+          opponentScore += manualScore;
+          debugPrint('[SCORE] Non-Dealer Hand (Manual): Opponent scored $manualScore (${_state.opponentScore} -> $opponentScore)');
+          if (manualScore > 0) {
+            nonDealerAnimation = ScoreAnimation(
+              points: manualScore,
+              isPlayer: false,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        } else {
+          playerScore += manualScore;
+          debugPrint('[SCORE] Non-Dealer Hand (Manual): Player scored $manualScore (${_state.playerScore} -> $playerScore)');
+          if (manualScore > 0) {
+            nonDealerAnimation = ScoreAnimation(
+              points: manualScore,
+              isPlayer: true,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        }
+
+        // Check if game is over after non-dealer score
+        if (playerScore > 120 || opponentScore > 120) {
+          debugPrint('[SCORE] Game over after non-dealer hand. Player=$playerScore, Opponent=$opponentScore');
+          _state = _state.copyWith(
+            countingPhase: CountingPhase.completed,
+            isInHandCountingPhase: false,
+            playerScore: playerScore,
+            opponentScore: opponentScore,
+            playerScoreAnimation: nonDealerAnimation != null && nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
+            opponentScoreAnimation: nonDealerAnimation != null && !nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
+          );
+          _checkGameOver();
+          notifyListeners();
+          return;
+        }
+
+        // Calculate dealer hand breakdown for next phase
+        final dealerHand = _state.isPlayerDealer ? _state.playerHand : _state.opponentHand;
+        final dealerBreakdown = CribbageScorer.scoreHandWithBreakdown(dealerHand, starter, false);
+        debugPrint('[COUNTING] Dealer Hand: ${dealerHand.map((c) => c.label).join(", ")} + Starter: ${starter.label}');
+        debugPrint('[COUNTING] Dealer Breakdown: ${dealerBreakdown.entries.map((e) => "${e.type} ${e.cards.map((c) => c.label).join(",")} = ${e.points}").join(" | ")}');
+
+        // Move to dealer phase (score will be entered manually next)
+        _state = _state.copyWith(
+          handScores: _state.handScores.copyWith(
+            nonDealerScore: manualScore,
+            dealerScore: dealerBreakdown.totalScore,
+            dealerBreakdown: dealerBreakdown,
+          ),
+          countingPhase: CountingPhase.dealer,
+          playerScore: playerScore,
+          opponentScore: opponentScore,
+          playerScoreAnimation: nonDealerAnimation != null && nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
+          opponentScoreAnimation: nonDealerAnimation != null && !nonDealerAnimation.isPlayer ? nonDealerAnimation : null,
+        );
+        break;
+
+      case CountingPhase.dealer:
+        // Apply manual dealer score
+        var playerScore = _state.playerScore;
+        var opponentScore = _state.opponentScore;
+        ScoreAnimation? dealerAnimation;
+
+        if (_state.isPlayerDealer) {
+          playerScore += manualScore;
+          debugPrint('[SCORE] Dealer Hand (Manual): Player scored $manualScore (${_state.playerScore} -> $playerScore)');
+          if (manualScore > 0) {
+            dealerAnimation = ScoreAnimation(
+              points: manualScore,
+              isPlayer: true,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        } else {
+          opponentScore += manualScore;
+          debugPrint('[SCORE] Dealer Hand (Manual): Opponent scored $manualScore (${_state.opponentScore} -> $opponentScore)');
+          if (manualScore > 0) {
+            dealerAnimation = ScoreAnimation(
+              points: manualScore,
+              isPlayer: false,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        }
+
+        // Check if game is over after dealer score
+        if (playerScore > 120 || opponentScore > 120) {
+          debugPrint('[SCORE] Game over after dealer hand. Player=$playerScore, Opponent=$opponentScore');
+          _state = _state.copyWith(
+            countingPhase: CountingPhase.completed,
+            isInHandCountingPhase: false,
+            playerScore: playerScore,
+            opponentScore: opponentScore,
+            playerScoreAnimation: dealerAnimation != null && dealerAnimation.isPlayer ? dealerAnimation : null,
+            opponentScoreAnimation: dealerAnimation != null && !dealerAnimation.isPlayer ? dealerAnimation : null,
+          );
+          _checkGameOver();
+          notifyListeners();
+          return;
+        }
+
+        // Calculate crib breakdown for next phase (crib is always counted as "in crib")
+        final cribBreakdown = CribbageScorer.scoreHandWithBreakdown(_state.cribHand, starter, true);
+        debugPrint('[COUNTING] Crib: ${_state.cribHand.map((c) => c.label).join(", ")} + Starter: ${starter.label}');
+        debugPrint('[COUNTING] Crib Breakdown: ${cribBreakdown.entries.map((e) => "${e.type} ${e.cards.map((c) => c.label).join(",")} = ${e.points}").join(" | ")}');
+
+        // Move to crib phase (score will be entered manually next)
+        _state = _state.copyWith(
+          handScores: _state.handScores.copyWith(
+            dealerScore: manualScore,
+            cribScore: cribBreakdown.totalScore,
+            cribBreakdown: cribBreakdown,
+          ),
+          countingPhase: CountingPhase.crib,
+          playerScore: playerScore,
+          opponentScore: opponentScore,
+          playerScoreAnimation: dealerAnimation != null && dealerAnimation.isPlayer ? dealerAnimation : null,
+          opponentScoreAnimation: dealerAnimation != null && !dealerAnimation.isPlayer ? dealerAnimation : null,
+        );
+        break;
+
+      case CountingPhase.crib:
+        // Apply manual crib score
+        var playerScore = _state.playerScore;
+        var opponentScore = _state.opponentScore;
+        ScoreAnimation? cribAnimation;
+
+        if (_state.isPlayerDealer) {
+          playerScore += manualScore;
+          debugPrint('[SCORE] Crib (Manual): Player (dealer) scored $manualScore (${_state.playerScore} -> $playerScore)');
+          if (manualScore > 0) {
+            cribAnimation = ScoreAnimation(
+              points: manualScore,
+              isPlayer: true,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        } else {
+          opponentScore += manualScore;
+          debugPrint('[SCORE] Crib (Manual): Opponent (dealer) scored $manualScore (${_state.opponentScore} -> $opponentScore)');
+          if (manualScore > 0) {
+            cribAnimation = ScoreAnimation(
+              points: manualScore,
+              isPlayer: false,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        }
+
+        // Complete counting phase
+        debugPrint('[SCORE] Round complete. Final scores: Player=$playerScore, Opponent=$opponentScore');
+        _state = _state.copyWith(
+          handScores: _state.handScores.copyWith(
+            cribScore: manualScore,
+          ),
+          countingPhase: CountingPhase.completed,
+          isInHandCountingPhase: false,
+          playerScore: playerScore,
+          opponentScore: opponentScore,
+          playerScoreAnimation: cribAnimation != null && cribAnimation.isPlayer ? cribAnimation : null,
+          opponentScoreAnimation: cribAnimation != null && !cribAnimation.isPlayer ? cribAnimation : null,
+        );
+        _checkGameOver();
+        if (!_state.gameOver) {
+          _startNewRound();
+        }
+        notifyListeners();
+        return;
+
+      default:
+        return;
+    }
+
+    notifyListeners();
+  }
+
   void dismissWinnerModal() {
     _state = _state.copyWith(showWinnerModal: false);
     notifyListeners();
