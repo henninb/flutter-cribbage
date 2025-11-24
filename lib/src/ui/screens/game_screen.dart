@@ -542,7 +542,18 @@ class _GameContent extends StatelessWidget {
   Widget _buildMiddleSection(BuildContext context) {
     switch (state.currentPhase) {
       case GamePhase.cutForDealer:
-        return Expanded(child: _CutCardsDisplay(state: state));
+        // Show spread deck if player hasn't selected, otherwise show cut cards
+        if (!state.playerHasSelectedCutCard && state.cutDeck.isNotEmpty) {
+          return Expanded(
+            child: _SpreadDeck(
+              state: state,
+              engine: engine,
+            ),
+          );
+        } else if (state.showCutForDealer) {
+          return Expanded(child: _CutCardsDisplay(state: state));
+        }
+        return const Expanded(child: SizedBox.shrink());
 
       case GamePhase.dealing:
         // Show cut cards only if we just cut for dealer (initial game start)
@@ -898,6 +909,119 @@ class _PlayingCard extends StatelessWidget {
                   color: isPlayed ? Colors.grey.shade600 : suitColor,
                 ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Spread deck display for interactive cut selection
+class _SpreadDeck extends StatelessWidget {
+  final GameState state;
+  final GameEngine engine;
+
+  const _SpreadDeck({
+    required this.state,
+    required this.engine,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final deckSize = state.cutDeck.length;
+
+    if (deckSize == 0) {
+      return const SizedBox.shrink();
+    }
+
+    // Calculate card width and overlap
+    const cardWidth = 60.0;
+    const cardHeight = 90.0;
+
+    // Calculate the total width needed if cards don't overlap
+    final totalNonOverlappingWidth = deckSize * cardWidth;
+
+    // Calculate spacing between cards to fit on screen with padding
+    final availableWidth = screenWidth - 32; // 16px padding on each side
+    final spacing = (availableWidth - cardWidth) / (deckSize - 1).clamp(1, double.infinity);
+    final finalSpacing = spacing.clamp(0, cardWidth * 0.8); // Max 80% overlap
+
+    // Calculate total width needed for the spread
+    final totalWidth = (deckSize - 1) * finalSpacing + cardWidth;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Tap the deck to cut for dealer',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: cardHeight,
+            width: totalWidth,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: List.generate(
+                deckSize,
+                (index) {
+                  return Positioned(
+                    left: index * finalSpacing,
+                    child: GestureDetector(
+                      onTap: () => engine.selectCutCard(index),
+                      child: _CardBackWidget(
+                        width: cardWidth,
+                        height: cardHeight,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CardBackWidget extends StatelessWidget {
+  final double width;
+  final double height;
+
+  const _CardBackWidget({
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.tertiary,
+          width: CardConstants.cardBorderWidth,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Icon(
+          Icons.style,
+          color: Theme.of(context).colorScheme.tertiary,
+          size: 24,
         ),
       ),
     );

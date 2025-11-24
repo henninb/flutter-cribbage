@@ -60,17 +60,24 @@ class ActionBar extends StatelessWidget {
       return buttons;
     }
 
-    // Cut for dealer phase
+    // Cut for dealer phase - no button needed, deck is shown automatically
+    // Only show a button if there's a tie and user needs to cut again
     if (state.currentPhase == GamePhase.cutForDealer) {
-      buttons.add(
-        Expanded(
-          child: FilledButton.icon(
-            onPressed: onCutForDealer,
-            icon: const Icon(Icons.content_cut),
-            label: const Text('Cut for Dealer'),
+      // If player has already selected and it's a tie, show "Cut Again" button
+      if (state.playerHasSelectedCutCard &&
+          state.cutPlayerCard != null &&
+          state.cutOpponentCard != null &&
+          state.cutPlayerCard!.rank.index == state.cutOpponentCard!.rank.index) {
+        buttons.add(
+          Expanded(
+            child: FilledButton.icon(
+              onPressed: onCutForDealer,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Cut Again'),
+            ),
           ),
-        ),
-      );
+        );
+      }
       return buttons;
     }
 
