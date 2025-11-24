@@ -72,5 +72,22 @@ void main() {
         1,
       );
     });
+
+    test('duplicate ranks contribute multiple run combinations', () {
+      final hand = [
+        const PlayingCard(rank: Rank.five, suit: Suit.hearts),
+        const PlayingCard(rank: Rank.five, suit: Suit.diamonds),
+        const PlayingCard(rank: Rank.six, suit: Suit.spades),
+        const PlayingCard(rank: Rank.six, suit: Suit.clubs),
+      ];
+      const starter = PlayingCard(rank: Rank.seven, suit: Suit.hearts);
+
+      final breakdown = CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
+      final runEntries = breakdown.entries.where((e) => e.type == 'Sequence').toList();
+      expect(runEntries.length, 4); // 2x5 * 2x6 combinations
+      expect(runEntries.every((entry) => entry.points == 3), isTrue);
+      final totalRunPoints = runEntries.fold<int>(0, (sum, entry) => sum + entry.points);
+      expect(totalRunPoints, 12);
+    });
   });
 }

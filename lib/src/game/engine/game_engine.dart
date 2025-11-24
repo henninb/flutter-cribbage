@@ -9,6 +9,7 @@ import '../logic/opponent_ai.dart';
 import '../logic/pegging_round_manager.dart';
 import '../models/card.dart';
 import '../../services/game_persistence.dart';
+import '../../utils/string_sanitizer.dart';
 import 'game_state.dart';
 
 class GameEngine extends ChangeNotifier {
@@ -42,6 +43,22 @@ class GameEngine extends ChangeNotifier {
       _state = _state.copyWith(
         cutPlayerCard: cut.player,
         cutOpponentCard: cut.opponent,
+      );
+    }
+    final names = _persistence?.loadPlayerNames();
+    if (names != null) {
+      // Sanitize loaded names for security
+      final sanitizedPlayerName = StringSanitizer.sanitizeNameWithDefault(
+        names.playerName,
+        'You',
+      );
+      final sanitizedOpponentName = StringSanitizer.sanitizeNameWithDefault(
+        names.opponentName,
+        'Opponent',
+      );
+      _state = _state.copyWith(
+        playerName: sanitizedPlayerName,
+        opponentName: sanitizedOpponentName,
       );
     }
     notifyListeners();
@@ -1101,6 +1118,26 @@ class GameEngine extends ChangeNotifier {
     } else {
       _state = _state.copyWith(clearOpponentScoreAnimation: true);
     }
+    notifyListeners();
+  }
+
+  void updatePlayerName(bool isPlayer, String newName) {
+    // Sanitize the name for security and UI consistency
+    final defaultName = isPlayer ? 'You' : 'Opponent';
+    final sanitizedName = StringSanitizer.sanitizeNameWithDefault(
+      newName,
+      defaultName,
+    );
+
+    if (isPlayer) {
+      _state = _state.copyWith(playerName: sanitizedName);
+    } else {
+      _state = _state.copyWith(opponentName: sanitizedName);
+    }
+    _persistence?.savePlayerNames(
+      playerName: _state.playerName,
+      opponentName: _state.opponentName,
+    );
     notifyListeners();
   }
 

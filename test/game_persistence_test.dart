@@ -57,5 +57,20 @@ void main() {
       final loaded = persistence.loadCutCards();
       expect(loaded, isNull);
     });
+
+    test('player names round-trip through save and load', () {
+      persistence.savePlayerNames(playerName: 'Alice', opponentName: 'Bot');
+
+      final names = persistence.loadPlayerNames();
+      expect(names, isNotNull);
+      expect(names!.playerName, 'Alice');
+      expect(names.opponentName, 'Bot');
+    });
+
+    test('loadPlayerNames returns null when one side missing', () async {
+      await prefs.setString('playerName', 'Solo');
+      final names = persistence.loadPlayerNames();
+      expect(names, isNull);
+    });
   });
 }

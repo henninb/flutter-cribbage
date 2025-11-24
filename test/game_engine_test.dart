@@ -11,15 +11,21 @@ import 'package:cribbage/src/services/game_persistence.dart';
 class _FakePersistence implements GamePersistence {
   StoredStats? statsToLoad;
   CutCards? cutsToLoad;
+  PlayerNames? namesToLoad;
   StoredStats? lastSavedStats;
   PlayingCard? savedCutPlayer;
   PlayingCard? savedCutOpponent;
+  String? savedPlayerName;
+  String? savedOpponentName;
 
   @override
   StoredStats? loadStats() => statsToLoad;
 
   @override
   CutCards? loadCutCards() => cutsToLoad;
+
+  @override
+  PlayerNames? loadPlayerNames() => namesToLoad;
 
   @override
   void saveStats({
@@ -40,6 +46,12 @@ class _FakePersistence implements GamePersistence {
   void saveCutCards(PlayingCard player, PlayingCard opponent) {
     savedCutPlayer = player;
     savedCutOpponent = opponent;
+  }
+
+  @override
+  void savePlayerNames({required String playerName, required String opponentName}) {
+    savedPlayerName = playerName;
+    savedOpponentName = opponentName;
   }
 }
 
@@ -298,6 +310,18 @@ void main() {
       // Should still provide valid advice even in desperate situations
       expect(adviceDesperate[0], greaterThanOrEqualTo(0));
       expect(adviceDesperate[1], greaterThanOrEqualTo(0));
+    });
+
+    test('updatePlayerName persists values and updates state', () {
+      engine.updatePlayerName(true, 'Alice');
+      expect(engine.state.playerName, 'Alice');
+      expect(persistence.savedPlayerName, 'Alice');
+      expect(persistence.savedOpponentName, 'Opponent');
+
+      engine.updatePlayerName(false, 'Bot');
+      expect(engine.state.opponentName, 'Bot');
+      expect(persistence.savedPlayerName, 'Alice');
+      expect(persistence.savedOpponentName, 'Bot');
     });
   });
 }

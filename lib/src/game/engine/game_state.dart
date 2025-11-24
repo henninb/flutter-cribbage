@@ -146,6 +146,8 @@ class GameState {
     this.showCutCardDisplay = false,
     this.playerScoreAnimation,
     this.opponentScoreAnimation,
+    this.playerName = 'You',
+    this.opponentName = 'Opponent',
   });
 
   final bool gameStarted;
@@ -186,6 +188,8 @@ class GameState {
   final bool showCutCardDisplay;
   final ScoreAnimation? playerScoreAnimation;
   final ScoreAnimation? opponentScoreAnimation;
+  final String playerName;
+  final String opponentName;
 
   GameState copyWith({
     bool? gameStarted,
@@ -230,6 +234,8 @@ class GameState {
     ScoreAnimation? opponentScoreAnimation,
     bool clearPlayerScoreAnimation = false,
     bool clearOpponentScoreAnimation = false,
+    String? playerName,
+    String? opponentName,
   }) {
     return GameState(
       gameStarted: gameStarted ?? this.gameStarted,
@@ -275,6 +281,8 @@ class GameState {
       opponentScoreAnimation: clearOpponentScoreAnimation
           ? null
           : (opponentScoreAnimation ?? this.opponentScoreAnimation),
+      playerName: playerName ?? this.playerName,
+      opponentName: opponentName ?? this.opponentName,
     );
   }
 }

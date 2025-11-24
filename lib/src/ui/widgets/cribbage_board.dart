@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 class CribbageBoard extends StatelessWidget {
   final int playerScore;
   final int opponentScore;
+  final String playerName;
+  final String opponentName;
 
   const CribbageBoard({
     super.key,
     required this.playerScore,
     required this.opponentScore,
+    required this.playerName,
+    required this.opponentName,
   });
 
   @override
@@ -31,7 +35,7 @@ class CribbageBoard extends StatelessWidget {
           _buildTrack(
             context,
             playerScore,
-            'You',
+            playerName,
             Theme.of(context).colorScheme.primary,
             Theme.of(context).colorScheme.tertiary,
           ),
@@ -40,7 +44,7 @@ class CribbageBoard extends StatelessWidget {
           _buildTrack(
             context,
             opponentScore,
-            'Opponent',
+            opponentName,
             Theme.of(context).colorScheme.secondary,
             Theme.of(context).colorScheme.tertiaryContainer,
           ),

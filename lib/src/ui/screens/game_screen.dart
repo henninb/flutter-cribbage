@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../game/engine/game_engine.dart';
 import '../../game/engine/game_state.dart';
 import '../../game/models/card.dart';
 import '../../models/theme_models.dart';
 import '../../models/game_settings.dart';
+import '../../utils/string_sanitizer.dart';
 import '../widgets/cribbage_board.dart';
 import '../widgets/welcome_screen.dart';
 import '../widgets/action_bar.dart';
@@ -130,6 +132,8 @@ class _GameScreenState extends State<GameScreen> {
                 CribbageBoard(
                   playerScore: state.playerScore,
                   opponentScore: state.opponentScore,
+                  playerName: state.playerName,
+                  opponentName: state.opponentName,
                 ),
                   ],
                 ),
@@ -157,6 +161,85 @@ class _ScoreHeader extends StatefulWidget {
 }
 
 class _ScoreHeaderState extends State<_ScoreHeader> {
+  void _showNameDialog(BuildContext context, bool isPlayer) {
+    final currentName = isPlayer ? widget.state.playerName : widget.state.opponentName;
+    final controller = TextEditingController(text: currentName);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Enter ${isPlayer ? "Your" : "Opponent's"} Name'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Enter name',
+                border: const OutlineInputBorder(),
+                helperText: 'Max ${StringSanitizer.maxNameLength} characters',
+                counterText: '',
+              ),
+              maxLength: StringSanitizer.maxNameLength,
+              inputFormatters: [
+                // Allow only letters, numbers, spaces, and basic punctuation
+                FilteringTextInputFormatter.allow(RegExp(r"[\w\s._\-']")),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Letters, numbers, spaces, and basic punctuation only',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final inputName = controller.text;
+              final sanitizedName = StringSanitizer.sanitizeName(inputName);
+
+              if (sanitizedName.isEmpty) {
+                // Show error if name is invalid
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter a valid name'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                return;
+              }
+
+              // Update the name (engine will sanitize again for safety)
+              widget.engine.updatePlayerName(isPlayer, sanitizedName);
+
+              // Show feedback if name was modified during sanitization
+              if (sanitizedName != inputName.trim()) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Name updated to: $sanitizedName'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+
+              Navigator.of(context).pop();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Debug: Print scores being displayed
@@ -177,7 +260,7 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _ScoreColumn(
-            label: 'You',
+            label: widget.state.playerName,
             score: widget.state.playerScore,
             subtitle: widget.state.isPlayerDealer ? 'Dealer' : 'Pone',
             isDealer: widget.state.currentPhase != GamePhase.cutForDealer && widget.state.isPlayerDealer,
@@ -188,11 +271,13 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
                     onAnimationComplete: () => widget.engine.clearScoreAnimation(true),
                   )
                 : null,
+            onLabelTap: () => _showNameDialog(context, true),
+            onSubtitleTap: () => _showNameDialog(context, true),
           ),
           if (widget.state.starterCard != null)
             _StarterCard(card: widget.state.starterCard!),
           _ScoreColumn(
-            label: 'Opponent',
+            label: widget.state.opponentName,
             score: widget.state.opponentScore,
             subtitle: widget.state.isPlayerDealer ? 'Pone' : 'Dealer',
             isDealer: widget.state.currentPhase != GamePhase.cutForDealer && !widget.state.isPlayerDealer,
@@ -203,6 +288,8 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
                     onAnimationComplete: () => widget.engine.clearScoreAnimation(false),
                   )
                 : null,
+            onLabelTap: () => _showNameDialog(context, false),
+            onSubtitleTap: () => _showNameDialog(context, false),
           ),
         ],
       ),
@@ -216,6 +303,8 @@ class _ScoreColumn extends StatelessWidget {
   final String subtitle;
   final bool isDealer;
   final Widget? scoreAnimation;
+  final VoidCallback? onLabelTap;
+  final VoidCallback? onSubtitleTap;
 
   const _ScoreColumn({
     required this.label,
@@ -223,6 +312,8 @@ class _ScoreColumn extends StatelessWidget {
     required this.subtitle,
     required this.isDealer,
     this.scoreAnimation,
+    this.onLabelTap,
+    this.onSubtitleTap,
   });
 
   @override
@@ -232,9 +323,15 @@ class _ScoreColumn extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium,
+            GestureDetector(
+              onTap: onLabelTap,
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  decoration: onLabelTap != null ? TextDecoration.underline : null,
+                  decorationStyle: TextDecorationStyle.dotted,
+                ),
+              ),
             ),
             if (isDealer) ...[
               const SizedBox(width: 6),
@@ -270,9 +367,15 @@ class _ScoreColumn extends StatelessWidget {
             ],
           ],
         ),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.labelSmall,
+        GestureDetector(
+          onTap: onSubtitleTap,
+          child: Text(
+            subtitle,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              decoration: onSubtitleTap != null ? TextDecoration.underline : null,
+              decorationStyle: TextDecorationStyle.dotted,
+            ),
+          ),
         ),
       ],
     );
@@ -459,7 +562,7 @@ class _OpponentHand extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'Opponent ($cardsRemaining cards)',
+          '${state.opponentName} ($cardsRemaining cards)',
           style: Theme.of(context).textTheme.labelMedium,
         ),
         const SizedBox(height: 4),
@@ -548,7 +651,7 @@ class _PlayerHand extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'You ($cardsRemaining cards)',
+          '${state.playerName} ($cardsRemaining cards)',
           style: Theme.of(context).textTheme.labelMedium,
         ),
         const SizedBox(height: 4),
@@ -762,7 +865,10 @@ class _CutCardsDisplay extends StatelessWidget {
               children: [
                 Column(
                   children: [
-                    const Text('You', style: TextStyle(fontWeight: FontWeight.w600)),
+                    Text(
+                      state.playerName,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
                     _buildCutCard(context, state.cutPlayerCard!),
                   ],
@@ -773,7 +879,10 @@ class _CutCardsDisplay extends StatelessWidget {
                 ),
                 Column(
                   children: [
-                    const Text('Opponent', style: TextStyle(fontWeight: FontWeight.w600)),
+                    Text(
+                      state.opponentName,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 8),
                     _buildCutCard(context, state.cutOpponentCard!),
                   ],
@@ -899,7 +1008,9 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
         const SizedBox(height: 8),
         // Turn indicator
         Text(
-          widget.state.isPlayerTurn ? 'Your turn' : "Opponent's turn",
+          widget.state.isPlayerTurn
+              ? "${widget.state.playerName}'s turn"
+              : "${widget.state.opponentName}'s turn",
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: widget.state.isPlayerTurn
                     ? Theme.of(context).colorScheme.primary
@@ -1034,7 +1145,7 @@ class _PendingResetDialog extends StatelessWidget {
 }
 
 /// Winner modal
-class _WinnerModal extends StatelessWidget {
+class _WinnerModal extends StatefulWidget {
   final WinnerModalData data;
   final VoidCallback onDismiss;
 
@@ -1044,44 +1155,58 @@ class _WinnerModal extends StatelessWidget {
   });
 
   @override
+  State<_WinnerModal> createState() => _WinnerModalState();
+}
+
+class _WinnerModalState extends State<_WinnerModal> {
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: Card(
         margin: const EdgeInsets.all(32),
-        color: data.playerWon ? Colors.green.shade700 : Colors.red.shade700,
+        color: widget.data.playerWon ? Colors.green.shade700 : Colors.red.shade700,
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                data.playerWon ? 'You Won!' : 'Opponent Won',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+          child: Builder(
+            builder: (context) {
+              // Get engine from context to access current state
+              final engine = context.findAncestorStateOfType<_GameScreenState>()?.widget.engine;
+              final playerName = engine?.state.playerName ?? 'You';
+              final opponentName = engine?.state.opponentName ?? 'Opponent';
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.data.playerWon ? '$playerName Won!' : '$opponentName Won',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Final: ${widget.data.playerScore} - ${widget.data.opponentScore}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  if (widget.data.wasSkunk)
+                    const Text(
+                      'Skunk!',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Final: ${data.playerScore} - ${data.opponentScore}',
-                style: const TextStyle(color: Colors.white),
-              ),
-              if (data.wasSkunk)
-                const Text(
-                  'Skunk!',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              const SizedBox(height: 8),
-              Text(
-                'Record: ${data.gamesWon}-${data.gamesLost}',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: onDismiss,
-                child: const Text('OK'),
-              ),
-            ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Record: ${widget.data.gamesWon}-${widget.data.gamesLost}',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: widget.onDismiss,
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

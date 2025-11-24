@@ -80,7 +80,7 @@ class HandCountingDialog extends StatelessWidget {
       case CountingPhase.nonDealer:
         debugPrint('[DIALOG DEBUG] Showing nonDealer - breakdown is ${scores.nonDealerBreakdown == null ? "null" : "not null with ${scores.nonDealerBreakdown!.entries.length} entries"}');
         return _DialogData(
-          title: state.isPlayerDealer ? "Opponent's Hand" : "Your Hand",
+          title: state.isPlayerDealer ? "${state.opponentName}'s Hand" : "${state.playerName}'s Hand",
           hand: state.isPlayerDealer ? state.opponentHand : state.playerHand,
           breakdown: scores.nonDealerBreakdown,
         );
@@ -88,7 +88,7 @@ class HandCountingDialog extends StatelessWidget {
       case CountingPhase.dealer:
         debugPrint('[DIALOG DEBUG] Showing dealer - breakdown is ${scores.dealerBreakdown == null ? "null" : "not null with ${scores.dealerBreakdown!.entries.length} entries"}');
         return _DialogData(
-          title: state.isPlayerDealer ? "Your Hand" : "Opponent's Hand",
+          title: state.isPlayerDealer ? "${state.playerName}'s Hand" : "${state.opponentName}'s Hand",
           hand: state.isPlayerDealer ? state.playerHand : state.opponentHand,
           breakdown: scores.dealerBreakdown,
         );
@@ -96,7 +96,7 @@ class HandCountingDialog extends StatelessWidget {
       case CountingPhase.crib:
         debugPrint('[DIALOG DEBUG] Showing crib - breakdown is ${scores.cribBreakdown == null ? "null" : "not null with ${scores.cribBreakdown!.entries.length} entries"}');
         return _DialogData(
-          title: state.isPlayerDealer ? "Your Crib" : "Opponent's Crib",
+          title: state.isPlayerDealer ? "${state.playerName}'s Crib" : "${state.opponentName}'s Crib",
           hand: state.cribHand,
           breakdown: scores.cribBreakdown,
         );

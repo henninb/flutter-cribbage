@@ -23,6 +23,13 @@ class CutCards {
   final PlayingCard opponent;
 }
 
+class PlayerNames {
+  const PlayerNames({required this.playerName, required this.opponentName});
+
+  final String playerName;
+  final String opponentName;
+}
+
 abstract class GamePersistence {
   StoredStats? loadStats();
   void saveStats({
@@ -34,6 +41,9 @@ abstract class GamePersistence {
 
   CutCards? loadCutCards();
   void saveCutCards(PlayingCard player, PlayingCard opponent);
+
+  PlayerNames? loadPlayerNames();
+  void savePlayerNames({required String playerName, required String opponentName});
 }
 
 class SharedPrefsPersistence implements GamePersistence {
@@ -47,6 +57,8 @@ class SharedPrefsPersistence implements GamePersistence {
   static const _skunksAgainstKey = 'skunksAgainst';
   static const _playerCutKey = 'playerCut';
   static const _opponentCutKey = 'opponentCut';
+  static const _playerNameKey = 'playerName';
+  static const _opponentNameKey = 'opponentName';
 
   @override
   StoredStats? loadStats() {
@@ -90,5 +102,22 @@ class SharedPrefsPersistence implements GamePersistence {
     _prefs
       ..setString(_playerCutKey, player.encode())
       ..setString(_opponentCutKey, opponent.encode());
+  }
+
+  @override
+  PlayerNames? loadPlayerNames() {
+    final playerName = _prefs.getString(_playerNameKey);
+    final opponentName = _prefs.getString(_opponentNameKey);
+    if (playerName == null || opponentName == null) {
+      return null;
+    }
+    return PlayerNames(playerName: playerName, opponentName: opponentName);
+  }
+
+  @override
+  void savePlayerNames({required String playerName, required String opponentName}) {
+    _prefs
+      ..setString(_playerNameKey, playerName)
+      ..setString(_opponentNameKey, opponentName);
   }
 }
