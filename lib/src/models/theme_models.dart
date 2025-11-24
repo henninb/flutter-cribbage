@@ -92,8 +92,6 @@ class CribbageTheme {
         onError: Colors.white,
         surface: colors.surface,
         onSurface: _getContrastColor(colors.surface),
-        background: colors.background,
-        onBackground: _getContrastColor(colors.background),
       ),
       cardTheme: CardThemeData(
         color: colors.surface,

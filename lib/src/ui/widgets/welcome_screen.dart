@@ -49,7 +49,7 @@ class WelcomeScreen extends StatelessWidget {
             const SizedBox(height: 48),
             // Welcome message
             Card(
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(

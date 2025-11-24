@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:cribbage/src/game/engine/game_state.dart';
-import 'package:cribbage/src/game/logic/deal_utils.dart';
 import 'package:cribbage/src/game/models/card.dart';
 import 'package:cribbage/src/ui/widgets/action_bar.dart';
 
 void main() {
-  Future<void> _pumpBar(
+  Future<void> pumpBar(
     WidgetTester tester, {
     required GameState state,
     required VoidCallback onStartGame,
@@ -38,7 +37,7 @@ void main() {
 
   testWidgets('shows Start New Game before game begins', (tester) async {
     var started = false;
-    await _pumpBar(
+    await pumpBar(
       tester,
       state: const GameState(),
       onStartGame: () => started = true,
@@ -56,7 +55,7 @@ void main() {
 
   testWidgets('shows Cut for Dealer button during phase', (tester) async {
     var cut = false;
-    await _pumpBar(
+    await pumpBar(
       tester,
       state: const GameState(
         gameStarted: true,
@@ -79,7 +78,7 @@ void main() {
     var dealt = false;
     var ended = false;
 
-    await _pumpBar(
+    await pumpBar(
       tester,
       state: const GameState(
         gameStarted: true,
@@ -104,7 +103,7 @@ void main() {
   testWidgets('crib selection enables confirm button only with two cards', (tester) async {
     var confirmed = false;
     var advised = false;
-    await _pumpBar(
+    await pumpBar(
       tester,
       state: GameState(
         gameStarted: true,
@@ -132,7 +131,7 @@ void main() {
 
   testWidgets('pegging phase shows Go button when player cannot play', (tester) async {
     var went = false;
-    await _pumpBar(
+    await pumpBar(
       tester,
       state: GameState(
         gameStarted: true,
@@ -158,7 +157,7 @@ void main() {
 
   testWidgets('hand counting phase shows Count Hands button', (tester) async {
     var counted = false;
-    await _pumpBar(
+    await pumpBar(
       tester,
       state: const GameState(
         gameStarted: true,
@@ -180,7 +179,7 @@ void main() {
 
   testWidgets('game over state shows New Game button when modal hidden', (tester) async {
     var restarted = false;
-    await _pumpBar(
+    await pumpBar(
       tester,
       state: const GameState(
         gameStarted: true,

@@ -42,8 +42,8 @@ void main() {
       );
       final data = theme.toThemeData();
       expect(data.brightness, Brightness.light);
-      expect(data.colorScheme.background, equals(brightColors.background));
-      expect(data.colorScheme.onBackground, Colors.black);
+      expect(data.colorScheme.surface, equals(brightColors.surface));
+      expect(data.colorScheme.onSurface, Colors.black);
     });
 
     test('dark backgrounds select dark theme with light text', () {
@@ -55,8 +55,8 @@ void main() {
       );
       final data = theme.toThemeData();
       expect(data.brightness, Brightness.dark);
-      expect(data.colorScheme.background, equals(darkColors.background));
-      expect(data.colorScheme.onBackground, Colors.white);
+      expect(data.colorScheme.surface, equals(darkColors.surface));
+      expect(data.colorScheme.onSurface, Colors.white);
       expect(data.cardTheme.color, equals(darkColors.surface));
     });
   });

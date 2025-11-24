@@ -15,6 +15,19 @@ import '../widgets/card_constants.dart';
 import '../widgets/score_animation.dart';
 import 'settings_screen.dart';
 
+/// Data passed when dragging a card
+class CardDragData {
+  final int cardIndex;
+  final dynamic card;
+  final GamePhase phase;
+
+  const CardDragData({
+    required this.cardIndex,
+    required this.card,
+    required this.phase,
+  });
+}
+
 /// Main game screen with zone-based layout (NO SCROLLING)
 class GameScreen extends StatefulWidget {
   const GameScreen({
@@ -113,6 +126,7 @@ class _GameScreenState extends State<GameScreen> {
                   child: _GameArea(
                     state: state,
                     engine: widget.engine,
+                    settings: widget.currentSettings,
                   ),
                 ),
 
@@ -418,10 +432,12 @@ class _StarterCard extends StatelessWidget {
 class _GameArea extends StatelessWidget {
   final GameState state;
   final GameEngine engine;
+  final GameSettings settings;
 
   const _GameArea({
     required this.state,
     required this.engine,
+    required this.settings,
   });
 
   @override
@@ -456,7 +472,7 @@ class _GameArea extends StatelessWidget {
     }
 
     // Show game content based on phase
-    return _GameContent(state: state, engine: engine);
+    return _GameContent(state: state, engine: engine, settings: settings);
   }
 }
 
@@ -464,10 +480,12 @@ class _GameArea extends StatelessWidget {
 class _GameContent extends StatelessWidget {
   final GameState state;
   final GameEngine engine;
+  final GameSettings settings;
 
   const _GameContent({
     required this.state,
     required this.engine,
+    required this.settings,
   });
 
   @override
@@ -484,7 +502,7 @@ class _GameContent extends StatelessWidget {
           _buildMiddleSection(context),
 
           // Player hand (only show after cards are dealt)
-          if (_shouldShowOpponentHand()) _PlayerHand(state: state, engine: engine),
+          if (_shouldShowOpponentHand()) _PlayerHand(state: state, engine: engine, settings: settings),
         ],
       ),
     );
@@ -503,6 +521,14 @@ class _GameContent extends StatelessWidget {
         return const Expanded(child: SizedBox.shrink());
 
       case GamePhase.cribSelection:
+        // Show drop zone for drag mode, otherwise show instructions
+        if (settings.cardSelectionMode == CardSelectionMode.drag) {
+          return _CribDropZone(
+            state: state,
+            engine: engine,
+            settings: settings,
+          );
+        }
         return Column(
           children: [
             Text(
@@ -517,7 +543,11 @@ class _GameContent extends StatelessWidget {
         );
 
       case GamePhase.pegging:
-        return _PeggingDisplay(state: state);
+        return _PeggingDisplay(
+          state: state,
+          engine: engine,
+          settings: settings,
+        );
 
       case GamePhase.handCounting:
         // Show pegging pile until user clicks "Count Hands"
@@ -606,7 +636,7 @@ class _CardBack extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -627,10 +657,12 @@ class _CardBack extends StatelessWidget {
 class _PlayerHand extends StatelessWidget {
   final GameState state;
   final GameEngine engine;
+  final GameSettings settings;
 
   const _PlayerHand({
     required this.state,
     required this.engine,
+    required this.settings,
   });
 
   @override
@@ -672,14 +704,16 @@ class _PlayerHand extends StatelessWidget {
               !isPlayed &&
               (state.peggingCount + card.value <= 31);
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: CardConstants.cardHorizontalSpacing),
-            child: _PlayingCard(
-              card: card,
-              isSelected: isSelected,
-              isPlayed: isPlayed,
-              isPlayable: isPlayable,
-              onTap: () {
+          // Wrap card in draggable if drag mode is enabled
+          Widget cardWidget = _PlayingCard(
+            card: card,
+            isSelected: isSelected,
+            isPlayed: isPlayed,
+            isPlayable: isPlayable,
+            isDragMode: settings.cardSelectionMode == CardSelectionMode.drag,
+            onTap: settings.cardSelectionMode == CardSelectionMode.drag
+              ? null
+              : () {
                 if (state.currentPhase == GamePhase.cribSelection) {
                   engine.toggleCardSelection(originalIndex);
                 } else if (state.currentPhase == GamePhase.pegging && state.isPlayerTurn && !isPlayed) {
@@ -700,7 +734,50 @@ class _PlayerHand extends StatelessWidget {
                   }
                 }
               },
-            ),
+          );
+
+          // Wrap in Draggable for drag mode
+          if (settings.cardSelectionMode == CardSelectionMode.drag && !isPlayed) {
+            final dragData = CardDragData(
+              cardIndex: originalIndex,
+              card: card,
+              phase: state.currentPhase,
+            );
+
+            cardWidget = Draggable<CardDragData>(
+              data: dragData,
+              feedback: Transform.scale(
+                scale: 1.2,
+                child: Opacity(
+                  opacity: 0.7,
+                  child: _PlayingCard(
+                    card: card,
+                    isSelected: false,
+                    isPlayed: false,
+                    isPlayable: isPlayable,
+                    isDragMode: true,
+                    onTap: null,
+                  ),
+                ),
+              ),
+              childWhenDragging: Opacity(
+                opacity: 0.3,
+                child: _PlayingCard(
+                  card: card,
+                  isSelected: isSelected,
+                  isPlayed: isPlayed,
+                  isPlayable: isPlayable,
+                  isDragMode: true,
+                  onTap: null,
+                ),
+              ),
+              child: cardWidget,
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: CardConstants.cardHorizontalSpacing),
+            child: cardWidget,
           );
         },
       ),
@@ -716,13 +793,15 @@ class _PlayingCard extends StatelessWidget {
   final bool isSelected;
   final bool isPlayed;
   final bool isPlayable;
-  final VoidCallback onTap;
+  final bool isDragMode;
+  final VoidCallback? onTap;
 
   const _PlayingCard({
     required this.card,
     required this.isSelected,
     required this.isPlayed,
     required this.isPlayable,
+    required this.isDragMode,
     required this.onTap,
   });
 
@@ -753,7 +832,7 @@ class _PlayingCard extends StatelessWidget {
     final suitColor = _getSuitColor(card.label);
 
     return GestureDetector(
-      onTap: !isPlayed ? onTap : null,
+      onTap: !isPlayed && onTap != null ? onTap : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: CardConstants.cardWidth,
@@ -769,12 +848,12 @@ class _PlayingCard extends StatelessWidget {
               ? []
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.35),
+                    color: Colors.black.withValues(alpha: 0.35),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -817,12 +896,12 @@ class _CutCardsDisplay extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -899,8 +978,14 @@ class _CutCardsDisplay extends StatelessWidget {
 /// Pegging display - count and pile with history
 class _PeggingDisplay extends StatefulWidget {
   final GameState state;
+  final GameEngine? engine;
+  final GameSettings? settings;
 
-  const _PeggingDisplay({required this.state});
+  const _PeggingDisplay({
+    required this.state,
+    this.engine,
+    this.settings,
+  });
 
   @override
   State<_PeggingDisplay> createState() => _PeggingDisplayState();
@@ -956,15 +1041,15 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(opacity),
+        color: Colors.white.withValues(alpha: opacity),
         borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius / 2),
         border: Border.all(
-          color: Colors.grey.shade700.withOpacity(opacity),
+          color: Colors.grey.shade700.withValues(alpha: opacity),
           width: CardConstants.cardBorderWidth,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15 * opacity),
+            color: Colors.black.withValues(alpha: 0.15 * opacity),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -976,7 +1061,7 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: fontSize,
-            color: suitColor.withOpacity(opacity),
+            color: suitColor.withValues(alpha: opacity),
           ),
         ),
       ),
@@ -1017,88 +1102,104 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
                     : Theme.of(context).colorScheme.secondary,
               ),
         ),
-        // Pegging pile with history
-        if (hasHistory || hasCurrentCards) ...[
-          const SizedBox(height: 8),
-          SizedBox(
-            height: CardConstants.activePeggingCardHeight + 8,
-            child: ListView(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
+        // Pegging pile with history (wrapped in drop zone for drag mode)
+        const SizedBox(height: 8),
+        _buildPileArea(context, completedRounds, hasHistory, hasCurrentCards),
+      ],
+    );
+  }
+
+  Widget _buildPileArea(BuildContext context, List<dynamic> completedRounds, bool hasHistory, bool hasCurrentCards) {
+    // Check if drag mode is enabled
+    final isDragMode = widget.settings?.cardSelectionMode == CardSelectionMode.drag;
+    final engine = widget.engine;
+    final showDropZone = isDragMode && engine != null && widget.state.isPlayerTurn;
+
+    return SizedBox(
+      height: CardConstants.activePeggingCardHeight + 8,
+      child: ListView(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        children: [
+          // Previous completed rounds (fanned and greyed)
+          ...completedRounds.map((round) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Previous completed rounds (fanned and greyed)
-                ...completedRounds.map((round) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Cards in this round (fanned/overlapped)
-                      SizedBox(
-                        width: _calculateFannedWidth(round.cards.length),
-                        height: CardConstants.activePeggingCardHeight,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: List.generate(
-                            round.cards.length,
-                            (index) {
-                              final card = round.cards[index];
-                              return Positioned(
-                                left: index * CardConstants.peggingCardOverlap,
-                                child: _buildCard(
-                                  card: card,
-                                  width: CardConstants.activePeggingCardWidth,
-                                  height: CardConstants.activePeggingCardHeight,
-                                  fontSize: 14.0,
-                                  opacity: 1.0,
-                                ),
-                              );
-                            },
+                // Cards in this round (fanned/overlapped)
+                SizedBox(
+                  width: _calculateFannedWidth(round.cards.length),
+                  height: CardConstants.activePeggingCardHeight,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: List.generate(
+                      round.cards.length,
+                      (index) {
+                        final card = round.cards[index];
+                        return Positioned(
+                          left: index * CardConstants.peggingCardOverlap,
+                          child: _buildCard(
+                            card: card,
+                            width: CardConstants.activePeggingCardWidth,
+                            height: CardConstants.activePeggingCardHeight,
+                            fontSize: 14.0,
+                            opacity: 1.0,
                           ),
-                        ),
-                      ),
-                      // Round separator
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Container(
-                          width: 2,
-                          height: CardConstants.activePeggingCardHeight,
-                          color: Colors.grey.shade400,
-                        ),
-                      ),
-                    ],
-                  );
-                }),
-                // Current round (full size, fanned/overlapped)
-                if (hasCurrentCards)
-                  SizedBox(
-                    width: _calculateFannedWidth(widget.state.peggingPile.length),
-                    height: CardConstants.activePeggingCardHeight,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: List.generate(
-                        widget.state.peggingPile.length,
-                        (index) {
-                          final card = widget.state.peggingPile[index];
-                          return Positioned(
-                            left: index * CardConstants.peggingCardOverlap,
-                            child: _buildCard(
-                              card: card,
-                              width: CardConstants.activePeggingCardWidth,
-                              height: CardConstants.activePeggingCardHeight,
-                              fontSize: 14.0,
-                              opacity: 1.0,
-                            ),
-                          );
-                        },
-                      ),
+                        );
+                      },
                     ),
                   ),
-                const SizedBox(width: 8),
+                ),
+                // Round separator
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    width: 2,
+                    height: CardConstants.activePeggingCardHeight,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
               ],
+            );
+          }),
+          // Current round (full size, fanned/overlapped)
+          if (hasCurrentCards)
+            SizedBox(
+              width: _calculateFannedWidth(widget.state.peggingPile.length),
+              height: CardConstants.activePeggingCardHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: List.generate(
+                  widget.state.peggingPile.length,
+                  (index) {
+                    final card = widget.state.peggingPile[index];
+                    return Positioned(
+                      left: index * CardConstants.peggingCardOverlap,
+                      child: _buildCard(
+                        card: card,
+                        width: CardConstants.activePeggingCardWidth,
+                        height: CardConstants.activePeggingCardHeight,
+                        fontSize: 14.0,
+                        opacity: 1.0,
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
+          // Drop zone appears after all cards (at the position of next card)
+          if (showDropZone)
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: _PeggingPileDropZone(
+                state: widget.state,
+                engine: engine,
+              ),
+            ),
+          const SizedBox(width: 8),
         ],
-      ],
+      ),
     );
   }
 }
@@ -1210,6 +1311,256 @@ class _WinnerModalState extends State<_WinnerModal> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Crib selection drop zone
+class _CribDropZone extends StatefulWidget {
+  final GameState state;
+  final GameEngine engine;
+  final GameSettings settings;
+
+  const _CribDropZone({
+    required this.state,
+    required this.engine,
+    required this.settings,
+  });
+
+  @override
+  State<_CribDropZone> createState() => _CribDropZoneState();
+}
+
+class _CribDropZoneState extends State<_CribDropZone> {
+  bool _isHovering = false;
+
+  void _undoSelection() {
+    // Clear all selected cards
+    final selectedIndices = List<int>.from(widget.state.selectedCards);
+    for (final index in selectedIndices) {
+      widget.engine.toggleCardSelection(index);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasSelection = widget.state.selectedCards.isNotEmpty;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Drop zone
+        DragTarget<CardDragData>(
+          onWillAcceptWithDetails: (details) {
+            // Only accept cards during crib selection phase
+            return details.data.phase == GamePhase.cribSelection &&
+                   widget.state.selectedCards.length < 2;
+          },
+          onAcceptWithDetails: (details) {
+            // Add card to crib selection
+            widget.engine.toggleCardSelection(details.data.cardIndex);
+            setState(() {
+              _isHovering = false;
+            });
+          },
+          onMove: (details) {
+            if (!_isHovering) {
+              setState(() {
+                _isHovering = true;
+              });
+            }
+          },
+          onLeave: (details) {
+            setState(() {
+              _isHovering = false;
+            });
+          },
+          builder: (context, candidateData, rejectedData) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: _isHovering
+                    ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5)
+                    : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                border: Border.all(
+                  color: _isHovering
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.outline,
+                  width: _isHovering ? 3 : 2,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _isHovering
+                        ? 'Drop card here for crib'
+                        : 'Drag 2 cards here for the crib',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: _isHovering
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontWeight: _isHovering ? FontWeight.bold : FontWeight.normal,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${widget.state.selectedCards.length}/2 selected',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        // Undo button (only visible when cards are selected)
+        if (hasSelection) ...[
+          const SizedBox(width: 12),
+          IconButton(
+            onPressed: _undoSelection,
+            icon: const Icon(Icons.undo),
+            tooltip: 'Undo selection',
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+              foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Card silhouette drop zone for pegging - shows where next card will be placed
+class _PeggingPileDropZone extends StatefulWidget {
+  final GameState state;
+  final GameEngine engine;
+
+  const _PeggingPileDropZone({
+    required this.state,
+    required this.engine,
+  });
+
+  @override
+  State<_PeggingPileDropZone> createState() => _PeggingPileDropZoneState();
+}
+
+class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
+  bool _isHovering = false;
+  String? _errorMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<CardDragData>(
+      onWillAcceptWithDetails: (details) {
+        // Only accept cards during pegging phase
+        if (details.data.phase != GamePhase.pegging || !widget.state.isPlayerTurn) {
+          return false;
+        }
+
+        final card = details.data.card;
+        final wouldExceed = widget.state.peggingCount + card.value > 31;
+
+        if (wouldExceed) {
+          setState(() {
+            _errorMessage = 'Cannot play ${card.label} - would exceed 31';
+          });
+          return false;
+        }
+
+        setState(() {
+          _errorMessage = null;
+        });
+        return true;
+      },
+      onAcceptWithDetails: (details) {
+        // Play the card
+        widget.engine.playCard(details.data.cardIndex);
+        setState(() {
+          _isHovering = false;
+          _errorMessage = null;
+        });
+      },
+      onMove: (details) {
+        if (!_isHovering) {
+          setState(() {
+            _isHovering = true;
+          });
+        }
+      },
+      onLeave: (details) {
+        setState(() {
+          _isHovering = false;
+          _errorMessage = null;
+        });
+      },
+      builder: (context, candidateData, rejectedData) {
+        final hasError = _errorMessage != null;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isHovering || hasError)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  hasError
+                      ? _errorMessage!
+                      : 'Drop here',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: hasError
+                            ? Colors.red.shade700
+                            : Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: CardConstants.activePeggingCardWidth,
+              height: CardConstants.activePeggingCardHeight,
+              decoration: BoxDecoration(
+                color: hasError
+                    ? Colors.red.shade100.withValues(alpha: 0.2)
+                    : _isHovering
+                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                        : Colors.transparent,
+                border: Border.all(
+                  color: hasError
+                      ? Colors.red.shade700
+                      : _isHovering
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignInside,
+                ),
+                borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius / 2),
+              ),
+              child: Center(
+                child: hasError
+                    ? Icon(
+                        Icons.close,
+                        color: Colors.red.shade700,
+                        size: 24,
+                      )
+                    : Icon(
+                        _isHovering ? Icons.add : Icons.more_horiz,
+                        color: _isHovering
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+                        size: 24,
+                      ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

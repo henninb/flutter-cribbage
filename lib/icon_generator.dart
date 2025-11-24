@@ -233,7 +233,7 @@ class CribbageIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -261,14 +261,14 @@ class CribbageIcon extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            color.withOpacity(0.8),
+            color.withValues(alpha: 0.8),
             color,
           ],
         ),
         borderRadius: BorderRadius.circular(size / 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -283,7 +283,7 @@ class CribbageBoardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.15)
+      ..color = Colors.white.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
 
     // Draw subtle pegging holes in a pattern
@@ -304,7 +304,7 @@ class CribbageBoardPainter extends CustomPainter {
 
     // Draw border holes
     final borderPaint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = Colors.white.withValues(alpha: 0.2)
       ..style = PaintingStyle.fill;
 
     const borderHoles = 24;

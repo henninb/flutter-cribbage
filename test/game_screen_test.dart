@@ -8,7 +8,7 @@ import 'package:cribbage/src/ui/screens/game_screen.dart';
 import 'package:cribbage/src/ui/theme/theme_definitions.dart';
 
 void main() {
-  GameScreen _buildScreen({
+  GameScreen buildScreen({
     required GameEngine engine,
     GameSettings settings = const GameSettings(),
     required void Function(GameSettings) onSettingsChange,
@@ -27,7 +27,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: _buildScreen(
+        home: buildScreen(
           engine: engine,
           onSettingsChange: (_) {},
         ),
@@ -53,7 +53,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: _buildScreen(
+        home: buildScreen(
           engine: engine,
           onSettingsChange: (value) => updated = value,
         ),
@@ -77,7 +77,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: _buildScreen(
+        home: buildScreen(
           engine: engine,
           onSettingsChange: (value) => updated = value,
         ),

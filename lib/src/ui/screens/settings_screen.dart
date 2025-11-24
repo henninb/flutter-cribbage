@@ -51,7 +51,7 @@ class SettingsScreen extends StatelessWidget {
             context,
             CardSelectionMode.drag,
             'Drag',
-            'Drag cards to discard area',
+            'Drag cards to play area',
             Icons.drag_indicator,
           ),
           const SizedBox(height: 24),
@@ -210,7 +210,7 @@ class SettingsScreen extends StatelessWidget {
           ? Theme.of(context).colorScheme.primaryContainer
           : enabled
               ? Theme.of(context).colorScheme.surface
-              : Theme.of(context).colorScheme.surfaceVariant,
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
       child: ListTile(
         enabled: enabled,
         leading: Icon(
@@ -219,7 +219,7 @@ class SettingsScreen extends StatelessWidget {
               ? (isSelected
                   ? Theme.of(context).colorScheme.primary
                   : Theme.of(context).colorScheme.onSurface)
-              : Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
+              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38),
         ),
         title: Text(title),
         subtitle: Text(description),

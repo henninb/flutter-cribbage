@@ -1265,7 +1265,7 @@ class GameEngine extends ChangeNotifier {
       final stateUpdate = _state.copyWith(
         isPeggingPhase: false,
         currentPhase: GamePhase.handCounting,
-        gameStatus: status + '\nPegging complete. Count hands.',
+        gameStatus: '$status\nPegging complete. Count hands.',
         isPlayerTurn: false,
         playerScore: playerScore,
         opponentScore: opponentScore,

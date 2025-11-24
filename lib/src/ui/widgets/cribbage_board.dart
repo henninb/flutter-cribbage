@@ -98,7 +98,7 @@ class CribbageBoard extends StatelessWidget {
             Container(
               height: 20,
               decoration: BoxDecoration(
-                color: trackColor.withOpacity(0.3),
+                color: trackColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -122,7 +122,7 @@ class CribbageBoard extends StatelessWidget {
                 child: Container(
                   width: 2,
                   height: 20,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               );
             }),
@@ -143,7 +143,7 @@ class CribbageBoard extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),

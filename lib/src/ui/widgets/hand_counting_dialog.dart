@@ -113,7 +113,7 @@ class HandCountingDialog extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             width: 2,
           ),
         ),
@@ -186,7 +186,7 @@ class HandCountingDialog extends StatelessWidget {
   ) {
     if (breakdown == null || breakdown.entries.isEmpty) {
       return Card(
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
@@ -199,7 +199,7 @@ class HandCountingDialog extends StatelessWidget {
     }
 
     return Card(
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -362,12 +362,12 @@ class _HandCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
