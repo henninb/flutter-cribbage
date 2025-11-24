@@ -1502,25 +1502,10 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
       builder: (context, candidateData, rejectedData) {
         final hasError = _errorMessage != null;
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
+        return Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
           children: [
-            if (_isHovering || hasError)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  hasError
-                      ? _errorMessage!
-                      : 'Drop here',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: hasError
-                            ? Colors.red.shade700
-                            : Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: CardConstants.activePeggingCardWidth,
@@ -1558,6 +1543,32 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
                       ),
               ),
             ),
+            if (_isHovering || hasError)
+              Positioned(
+                top: -16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: hasError
+                        ? Colors.red.shade50
+                        : Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    hasError
+                        ? _errorMessage!
+                        : 'Drop here',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: hasError
+                              ? Colors.red.shade700
+                              : Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
           ],
         );
       },
