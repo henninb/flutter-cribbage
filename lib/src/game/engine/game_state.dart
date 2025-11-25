@@ -126,6 +126,8 @@ class GameState {
     this.cutPlayerCard,
     this.cutOpponentCard,
     this.showCutForDealer = false,
+    this.cutDeck = const [],
+    this.playerHasSelectedCutCard = false,
     this.isPeggingPhase = false,
     this.isPlayerTurn = false,
     this.peggingCount = 0,
@@ -168,6 +170,8 @@ class GameState {
   final PlayingCard? cutPlayerCard;
   final PlayingCard? cutOpponentCard;
   final bool showCutForDealer;
+  final List<PlayingCard> cutDeck;
+  final bool playerHasSelectedCutCard;
   final bool isPeggingPhase;
   final bool isPlayerTurn;
   final int peggingCount;
@@ -211,6 +215,8 @@ class GameState {
     PlayingCard? cutPlayerCard,
     PlayingCard? cutOpponentCard,
     bool? showCutForDealer,
+    List<PlayingCard>? cutDeck,
+    bool? playerHasSelectedCutCard,
     bool? isPeggingPhase,
     bool? isPlayerTurn,
     int? peggingCount,
@@ -256,6 +262,8 @@ class GameState {
       cutPlayerCard: cutPlayerCard ?? this.cutPlayerCard,
       cutOpponentCard: cutOpponentCard ?? this.cutOpponentCard,
       showCutForDealer: showCutForDealer ?? this.showCutForDealer,
+      cutDeck: cutDeck ?? this.cutDeck,
+      playerHasSelectedCutCard: playerHasSelectedCutCard ?? this.playerHasSelectedCutCard,
       isPeggingPhase: isPeggingPhase ?? this.isPeggingPhase,
       isPlayerTurn: isPlayerTurn ?? this.isPlayerTurn,
       peggingCount: peggingCount ?? this.peggingCount,

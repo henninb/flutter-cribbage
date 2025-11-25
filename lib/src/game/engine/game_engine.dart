@@ -82,6 +82,8 @@ class GameEngine extends ChangeNotifier {
       cutPlayerCard: null,
       cutOpponentCard: null,
       showCutForDealer: false,
+      cutDeck: const [],
+      playerHasSelectedCutCard: false,
       isPlayerTurn: false,
       isPeggingPhase: false,
       gameOver: false,
@@ -104,15 +106,42 @@ class GameEngine extends ChangeNotifier {
       clearOpponentScoreAnimation: true,
     );
     notifyListeners();
+    // Automatically initialize the cut deck
+    cutForDealer();
   }
 
   void cutForDealer() {
+    // Initialize the cut deck and show it to the user
     final deck = createDeck(random: _random);
-    final playerCut = deck.first;
-    final opponentCut = deck[1];
+    _state = _state.copyWith(
+      cutDeck: deck,
+      playerHasSelectedCutCard: false,
+      cutPlayerCard: null,
+      cutOpponentCard: null,
+      gameStatus: 'Tap the deck to cut for dealer.',
+    );
+    notifyListeners();
+  }
+
+  void selectCutCard(int index) {
+    if (_state.cutDeck.isEmpty || index < 0 || index >= _state.cutDeck.length) {
+      return;
+    }
+
+    // Player selects their card
+    final playerCut = _state.cutDeck[index];
+
+    // Opponent selects a random card (different from player's card)
+    final remainingIndices = List<int>.generate(_state.cutDeck.length, (i) => i)
+        .where((i) => i != index)
+        .toList();
+    final opponentIndex = remainingIndices[_random.nextInt(remainingIndices.length)];
+    final opponentCut = _state.cutDeck[opponentIndex];
+
     _state = _state.copyWith(
       cutPlayerCard: playerCut,
       cutOpponentCard: opponentCut,
+      playerHasSelectedCutCard: true,
       showCutForDealer: true,
     );
     _persistence?.saveCutCards(playerCut, opponentCut);
