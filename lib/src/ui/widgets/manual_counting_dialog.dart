@@ -227,12 +227,12 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 // Scrollable content
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Column(
                       children: [
                         // Cards display
                         _buildCardsSection(context, dialogData.hand),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
 
                         // Slider directly under cards
                         _buildSlider(context),
@@ -298,7 +298,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
 
   Widget _buildHeader(BuildContext context, String title) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -355,7 +355,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         SizedBox(
           height: CardConstants.playerHandHeight,
           child: Center(
@@ -382,12 +382,12 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          // Current score display (large and prominent)
+          // Current score display (compact and prominent)
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            height: 56,
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            height: 36,
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -395,11 +395,11 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                   Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
                 ],
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
+                  blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -409,7 +409,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
               children: [
                 Text(
                   'Score: ',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -422,7 +422,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                   child: Text(
                     '$currentScore',
                     key: ValueKey<int>(currentScore),
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
                           height: 1.0,
@@ -431,7 +431,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 ),
                 Text(
                   ' ${currentScore == 1 ? 'point' : 'points'}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -461,7 +461,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
             ],
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
 
           // Slider with custom thumb showing score inside
           SliderTheme(
@@ -510,8 +510,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       opacity: _errorMessage != null ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12, top: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        margin: const EdgeInsets.only(bottom: 8, top: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.errorContainer,
           borderRadius: BorderRadius.circular(12),
@@ -562,17 +562,17 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     final pointsText = currentScore == 1 ? 'point' : 'points';
 
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20, top: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Instructional text
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                 width: 1,
@@ -583,13 +583,13 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 Icon(
                   Icons.touch_app,
                   color: Theme.of(context).colorScheme.primary,
-                  size: 20,
+                  size: 18,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Drag the slider to select your score, then tap Accept',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.w500,
                         ),
@@ -602,10 +602,10 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
           // Accept button
           SizedBox(
             width: double.infinity,
-            height: 56,
+            height: 52,
             child: FilledButton.icon(
               onPressed: _handleAccept,
-              icon: const Icon(Icons.check_circle, size: 24),
+              icon: const Icon(Icons.check_circle, size: 22),
               label: Text(
                 'Accept ($currentScore $pointsText)',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -614,7 +614,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
               ),
               style: FilledButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
