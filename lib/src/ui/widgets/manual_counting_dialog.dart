@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
@@ -50,6 +53,31 @@ class _ScoreThumbShape extends SliderComponentShape {
 
     canvas.drawCircle(center, thumbRadius, borderPaint);
 
+    // Draw tick marks around the circle
+    final tickPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    const tickCount = 12; // Number of tick marks around the circle
+    const tickLength = 6.0; // Length of each tick mark
+
+    for (int i = 0; i < tickCount; i++) {
+      final angle = (i * 360 / tickCount) * 3.14159 / 180; // Convert to radians
+      final innerRadius = thumbRadius - tickLength;
+
+      final startX = center.dx + innerRadius * cos(angle);
+      final startY = center.dy + innerRadius * sin(angle);
+      final endX = center.dx + thumbRadius * cos(angle);
+      final endY = center.dy + thumbRadius * sin(angle);
+
+      canvas.drawLine(
+        Offset(startX, startY),
+        Offset(endX, endY),
+        tickPaint,
+      );
+    }
+
     // Draw the text inside the circle
     final textSpan = TextSpan(
       text: text,
@@ -96,6 +124,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
   double _sliderValue = 0;
   String? _errorMessage;
   bool _showingBreakdown = false;
+  Timer? _errorTimer;
 
   // Valid cribbage scores (0-29 except 19, 25, 26, 27)
   // In cribbage, these scores are impossible in a hand
@@ -112,6 +141,12 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     super.initState();
     // Reset slider to zero each time dialog is displayed
     _sliderValue = 0;
+  }
+
+  @override
+  void dispose() {
+    _errorTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -150,13 +185,26 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     if (breakdown == null) return;
 
     if (currentScore != breakdown.totalScore) {
+      // Cancel any existing timer
+      _errorTimer?.cancel();
+
       setState(() {
         _errorMessage = 'Incorrect! Please try again.';
+      });
+
+      // Start a timer to clear the error message after 3 seconds
+      _errorTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _errorMessage = null;
+          });
+        }
       });
       return;
     }
 
     // Score is correct, proceed
+    _errorTimer?.cancel();
     setState(() {
       _errorMessage = null;
     });
@@ -359,6 +407,29 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
+          // Score range indicator (above the slider)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '0',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              Text(
+                '29',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
           // Slider with custom thumb showing score inside
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
@@ -386,6 +457,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
               max: (validScores.length - 1).toDouble(),
               divisions: validScores.length - 1,
               onChanged: (value) {
+                // Cancel error timer if user is adjusting the slider
+                _errorTimer?.cancel();
                 setState(() {
                   _sliderValue = value;
                   // Clear error when user changes the score
@@ -393,27 +466,6 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 });
               },
             ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Score range indicator
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '0',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-              Text(
-                '29',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-            ],
           ),
         ],
       ),
