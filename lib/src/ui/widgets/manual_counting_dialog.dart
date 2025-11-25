@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
@@ -52,31 +51,6 @@ class _ScoreThumbShape extends SliderComponentShape {
       ..strokeWidth = 3;
 
     canvas.drawCircle(center, thumbRadius, borderPaint);
-
-    // Draw tick marks around the circle
-    final tickPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    const tickCount = 12; // Number of tick marks around the circle
-    const tickLength = 6.0; // Length of each tick mark
-
-    for (int i = 0; i < tickCount; i++) {
-      final angle = (i * 360 / tickCount) * 3.14159 / 180; // Convert to radians
-      final innerRadius = thumbRadius - tickLength;
-
-      final startX = center.dx + innerRadius * cos(angle);
-      final startY = center.dy + innerRadius * sin(angle);
-      final endX = center.dx + thumbRadius * cos(angle);
-      final endY = center.dy + thumbRadius * sin(angle);
-
-      canvas.drawLine(
-        Offset(startX, startY),
-        Offset(endX, endY),
-        tickPaint,
-      );
-    }
 
     // Draw the text inside the circle
     final textSpan = TextSpan(
@@ -262,16 +236,17 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
 
                         // Slider directly under cards
                         _buildSlider(context),
-
-                        // Error message (if any)
-                        if (_errorMessage != null) ...[
-                          const SizedBox(height: 24),
-                          _buildErrorMessage(context),
-                        ],
                       ],
                     ),
                   ),
                 ),
+
+                // Error message (if any) - above buttons
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildErrorMessage(context),
+                  ),
 
                 // Fixed bottom buttons
                 _buildBottomButtons(context),
@@ -407,21 +382,79 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          // Score range indicator (above the slider)
+          // Current score display (large and prominent)
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: 56,
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Score: ',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Text(
+                    '$currentScore',
+                    key: ValueKey<int>(currentScore),
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                          height: 1.0,
+                        ),
+                  ),
+                ),
+                Text(
+                  ' ${currentScore == 1 ? 'point' : 'points'}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ],
+            ),
+          ),
+
+          // Score range indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '0',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.bold,
                     ),
               ),
               Text(
                 '29',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.bold,
                     ),
               ),
@@ -477,24 +510,29 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       opacity: _errorMessage != null ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        margin: const EdgeInsets.only(bottom: 12, top: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.errorContainer,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.error,
+            width: 2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
+              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
               blurRadius: 8,
-              offset: const Offset(0, 4),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error.withValues(alpha: 0.15),
+                color: Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -503,13 +541,13 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 size: 20,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 _errorMessage!,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onErrorContainer,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       letterSpacing: 0.15,
                     ),
               ),
@@ -524,25 +562,64 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     final pointsText = currentScore == 1 ? 'point' : 'points';
 
     return Padding(
-      padding: const EdgeInsets.all(16),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: FilledButton.icon(
-          onPressed: _handleAccept,
-          icon: const Icon(Icons.check_circle, size: 24),
-          label: Text(
-            'Accept ($currentScore $pointsText)',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20, top: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Instructional text
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.touch_app,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
                 ),
-          ),
-          style: FilledButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Drag the slider to select your score, then tap Accept',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+
+          // Accept button
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: FilledButton.icon(
+              onPressed: _handleAccept,
+              icon: const Icon(Icons.check_circle, size: 24),
+              label: Text(
+                'Accept ($currentScore $pointsText)',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
