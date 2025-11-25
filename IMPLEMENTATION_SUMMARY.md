@@ -209,9 +209,12 @@ The following features from the Android app were **intentionally deferred** per 
    - Email generation with game state
    - Device info collection
 
-4. **Debug Score Dialog**
-   - Triple-tap to adjust scores
-   - Debug builds only
+4. **Debug Score Dialog** ✅ IMPLEMENTED
+   - Triple-tap on either player's score to open the debug dialog
+   - +/- buttons to adjust scores by 1 or 5 points
+   - Only available in debug builds (disabled in release)
+   - Useful for testing game scenarios and debugging
+   - File: `lib/src/ui/widgets/debug_score_dialog.dart`
 
 5. **Enhanced 31 Banner**
    - More prominent animation

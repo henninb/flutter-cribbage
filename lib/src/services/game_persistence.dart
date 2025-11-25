@@ -8,12 +8,16 @@ class StoredStats {
     required this.gamesLost,
     required this.skunksFor,
     required this.skunksAgainst,
+    required this.doubleSkunksFor,
+    required this.doubleSkunksAgainst,
   });
 
   final int gamesWon;
   final int gamesLost;
   final int skunksFor;
   final int skunksAgainst;
+  final int doubleSkunksFor;
+  final int doubleSkunksAgainst;
 }
 
 class CutCards {
@@ -37,6 +41,8 @@ abstract class GamePersistence {
     required int gamesLost,
     required int skunksFor,
     required int skunksAgainst,
+    required int doubleSkunksFor,
+    required int doubleSkunksAgainst,
   });
 
   CutCards? loadCutCards();
@@ -55,6 +61,8 @@ class SharedPrefsPersistence implements GamePersistence {
   static const _gamesLostKey = 'gamesLost';
   static const _skunksForKey = 'skunksFor';
   static const _skunksAgainstKey = 'skunksAgainst';
+  static const _doubleSkunksForKey = 'doubleSkunksFor';
+  static const _doubleSkunksAgainstKey = 'doubleSkunksAgainst';
   static const _playerCutKey = 'playerCut';
   static const _opponentCutKey = 'opponentCut';
   static const _playerNameKey = 'playerName';
@@ -67,6 +75,8 @@ class SharedPrefsPersistence implements GamePersistence {
       gamesLost: _prefs.getInt(_gamesLostKey) ?? 0,
       skunksFor: _prefs.getInt(_skunksForKey) ?? 0,
       skunksAgainst: _prefs.getInt(_skunksAgainstKey) ?? 0,
+      doubleSkunksFor: _prefs.getInt(_doubleSkunksForKey) ?? 0,
+      doubleSkunksAgainst: _prefs.getInt(_doubleSkunksAgainstKey) ?? 0,
     );
   }
 
@@ -76,12 +86,16 @@ class SharedPrefsPersistence implements GamePersistence {
     required int gamesLost,
     required int skunksFor,
     required int skunksAgainst,
+    required int doubleSkunksFor,
+    required int doubleSkunksAgainst,
   }) {
     _prefs
       ..setInt(_gamesWonKey, gamesWon)
       ..setInt(_gamesLostKey, gamesLost)
       ..setInt(_skunksForKey, skunksFor)
-      ..setInt(_skunksAgainstKey, skunksAgainst);
+      ..setInt(_skunksAgainstKey, skunksAgainst)
+      ..setInt(_doubleSkunksForKey, doubleSkunksFor)
+      ..setInt(_doubleSkunksAgainstKey, doubleSkunksAgainst);
   }
 
   @override

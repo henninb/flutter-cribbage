@@ -33,12 +33,16 @@ class _FakePersistence implements GamePersistence {
     required int gamesLost,
     required int skunksFor,
     required int skunksAgainst,
+    required int doubleSkunksFor,
+    required int doubleSkunksAgainst,
   }) {
     lastSavedStats = StoredStats(
       gamesWon: gamesWon,
       gamesLost: gamesLost,
       skunksFor: skunksFor,
       skunksAgainst: skunksAgainst,
+      doubleSkunksFor: doubleSkunksFor,
+      doubleSkunksAgainst: doubleSkunksAgainst,
     );
   }
 

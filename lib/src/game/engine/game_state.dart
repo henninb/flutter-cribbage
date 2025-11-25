@@ -76,20 +76,26 @@ class WinnerModalData {
     required this.playerScore,
     required this.opponentScore,
     required this.wasSkunk,
+    required this.wasDoubleSkunk,
     required this.gamesWon,
     required this.gamesLost,
     required this.skunksFor,
     required this.skunksAgainst,
+    required this.doubleSkunksFor,
+    required this.doubleSkunksAgainst,
   });
 
   final bool playerWon;
   final int playerScore;
   final int opponentScore;
   final bool wasSkunk;
+  final bool wasDoubleSkunk;
   final int gamesWon;
   final int gamesLost;
   final int skunksFor;
   final int skunksAgainst;
+  final int doubleSkunksFor;
+  final int doubleSkunksAgainst;
 }
 
 @immutable
@@ -117,6 +123,8 @@ class GameState {
     this.gamesLost = 0,
     this.skunksFor = 0,
     this.skunksAgainst = 0,
+    this.doubleSkunksFor = 0,
+    this.doubleSkunksAgainst = 0,
     this.isPlayerDealer = false,
     this.playerHand = const [],
     this.opponentHand = const [],
@@ -161,6 +169,8 @@ class GameState {
   final int gamesLost;
   final int skunksFor;
   final int skunksAgainst;
+  final int doubleSkunksFor;
+  final int doubleSkunksAgainst;
   final bool isPlayerDealer;
   final List<PlayingCard> playerHand;
   final List<PlayingCard> opponentHand;
@@ -205,6 +215,8 @@ class GameState {
     int? gamesLost,
     int? skunksFor,
     int? skunksAgainst,
+    int? doubleSkunksFor,
+    int? doubleSkunksAgainst,
     bool? isPlayerDealer,
     List<PlayingCard>? playerHand,
     List<PlayingCard>? opponentHand,
@@ -253,6 +265,8 @@ class GameState {
       gamesLost: gamesLost ?? this.gamesLost,
       skunksFor: skunksFor ?? this.skunksFor,
       skunksAgainst: skunksAgainst ?? this.skunksAgainst,
+      doubleSkunksFor: doubleSkunksFor ?? this.doubleSkunksFor,
+      doubleSkunksAgainst: doubleSkunksAgainst ?? this.doubleSkunksAgainst,
       isPlayerDealer: isPlayerDealer ?? this.isPlayerDealer,
       playerHand: playerHand ?? this.playerHand,
       opponentHand: opponentHand ?? this.opponentHand,

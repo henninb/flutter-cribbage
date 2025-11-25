@@ -36,6 +36,8 @@ class GameEngine extends ChangeNotifier {
         gamesLost: stats.gamesLost,
         skunksFor: stats.skunksFor,
         skunksAgainst: stats.skunksAgainst,
+        doubleSkunksFor: stats.doubleSkunksFor,
+        doubleSkunksAgainst: stats.doubleSkunksAgainst,
       );
     }
     final cut = _persistence?.loadCutCards();
@@ -1532,19 +1534,33 @@ class GameEngine extends ChangeNotifier {
     }
     final playerWins = _state.playerScore > _state.opponentScore;
     final loserScore = playerWins ? _state.opponentScore : _state.playerScore;
-    final skunked = loserScore < 91;
+
+    // Check for skunk (< 91) and double skunk (< 61)
+    final doubleSkunk = loserScore < 61;
+    final skunk = loserScore < 91;
+
     final gamesWon = playerWins ? _state.gamesWon + 1 : _state.gamesWon;
     final gamesLost = playerWins ? _state.gamesLost : _state.gamesLost + 1;
-    final skunksFor = playerWins && skunked ? _state.skunksFor + 1 : _state.skunksFor;
-    final skunksAgainst = !playerWins && skunked
+
+    // Track regular skunks (includes double skunks in the count)
+    final skunksFor = playerWins && skunk ? _state.skunksFor + 1 : _state.skunksFor;
+    final skunksAgainst = !playerWins && skunk
         ? _state.skunksAgainst + 1
         : _state.skunksAgainst;
+
+    // Track double skunks separately
+    final doubleSkunksFor = playerWins && doubleSkunk ? _state.doubleSkunksFor + 1 : _state.doubleSkunksFor;
+    final doubleSkunksAgainst = !playerWins && doubleSkunk
+        ? _state.doubleSkunksAgainst + 1
+        : _state.doubleSkunksAgainst;
 
     _persistence?.saveStats(
       gamesWon: gamesWon,
       gamesLost: gamesLost,
       skunksFor: skunksFor,
       skunksAgainst: skunksAgainst,
+      doubleSkunksFor: doubleSkunksFor,
+      doubleSkunksAgainst: doubleSkunksAgainst,
     );
 
     _state = _state.copyWith(
@@ -1554,16 +1570,21 @@ class GameEngine extends ChangeNotifier {
       gamesLost: gamesLost,
       skunksFor: skunksFor,
       skunksAgainst: skunksAgainst,
+      doubleSkunksFor: doubleSkunksFor,
+      doubleSkunksAgainst: doubleSkunksAgainst,
       showWinnerModal: true,
       winnerModalData: WinnerModalData(
         playerWon: playerWins,
         playerScore: _state.playerScore,
         opponentScore: _state.opponentScore,
-        wasSkunk: skunked,
+        wasSkunk: skunk,
+        wasDoubleSkunk: doubleSkunk,
         gamesWon: gamesWon,
         gamesLost: gamesLost,
         skunksFor: skunksFor,
         skunksAgainst: skunksAgainst,
+        doubleSkunksFor: doubleSkunksFor,
+        doubleSkunksAgainst: doubleSkunksAgainst,
       ),
       gameStatus: playerWins ? 'You win!' : 'Opponent wins!',
     );

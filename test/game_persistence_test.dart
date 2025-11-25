@@ -24,12 +24,16 @@ void main() {
       expect(defaults.gamesLost, 0);
       expect(defaults.skunksFor, 0);
       expect(defaults.skunksAgainst, 0);
+      expect(defaults.doubleSkunksFor, 0);
+      expect(defaults.doubleSkunksAgainst, 0);
 
       persistence.saveStats(
         gamesWon: 5,
         gamesLost: 2,
         skunksFor: 1,
         skunksAgainst: 3,
+        doubleSkunksFor: 1,
+        doubleSkunksAgainst: 0,
       );
 
       final loaded = persistence.loadStats();
@@ -38,6 +42,8 @@ void main() {
       expect(loaded.gamesLost, 2);
       expect(loaded.skunksFor, 1);
       expect(loaded.skunksAgainst, 3);
+      expect(loaded.doubleSkunksFor, 1);
+      expect(loaded.doubleSkunksAgainst, 0);
     });
 
     test('cut cards round-trip through save and load', () {

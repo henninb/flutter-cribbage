@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -14,6 +15,7 @@ import '../widgets/hand_counting_dialog.dart';
 import '../widgets/manual_counting_dialog.dart';
 import '../widgets/card_constants.dart';
 import '../widgets/score_animation.dart';
+import '../widgets/debug_score_dialog.dart';
 import 'settings_screen.dart';
 
 /// Data passed when dragging a card
@@ -288,6 +290,7 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
                 : null,
             onLabelTap: () => _showNameDialog(context, true),
             onSubtitleTap: () => _showNameDialog(context, true),
+            engine: widget.engine,
           ),
           if (widget.state.starterCard != null)
             _StarterCard(card: widget.state.starterCard!),
@@ -305,6 +308,7 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
                 : null,
             onLabelTap: () => _showNameDialog(context, false),
             onSubtitleTap: () => _showNameDialog(context, false),
+            engine: widget.engine,
           ),
         ],
       ),
@@ -312,7 +316,7 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
   }
 }
 
-class _ScoreColumn extends StatelessWidget {
+class _ScoreColumn extends StatefulWidget {
   final String label;
   final int score;
   final String subtitle;
@@ -320,6 +324,7 @@ class _ScoreColumn extends StatelessWidget {
   final Widget? scoreAnimation;
   final VoidCallback? onLabelTap;
   final VoidCallback? onSubtitleTap;
+  final GameEngine engine;
 
   const _ScoreColumn({
     required this.label,
@@ -329,7 +334,45 @@ class _ScoreColumn extends StatelessWidget {
     this.scoreAnimation,
     this.onLabelTap,
     this.onSubtitleTap,
+    required this.engine,
   });
+
+  @override
+  State<_ScoreColumn> createState() => _ScoreColumnState();
+}
+
+class _ScoreColumnState extends State<_ScoreColumn> {
+  int _tapCount = 0;
+  DateTime? _lastTapTime;
+
+  void _handleScoreTap() {
+    // Only enable in debug mode
+    if (!kDebugMode) return;
+
+    final now = DateTime.now();
+
+    // Reset tap count if more than 500ms has passed since last tap
+    if (_lastTapTime == null || now.difference(_lastTapTime!) > const Duration(milliseconds: 500)) {
+      _tapCount = 1;
+    } else {
+      _tapCount++;
+    }
+
+    _lastTapTime = now;
+
+    // Show debug dialog on triple tap
+    if (_tapCount >= 3) {
+      _tapCount = 0;
+      _lastTapTime = null;
+
+      DebugScoreDialog.show(
+        context,
+        widget.engine,
+        widget.engine.state.playerScore,
+        widget.engine.state.opponentScore,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -339,16 +382,16 @@ class _ScoreColumn extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             GestureDetector(
-              onTap: onLabelTap,
+              onTap: widget.onLabelTap,
               child: Text(
-                label,
+                widget.label,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  decoration: onLabelTap != null ? TextDecoration.underline : null,
+                  decoration: widget.onLabelTap != null ? TextDecoration.underline : null,
                   decorationStyle: TextDecorationStyle.dotted,
                 ),
               ),
             ),
-            if (isDealer) ...[
+            if (widget.isDealer) ...[
               const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -367,27 +410,30 @@ class _ScoreColumn extends StatelessWidget {
             ],
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '$score',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            if (scoreAnimation != null) ...[
-              const SizedBox(width: 8),
-              scoreAnimation!,
+        GestureDetector(
+          onTap: _handleScoreTap,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${widget.score}',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              if (widget.scoreAnimation != null) ...[
+                const SizedBox(width: 8),
+                widget.scoreAnimation!,
+              ],
             ],
-          ],
+          ),
         ),
         GestureDetector(
-          onTap: onSubtitleTap,
+          onTap: widget.onSubtitleTap,
           child: Text(
-            subtitle,
+            widget.subtitle,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              decoration: onSubtitleTap != null ? TextDecoration.underline : null,
+              decoration: widget.onSubtitleTap != null ? TextDecoration.underline : null,
               decorationStyle: TextDecorationStyle.dotted,
             ),
           ),
@@ -1458,55 +1504,290 @@ class _WinnerModal extends StatefulWidget {
 class _WinnerModalState extends State<_WinnerModal> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Card(
-        margin: const EdgeInsets.all(32),
-        color: widget.data.playerWon ? Colors.green.shade700 : Colors.red.shade700,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Builder(
-            builder: (context) {
-              // Get engine from context to access current state
-              final engine = context.findAncestorStateOfType<_GameScreenState>()?.widget.engine;
-              final playerName = engine?.state.playerName ?? 'You';
-              final opponentName = engine?.state.opponentName ?? 'Opponent';
+    // Get engine from context to access current state
+    final engine = context.findAncestorStateOfType<_GameScreenState>()?.widget.engine;
+    final playerName = engine?.state.playerName ?? 'You';
+    final opponentName = engine?.state.opponentName ?? 'Opponent';
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.data.playerWon ? '$playerName Won!' : '$opponentName Won',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+    final winnerName = widget.data.playerWon ? playerName : opponentName;
+
+    return GestureDetector(
+      onTap: widget.onDismiss,
+      child: Container(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: GestureDetector(
+                onTap: widget.onDismiss,
+                child: Card(
+                  elevation: 12,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Final: ${widget.data.playerScore} - ${widget.data.opponentScore}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  if (widget.data.wasSkunk)
-                    const Text(
-                      'Skunk!',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          widget.data.playerWon
+                            ? Theme.of(context).colorScheme.primaryContainer
+                            : Theme.of(context).colorScheme.errorContainer,
+                          widget.data.playerWon
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.error,
+                        ],
+                      ),
                     ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Record: ${widget.data.gamesWon}-${widget.data.gamesLost}',
-                    style: const TextStyle(color: Colors.white70),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                      // Trophy/Crown Icon
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: widget.data.playerWon
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+                            : Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          widget.data.playerWon ? Icons.emoji_events : Icons.close,
+                          size: 40,
+                          color: widget.data.playerWon
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                            : Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Winner Name
+                      Text(
+                        '$winnerName Won!',
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              color: widget.data.playerWon
+                                ? Theme.of(context).colorScheme.onPrimaryContainer
+                                : Theme.of(context).colorScheme.onErrorContainer,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 26,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Skunk Badge
+                      if (widget.data.wasDoubleSkunk)
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade600,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 3,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.whatshot, color: Colors.white, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                'DOUBLE SKUNK!',
+                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else if (widget.data.wasSkunk)
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade600,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 3,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.local_fire_department, color: Colors.white, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                'SKUNK!',
+                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      const SizedBox(height: 16),
+
+                      // Final Score
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: widget.data.playerWon
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+                            : Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Final Score',
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: widget.data.playerWon
+                                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                                      : Theme.of(context).colorScheme.onErrorContainer,
+                                    letterSpacing: 1.0,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${widget.data.playerScore} - ${widget.data.opponentScore}',
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                    color: widget.data.playerWon
+                                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                                      : Theme.of(context).colorScheme.onErrorContainer,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 28,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Statistics Grid
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: widget.data.playerWon
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)
+                            : Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Overall Statistics',
+                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: widget.data.playerWon
+                                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                                      : Theme.of(context).colorScheme.onErrorContainer,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            _StatRow(
+                              label: 'Record',
+                              value: '${widget.data.gamesWon} - ${widget.data.gamesLost}',
+                              icon: Icons.sports_score,
+                              isPlayerWin: widget.data.playerWon,
+                            ),
+                            const SizedBox(height: 6),
+                            _StatRow(
+                              label: 'Skunks',
+                              value: '${widget.data.skunksFor} - ${widget.data.skunksAgainst}',
+                              icon: Icons.local_fire_department,
+                              isPlayerWin: widget.data.playerWon,
+                            ),
+                            const SizedBox(height: 6),
+                            _StatRow(
+                              label: 'Double Skunks',
+                              value: '${widget.data.doubleSkunksFor} - ${widget.data.doubleSkunksAgainst}',
+                              icon: Icons.whatshot,
+                              isPlayerWin: widget.data.playerWon,
+                            ),
+                          ],
+                        ),
+                      ),
+                        ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: widget.onDismiss,
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
+                ),
+              ),
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Stat row widget for statistics display
+class _StatRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final bool isPlayerWin;
+
+  const _StatRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.isPlayerWin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isPlayerWin
+      ? Theme.of(context).colorScheme.onPrimaryContainer
+      : Theme.of(context).colorScheme.onErrorContainer;
+
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: textColor.withValues(alpha: 0.7),
+          size: 20,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: textColor.withValues(alpha: 0.8),
+                ),
+          ),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ],
     );
   }
 }

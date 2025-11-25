@@ -70,6 +70,23 @@ assets/                   # Placeholder for card art / icons
 5. **Match tracking** – wins/losses and skunks accumulate across games in local
    storage. Restart at any time via the app bar refresh icon.
 
+## Debugging Features
+
+### Debug Score Dialog (Debug Builds Only)
+
+When running in debug mode, you can manually adjust scores for testing:
+
+1. **Triple-tap** on either player's score number in the score header
+2. A debug dialog will appear with +/- buttons
+3. Adjust scores by 1 or 5 points using the controls
+4. Click **Apply** to update the scores
+
+This feature is automatically disabled in release builds and is useful for:
+- Testing end-game scenarios
+- Verifying skunk detection logic
+- Debugging score-related issues
+- Quick game state setup for testing
+
 ## Testing
 
 Two focused suites ensure the Dart port stays faithful to the Kotlin logic:
