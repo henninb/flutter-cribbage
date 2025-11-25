@@ -542,23 +542,26 @@ class _GameContent extends StatelessWidget {
   Widget _buildMiddleSection(BuildContext context) {
     switch (state.currentPhase) {
       case GamePhase.cutForDealer:
-        // Show spread deck if player hasn't selected, otherwise show cut cards
-        if (!state.playerHasSelectedCutCard && state.cutDeck.isNotEmpty) {
+        // Show spread deck (handles both pre-selection and post-selection states)
+        if (state.cutDeck.isNotEmpty) {
           return Expanded(
             child: _SpreadDeck(
               state: state,
               engine: engine,
             ),
           );
-        } else if (state.showCutForDealer) {
-          return Expanded(child: _CutCardsDisplay(state: state));
         }
         return const Expanded(child: SizedBox.shrink());
 
       case GamePhase.dealing:
-        // Show cut cards only if we just cut for dealer (initial game start)
-        if (state.showCutForDealer) {
-          return Expanded(child: _CutCardsDisplay(state: state));
+        // Show spread deck with cut cards if we just cut for dealer
+        if (state.showCutForDealer && state.playerHasSelectedCutCard) {
+          return Expanded(
+            child: _SpreadDeck(
+              state: state,
+              engine: engine,
+            ),
+          );
         }
         return const Expanded(child: SizedBox.shrink());
 
@@ -925,6 +928,41 @@ class _SpreadDeck extends StatelessWidget {
     required this.engine,
   });
 
+  Widget _buildCutCard(BuildContext context, PlayingCard card, {required double width, required double height}) {
+    final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
+        ? Colors.red.shade800
+        : Colors.black;
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: CardConstants.cardBorderWidth,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          card.label,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: suitColor,
+              ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -937,24 +975,23 @@ class _SpreadDeck extends StatelessWidget {
     // Calculate card width and overlap
     const cardWidth = 60.0;
     const cardHeight = 90.0;
-
-    // Calculate the total width needed if cards don't overlap
-    final totalNonOverlappingWidth = deckSize * cardWidth;
+    const cutCardWidth = 80.0;
+    const cutCardHeight = 120.0;
 
     // Calculate spacing between cards to fit on screen with padding
     final availableWidth = screenWidth - 32; // 16px padding on each side
     final spacing = (availableWidth - cardWidth) / (deckSize - 1).clamp(1, double.infinity);
-    final finalSpacing = spacing.clamp(0, cardWidth * 0.8); // Max 80% overlap
+    final finalSpacing = spacing.clamp(0.0, cardWidth * 0.8).toDouble(); // Max 80% overlap
 
     // Calculate total width needed for the spread
-    final totalWidth = (deckSize - 1) * finalSpacing + cardWidth;
+    final totalWidth = ((deckSize - 1) * finalSpacing + cardWidth).toDouble();
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Tap the deck to cut for dealer',
+            state.playerHasSelectedCutCard ? 'Cut for Dealer' : 'Tap the deck to cut for dealer',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -971,7 +1008,7 @@ class _SpreadDeck extends StatelessWidget {
                   return Positioned(
                     left: index * finalSpacing,
                     child: GestureDetector(
-                      onTap: () => engine.selectCutCard(index),
+                      onTap: state.playerHasSelectedCutCard ? null : () => engine.selectCutCard(index),
                       child: _CardBackWidget(
                         width: cardWidth,
                         height: cardHeight,
@@ -982,6 +1019,112 @@ class _SpreadDeck extends StatelessWidget {
               ),
             ),
           ),
+          // Show cut cards if player has selected
+          if (state.playerHasSelectedCutCard &&
+              state.cutPlayerCard != null &&
+              state.cutOpponentCard != null) ...[
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Player's cut card
+                Column(
+                  children: [
+                    _buildCutCard(
+                      context,
+                      state.cutPlayerCard!,
+                      width: cutCardWidth,
+                      height: cutCardHeight,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.playerName,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    // Show dealer badge if player is dealer (and not a tie)
+                    if (state.isPlayerDealer &&
+                        state.cutPlayerCard!.rank.index != state.cutOpponentCard!.rank.index) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade700,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'DEALER',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                // VS indicator
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(
+                    'vs',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+                // Opponent's cut card
+                Column(
+                  children: [
+                    _buildCutCard(
+                      context,
+                      state.cutOpponentCard!,
+                      width: cutCardWidth,
+                      height: cutCardHeight,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.opponentName,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    // Show dealer badge if opponent is dealer (and not a tie)
+                    if (!state.isPlayerDealer &&
+                        state.cutPlayerCard!.rank.index != state.cutOpponentCard!.rank.index) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade700,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'DEALER',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            // Show tie message if cards are equal
+            if (state.cutPlayerCard!.rank.index == state.cutOpponentCard!.rank.index) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Tie! Cut again.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+              ),
+            ],
+          ],
         ],
       ),
     );
@@ -1022,108 +1165,6 @@ class _CardBackWidget extends StatelessWidget {
           Icons.style,
           color: Theme.of(context).colorScheme.tertiary,
           size: 24,
-        ),
-      ),
-    );
-  }
-}
-
-/// Cut cards display
-class _CutCardsDisplay extends StatelessWidget {
-  final GameState state;
-
-  const _CutCardsDisplay({required this.state});
-
-  Widget _buildCutCard(BuildContext context, dynamic card) {
-    final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
-        ? Colors.red.shade800
-        : Colors.black;
-
-    return Container(
-      width: CardConstants.cardWidth,
-      height: CardConstants.cardHeight,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-          width: CardConstants.cardBorderWidth,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          card.label,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: suitColor,
-              ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!state.showCutForDealer ||
-        state.cutPlayerCard == null ||
-        state.cutOpponentCard == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text(
-              'Cut for Dealer',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    Text(
-                      state.playerName,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildCutCard(context, state.cutPlayerCard!),
-                  ],
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text('vs', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ),
-                Column(
-                  children: [
-                    Text(
-                      state.opponentName,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildCutCard(context, state.cutOpponentCard!),
-                  ],
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
