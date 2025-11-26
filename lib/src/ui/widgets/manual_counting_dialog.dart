@@ -5,6 +5,51 @@ import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
 import 'card_constants.dart';
 
+/// Controller to trigger Accept from outside the dialog (e.g., ActionBar button)
+class ManualCountingController extends ChangeNotifier {
+  VoidCallback? _onAccept;
+  int _currentScore = 0;
+  bool _isShowingBreakdown = false;
+
+  void attach(VoidCallback handler) {
+    _onAccept = handler;
+  }
+
+  void detach() {
+    _onAccept = null;
+  }
+
+  void triggerAccept() {
+    _onAccept?.call();
+  }
+
+  void updateScore(int score) {
+    if (_currentScore != score) {
+      _currentScore = score;
+      notifyListeners();
+    }
+  }
+
+  int get currentScore => _currentScore;
+
+  bool get isShowingBreakdown => _isShowingBreakdown;
+
+  void setShowingBreakdown(bool value) {
+    if (_isShowingBreakdown != value) {
+      _isShowingBreakdown = value;
+      notifyListeners();
+    }
+  }
+
+  void reset() {
+    if (_currentScore != 0 || _isShowingBreakdown) {
+      _currentScore = 0;
+      _isShowingBreakdown = false;
+      notifyListeners();
+    }
+  }
+}
+
 /// Custom slider thumb that displays the score value inside the circle
 class _ScoreThumbShape extends SliderComponentShape {
   final double thumbRadius;
@@ -83,11 +128,13 @@ class _ScoreThumbShape extends SliderComponentShape {
 class ManualCountingDialog extends StatefulWidget {
   final GameState state;
   final Function(int) onScoreSubmit;
+  final ManualCountingController controller;
 
   const ManualCountingDialog({
     super.key,
     required this.state,
     required this.onScoreSubmit,
+    required this.controller,
   });
 
   @override
@@ -115,10 +162,13 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     super.initState();
     // Reset slider to zero each time dialog is displayed
     _sliderValue = 0;
+    widget.controller.reset();
+    widget.controller.attach(_handleAccept);
   }
 
   @override
   void dispose() {
+    widget.controller.detach();
     _errorTimer?.cancel();
     super.dispose();
   }
@@ -132,6 +182,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
         _sliderValue = 0;
         _errorMessage = null;
       });
+      widget.controller.reset();
+      widget.controller.attach(_handleAccept);
     }
   }
 
@@ -183,18 +235,22 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       _errorMessage = null;
     });
     widget.onScoreSubmit(currentScore);
+    // Reset the controller for the next counting phase
+    widget.controller.reset();
   }
 
   void _showBreakdown() {
     setState(() {
       _showingBreakdown = true;
     });
+    widget.controller.setShowingBreakdown(true);
   }
 
   void _hideBreakdown() {
     setState(() {
       _showingBreakdown = false;
     });
+    widget.controller.setShowingBreakdown(false);
   }
 
   @override
@@ -227,7 +283,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 // Scrollable content
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     child: Column(
                       children: [
                         // Cards display
@@ -398,7 +455,10 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.3),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -416,7 +476,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 ),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (Widget child, Animation<double> animation) {
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
                     return ScaleTransition(scale: animation, child: child);
                   },
                   child: Text(
@@ -475,14 +536,11 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 overlayRadius: 32,
               ),
               activeTrackColor: Theme.of(context).colorScheme.primary,
-              inactiveTrackColor: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest,
+              inactiveTrackColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
               thumbColor: Theme.of(context).colorScheme.primary,
-              overlayColor: Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: 0.2),
+              overlayColor:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
             ),
             child: Slider(
               value: _sliderValue,
@@ -497,6 +555,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                   // Clear error when user changes the score
                   _errorMessage = null;
                 });
+                // Update the controller with the new score
+                widget.controller.updateScore(currentScore);
               },
             ),
           ),
@@ -532,7 +592,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
+                color:
+                    Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -559,8 +620,6 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
   }
 
   Widget _buildBottomButtons(BuildContext context) {
-    final pointsText = currentScore == 1 ? 'point' : 'points';
-
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 4),
       child: Column(
@@ -571,10 +630,16 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+              color: Theme.of(context)
+                  .colorScheme
+                  .primaryContainer
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -590,7 +655,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                   child: Text(
                     'Drag the slider to select your score, then tap Accept',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.w500,
                         ),
                   ),
@@ -599,25 +665,14 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
             ),
           ),
 
-          // Accept button
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: FilledButton.icon(
-              onPressed: _handleAccept,
-              icon: const Icon(Icons.check_circle, size: 22),
-              label: Text(
-                'Accept ($currentScore $pointsText)',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              style: FilledButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+          // Action bar hosts the accept button during manual counting
+          Text(
+            'Use the Accept button below to submit your score.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
                 ),
-              ),
-            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -651,7 +706,10 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.3),
                           width: 2,
                         ),
                       ),
@@ -667,7 +725,10 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                         const SizedBox(width: 12),
                         Text(
                           'Score Breakdown',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -690,7 +751,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                     child: Text(
                       'Tap anywhere to continue',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                             fontStyle: FontStyle.italic,
                           ),
                     ),
@@ -754,7 +816,10 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
 
         // Breakdown table
         Card(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: Theme.of(context)
+              .colorScheme
+              .surfaceContainerHighest
+              .withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -803,43 +868,48 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 const Divider(height: 20, thickness: 1),
 
                 // Score entries
-                ...breakdown.entries.map((entry) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 13,
-                            child: Text(
-                              entry.cards.map((c) => c.label).join(' '),
-                              style:
-                                  Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                            ),
+                ...breakdown.entries.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 13,
+                          child: Text(
+                            entry.cards.map((c) => c.label).join(' '),
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
                           ),
-                          Expanded(
-                            flex: 10,
-                            child: Text(
-                              entry.type,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              textAlign: TextAlign.center,
-                            ),
+                        ),
+                        Expanded(
+                          flex: 10,
+                          child: Text(
+                            entry.type,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
                           ),
-                          Expanded(
-                            flex: 7,
-                            child: Text(
-                              '${entry.points}',
-                              style:
-                                  Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).colorScheme.secondary,
-                                      ),
-                              textAlign: TextAlign.end,
-                            ),
+                        ),
+                        Expanded(
+                          flex: 7,
+                          child: Text(
+                            '${entry.points}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
+                            textAlign: TextAlign.end,
                           ),
-                        ],
-                      ),
-                    ),),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

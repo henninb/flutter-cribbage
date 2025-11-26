@@ -6,12 +6,10 @@ import 'card_constants.dart';
 /// Full-screen hand counting dialog matching Android app
 class HandCountingDialog extends StatelessWidget {
   final GameState state;
-  final VoidCallback onContinue;
 
   const HandCountingDialog({
     super.key,
     required this.state,
-    required this.onContinue,
   });
 
   @override
@@ -55,9 +53,6 @@ class HandCountingDialog extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Fixed bottom button
-            _buildAcceptButton(context, dialogData.breakdown),
           ],
         ),
       ),
@@ -69,40 +64,54 @@ class HandCountingDialog extends StatelessWidget {
 
     debugPrint('[DIALOG DEBUG] ===== _getDialogData called =====');
     debugPrint('[DIALOG DEBUG] CountingPhase: ${state.countingPhase}');
-    debugPrint('[DIALOG DEBUG] isInHandCountingPhase: ${state.isInHandCountingPhase}');
+    debugPrint(
+        '[DIALOG DEBUG] isInHandCountingPhase: ${state.isInHandCountingPhase}');
     debugPrint('[DIALOG DEBUG] gameOver: ${state.gameOver}');
     debugPrint('[DIALOG DEBUG] showWinnerModal: ${state.showWinnerModal}');
-    debugPrint('[DIALOG DEBUG] NonDealer breakdown: ${scores.nonDealerBreakdown?.entries.length} entries');
-    debugPrint('[DIALOG DEBUG] Dealer breakdown: ${scores.dealerBreakdown?.entries.length} entries');
-    debugPrint('[DIALOG DEBUG] Crib breakdown: ${scores.cribBreakdown?.entries.length} entries');
+    debugPrint(
+        '[DIALOG DEBUG] NonDealer breakdown: ${scores.nonDealerBreakdown?.entries.length} entries');
+    debugPrint(
+        '[DIALOG DEBUG] Dealer breakdown: ${scores.dealerBreakdown?.entries.length} entries');
+    debugPrint(
+        '[DIALOG DEBUG] Crib breakdown: ${scores.cribBreakdown?.entries.length} entries');
 
     switch (state.countingPhase) {
       case CountingPhase.nonDealer:
-        debugPrint('[DIALOG DEBUG] Showing nonDealer - breakdown is ${scores.nonDealerBreakdown == null ? "null" : "not null with ${scores.nonDealerBreakdown!.entries.length} entries"}');
+        debugPrint(
+            '[DIALOG DEBUG] Showing nonDealer - breakdown is ${scores.nonDealerBreakdown == null ? "null" : "not null with ${scores.nonDealerBreakdown!.entries.length} entries"}');
         return _DialogData(
-          title: state.isPlayerDealer ? "${state.opponentName}'s Hand" : "${state.playerName}'s Hand",
+          title: state.isPlayerDealer
+              ? "${state.opponentName}'s Hand"
+              : "${state.playerName}'s Hand",
           hand: state.isPlayerDealer ? state.opponentHand : state.playerHand,
           breakdown: scores.nonDealerBreakdown,
         );
 
       case CountingPhase.dealer:
-        debugPrint('[DIALOG DEBUG] Showing dealer - breakdown is ${scores.dealerBreakdown == null ? "null" : "not null with ${scores.dealerBreakdown!.entries.length} entries"}');
+        debugPrint(
+            '[DIALOG DEBUG] Showing dealer - breakdown is ${scores.dealerBreakdown == null ? "null" : "not null with ${scores.dealerBreakdown!.entries.length} entries"}');
         return _DialogData(
-          title: state.isPlayerDealer ? "${state.playerName}'s Hand" : "${state.opponentName}'s Hand",
+          title: state.isPlayerDealer
+              ? "${state.playerName}'s Hand"
+              : "${state.opponentName}'s Hand",
           hand: state.isPlayerDealer ? state.playerHand : state.opponentHand,
           breakdown: scores.dealerBreakdown,
         );
 
       case CountingPhase.crib:
-        debugPrint('[DIALOG DEBUG] Showing crib - breakdown is ${scores.cribBreakdown == null ? "null" : "not null with ${scores.cribBreakdown!.entries.length} entries"}');
+        debugPrint(
+            '[DIALOG DEBUG] Showing crib - breakdown is ${scores.cribBreakdown == null ? "null" : "not null with ${scores.cribBreakdown!.entries.length} entries"}');
         return _DialogData(
-          title: state.isPlayerDealer ? "${state.playerName}'s Crib" : "${state.opponentName}'s Crib",
+          title: state.isPlayerDealer
+              ? "${state.playerName}'s Crib"
+              : "${state.opponentName}'s Crib",
           hand: state.cribHand,
           breakdown: scores.cribBreakdown,
         );
 
       default:
-        debugPrint('[DIALOG DEBUG] Counting phase is ${state.countingPhase} - returning null');
+        debugPrint(
+            '[DIALOG DEBUG] Counting phase is ${state.countingPhase} - returning null');
         return null;
     }
   }
@@ -199,7 +208,10 @@ class HandCountingDialog extends StatelessWidget {
     }
 
     return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      color: Theme.of(context)
+          .colorScheme
+          .surfaceContainerHighest
+          .withValues(alpha: 0.5),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -248,72 +260,44 @@ class HandCountingDialog extends StatelessWidget {
             const Divider(height: 20, thickness: 1),
 
             // Score entries
-            ...breakdown.entries.map((entry) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 13,
-                        child: Text(
-                          entry.cards.map((c) => c.label).join(' '),
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                        ),
+            ...breakdown.entries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 13,
+                      child: Text(
+                        entry.cards.map((c) => c.label).join(' '),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
-                      Expanded(
-                        flex: 10,
-                        child: Text(
-                          entry.type,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          textAlign: TextAlign.center,
-                        ),
+                    ),
+                    Expanded(
+                      flex: 10,
+                      child: Text(
+                        entry.type,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
                       ),
-                      Expanded(
-                        flex: 7,
-                        child: Text(
-                          '${entry.points}',
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.secondary,
-                                  ),
-                          textAlign: TextAlign.end,
-                        ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Text(
+                        '${entry.points}',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                        textAlign: TextAlign.end,
                       ),
-                    ],
-                  ),
-                ),),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAcceptButton(BuildContext context, DetailedScoreBreakdown? breakdown) {
-    final points = breakdown?.totalScore ?? 0;
-    final pointsText = points == 1 ? 'point' : 'points';
-
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: FilledButton.icon(
-          onPressed: onContinue,
-          icon: const Icon(Icons.check_circle, size: 24),
-          label: Text(
-            'Accept ($points $pointsText)',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                    ),
+                  ],
                 ),
-          ),
-          style: FilledButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

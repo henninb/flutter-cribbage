@@ -54,6 +54,14 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   bool _showSettings = false;
+  final ManualCountingController _manualCountingController =
+      ManualCountingController();
+
+  @override
+  void dispose() {
+    _manualCountingController.dispose();
+    super.dispose();
+  }
 
   void _handleAdvise() {
     if (!mounted) return;
@@ -82,6 +90,16 @@ class _GameScreenState extends State<GameScreen> {
       animation: widget.engine,
       builder: (context, _) {
         final state = widget.engine.state;
+        final isPlayerHandOrCrib = _isPlayerHandOrCrib(state);
+        final useManualCounting =
+            widget.currentSettings.countingMode == CountingMode.manual &&
+                isPlayerHandOrCrib;
+        final showHandCountingAccept =
+            state.currentPhase == GamePhase.handCounting &&
+                state.isInHandCountingPhase;
+        final onCountingAccept = useManualCounting
+            ? _manualCountingController.triggerAccept
+            : widget.engine.proceedToNextCountingPhase;
 
         // Show settings overlay if requested
         if (_showSettings) {
@@ -130,19 +148,30 @@ class _GameScreenState extends State<GameScreen> {
                         state: state,
                         engine: widget.engine,
                         settings: widget.currentSettings,
+                        manualCountingController: _manualCountingController,
                       ),
                     ),
 
                     // Zone 3: Action Bar
-                    ActionBar(
-                      state: state,
-                      onStartGame: widget.engine.startNewGame,
-                      onCutForDealer: widget.engine.cutForDealer,
-                      onDeal: widget.engine.dealCards,
-                      onConfirmCrib: widget.engine.confirmCribSelection,
-                      onGo: () => widget.engine.handleGo(),
-                      onStartCounting: widget.engine.startHandCounting,
-                      onAdvise: _handleAdvise,
+                    ListenableBuilder(
+                      listenable: _manualCountingController,
+                      builder: (context, _) => ActionBar(
+                        state: state,
+                        onStartGame: widget.engine.startNewGame,
+                        onCutForDealer: widget.engine.cutForDealer,
+                        onDeal: widget.engine.dealCards,
+                        onConfirmCrib: widget.engine.confirmCribSelection,
+                        onGo: () => widget.engine.handleGo(),
+                        onStartCounting: widget.engine.startHandCounting,
+                        onCountingAccept: onCountingAccept,
+                        onAdvise: _handleAdvise,
+                        showHandCountingAccept: showHandCountingAccept,
+                        manualCountingScore: useManualCounting
+                            ? _manualCountingController.currentScore
+                            : null,
+                        isShowingBreakdown:
+                            _manualCountingController.isShowingBreakdown,
+                      ),
                     ),
 
                     // Zone 4: Cribbage Board
@@ -508,11 +537,13 @@ class _GameArea extends StatelessWidget {
   final GameState state;
   final GameEngine engine;
   final GameSettings settings;
+  final ManualCountingController manualCountingController;
 
   const _GameArea({
     required this.state,
     required this.engine,
     required this.settings,
+    required this.manualCountingController,
   });
 
   @override
@@ -551,11 +582,11 @@ class _GameArea extends StatelessWidget {
         return ManualCountingDialog(
           state: state,
           onScoreSubmit: engine.proceedToNextCountingPhaseWithManualScore,
+          controller: manualCountingController,
         );
       } else {
         return HandCountingDialog(
           state: state,
-          onContinue: engine.proceedToNextCountingPhase,
         );
       }
     }

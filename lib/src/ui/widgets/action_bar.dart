@@ -11,7 +11,11 @@ class ActionBar extends StatelessWidget {
   final VoidCallback onConfirmCrib;
   final VoidCallback onGo;
   final VoidCallback onStartCounting;
+  final VoidCallback onCountingAccept;
   final VoidCallback onAdvise;
+  final bool showHandCountingAccept;
+  final int? manualCountingScore;
+  final bool isShowingBreakdown;
 
   const ActionBar({
     super.key,
@@ -22,30 +26,55 @@ class ActionBar extends StatelessWidget {
     required this.onConfirmCrib,
     required this.onGo,
     required this.onStartCounting,
+    required this.onCountingAccept,
     required this.onAdvise,
+    this.showHandCountingAccept = false,
+    this.manualCountingScore,
+    this.isShowingBreakdown = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final buttons = _buildButtons(context);
+    final isEmpty = buttons.isEmpty;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
-          top: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: 1,
-          ),
+          top: isEmpty
+              ? BorderSide.none
+              : BorderSide(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                ),
+          bottom: isEmpty
+              ? BorderSide(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                )
+              : BorderSide.none,
         ),
       ),
       child: Row(
-        children: _buildButtons(context),
+        children: buttons,
       ),
     );
   }
 
   List<Widget> _buildButtons(BuildContext context) {
     final buttons = <Widget>[];
+
+    // Disable all buttons when pending reset modal is showing
+    if (state.pendingReset != null) {
+      return buttons;
+    }
+
+    // Disable all buttons when manual counting breakdown is showing
+    if (isShowingBreakdown) {
+      return buttons;
+    }
 
     // Setup phase - Start New Game
     if (!state.gameStarted) {
@@ -67,7 +96,8 @@ class ActionBar extends StatelessWidget {
       if (state.playerHasSelectedCutCard &&
           state.cutPlayerCard != null &&
           state.cutOpponentCard != null &&
-          state.cutPlayerCard!.rank.index == state.cutOpponentCard!.rank.index) {
+          state.cutPlayerCard!.rank.index ==
+              state.cutOpponentCard!.rank.index) {
         buttons.add(
           Expanded(
             child: FilledButton.icon(
@@ -105,24 +135,27 @@ class ActionBar extends StatelessWidget {
 
     // Crib selection phase
     if (state.currentPhase == GamePhase.cribSelection) {
-      buttons.add(
-        Expanded(
-          flex: 2,
-          child: FilledButton(
-            onPressed: state.selectedCards.length == 2 ? onConfirmCrib : null,
-            child: Text(state.isPlayerDealer ? 'My Crib' : "Opponent's Crib"),
+      // Show Advise button when less than 2 cards selected
+      // Show Crib button when exactly 2 cards selected
+      if (state.selectedCards.length < 2) {
+        buttons.add(
+          Expanded(
+            child: FilledButton(
+              onPressed: onAdvise,
+              child: const Text('Advise'),
+            ),
           ),
-        ),
-      );
-      buttons.add(const SizedBox(width: 8));
-      buttons.add(
-        Expanded(
-          child: OutlinedButton(
-            onPressed: onAdvise,
-            child: const Text('Advise'),
+        );
+      } else {
+        buttons.add(
+          Expanded(
+            child: FilledButton(
+              onPressed: onConfirmCrib,
+              child: Text(state.isPlayerDealer ? 'My Crib' : "Opponent's Crib"),
+            ),
           ),
-        ),
-      );
+        );
+      }
       return buttons;
     }
 
@@ -130,12 +163,12 @@ class ActionBar extends StatelessWidget {
     if (state.currentPhase == GamePhase.pegging) {
       // Show Go button if player can't play
       final canPlay = state.isPlayerTurn &&
-                     state.playerHand.asMap().entries.any((entry) {
-        final index = entry.key;
-        final card = entry.value;
-        return !state.playerCardsPlayed.contains(index) &&
-               (state.peggingCount + card.value <= 31);
-      });
+          state.playerHand.asMap().entries.any((entry) {
+            final index = entry.key;
+            final card = entry.value;
+            return !state.playerCardsPlayed.contains(index) &&
+                (state.peggingCount + card.value <= 31);
+          });
 
       if (!canPlay && state.isPlayerTurn) {
         buttons.add(
@@ -154,12 +187,35 @@ class ActionBar extends StatelessWidget {
     }
 
     // Hand counting phase
-    if (state.currentPhase == GamePhase.handCounting && !state.isInHandCountingPhase) {
+    if (state.currentPhase == GamePhase.handCounting &&
+        !state.isInHandCountingPhase) {
       buttons.add(
         Expanded(
           child: FilledButton(
             onPressed: onStartCounting,
             child: const Text('Count Hands'),
+          ),
+        ),
+      );
+      return buttons;
+    }
+
+    // Hand counting active - show accept in the action bar
+    if (state.currentPhase == GamePhase.handCounting &&
+        state.isInHandCountingPhase &&
+        showHandCountingAccept) {
+      // Use manual counting score if provided, otherwise use state scores
+      final points = manualCountingScore ?? _currentCountingPoints();
+      final label = points != null
+          ? 'Accept ($points ${points == 1 ? "point" : "points"})'
+          : 'Accept (0)';
+
+      buttons.add(
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: onCountingAccept,
+            icon: const Icon(Icons.check_circle, size: 22),
+            label: Text(label),
           ),
         ),
       );
@@ -180,5 +236,18 @@ class ActionBar extends StatelessWidget {
     }
 
     return buttons;
+  }
+
+  int? _currentCountingPoints() {
+    switch (state.countingPhase) {
+      case CountingPhase.nonDealer:
+        return state.handScores.nonDealerScore;
+      case CountingPhase.dealer:
+        return state.handScores.dealerScore;
+      case CountingPhase.crib:
+        return state.handScores.cribScore;
+      default:
+        return null;
+    }
   }
 }
