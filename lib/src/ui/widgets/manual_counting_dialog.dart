@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
@@ -144,9 +142,7 @@ class ManualCountingDialog extends StatefulWidget {
 
 class _ManualCountingDialogState extends State<ManualCountingDialog> {
   double _sliderValue = 0;
-  String? _errorMessage;
   bool _showingBreakdown = false;
-  Timer? _errorTimer;
 
   // Valid cribbage scores (0-29 except 19, 25, 26, 27)
   // In cribbage, these scores are impossible in a hand
@@ -170,7 +166,6 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
   @override
   void dispose() {
     widget.controller.detach();
-    _errorTimer?.cancel();
     super.dispose();
   }
 
@@ -181,7 +176,6 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     if (oldWidget.state.countingPhase != widget.state.countingPhase) {
       setState(() {
         _sliderValue = 0;
-        _errorMessage = null;
       });
       widget.controller.reset();
       widget.controller.attach(_handleAccept);
@@ -212,29 +206,23 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     if (breakdown == null) return;
 
     if (currentScore != breakdown.totalScore) {
-      // Cancel any existing timer
-      _errorTimer?.cancel();
-
-      setState(() {
-        _errorMessage = 'Incorrect! Please try again.';
-      });
-
-      // Start a timer to clear the error message after 3 seconds
-      _errorTimer = Timer(const Duration(seconds: 3), () {
-        if (mounted) {
-          setState(() {
-            _errorMessage = null;
-          });
-        }
-      });
+      // Show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Incorrect! Please try again.',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+          ),
+          duration: const Duration(milliseconds: 2500),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        ),
+      );
       return;
     }
 
     // Score is correct, proceed
-    _errorTimer?.cancel();
-    setState(() {
-      _errorMessage = null;
-    });
     widget.onScoreSubmit(currentScore);
     // Reset the controller for the next counting phase
     widget.controller.reset();
@@ -298,13 +286,6 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                     ),
                   ),
                 ),
-
-                // Error message (if any) - above buttons
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildErrorMessage(context),
-                  ),
 
                 // Fixed bottom buttons
                 _buildBottomButtons(context),
@@ -549,12 +530,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
               max: (validScores.length - 1).toDouble(),
               divisions: validScores.length - 1,
               onChanged: (value) {
-                // Cancel error timer if user is adjusting the slider
-                _errorTimer?.cancel();
                 setState(() {
                   _sliderValue = value;
-                  // Clear error when user changes the score
-                  _errorMessage = null;
                 });
                 // Update the controller with the new score
                 widget.controller.updateScore(currentScore);
@@ -562,60 +539,6 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildErrorMessage(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _errorMessage != null ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 300),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8, top: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.errorContainer,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.error,
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color:
-                    Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.close_rounded,
-                color: Theme.of(context).colorScheme.error,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                _errorMessage!,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onErrorContainer,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.15,
-                    ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -31,9 +31,9 @@ class _ScoreAnimationWidgetState extends State<ScoreAnimationWidget>
   void initState() {
     super.initState();
 
-    // Create animation controller (total duration: 2.8 seconds)
+    // Create animation controller (total duration: 2.5 seconds)
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2800),
+      duration: const Duration(milliseconds: 2500),
       vsync: this,
     );
 

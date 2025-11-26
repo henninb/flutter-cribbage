@@ -257,9 +257,15 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
               if (sanitizedName.isEmpty) {
                 // Show error if name is invalid
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter a valid name'),
-                    duration: Duration(seconds: 2),
+                  SnackBar(
+                    content: Text(
+                      'Please enter a valid name',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                      ),
+                    ),
+                    duration: const Duration(milliseconds: 2500),
+                    backgroundColor: Theme.of(context).colorScheme.errorContainer,
                   ),
                 );
                 return;
@@ -272,8 +278,14 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
               if (sanitizedName != inputName.trim()) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Name updated to: $sanitizedName'),
-                    duration: const Duration(seconds: 2),
+                    content: Text(
+                      'Name updated to: $sanitizedName',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    duration: const Duration(milliseconds: 2500),
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                   ),
                 );
               }
@@ -890,9 +902,12 @@ class _PlayerHand extends StatelessWidget {
                               SnackBar(
                                 content: Text(
                                   'Cannot play ${card.label} - would exceed 31 (current: ${state.peggingCount}, would be: $wouldBeCount)',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onErrorContainer,
+                                  ),
                                 ),
-                                duration: const Duration(seconds: 2),
-                                backgroundColor: Colors.orange.shade700,
+                                duration: const Duration(milliseconds: 2500),
+                                backgroundColor: Theme.of(context).colorScheme.errorContainer,
                               ),
                             );
                           }
@@ -2267,7 +2282,6 @@ class _PeggingPileDropZone extends StatefulWidget {
 
 class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
   bool _isHovering = false;
-  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -2283,15 +2297,21 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
         final wouldExceed = widget.state.peggingCount + card.value > 31;
 
         if (wouldExceed) {
-          setState(() {
-            _errorMessage = 'Cannot play ${card.label} - would exceed 31';
-          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Cannot play ${card.label} - would exceed 31',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                ),
+              ),
+              duration: const Duration(milliseconds: 2500),
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            ),
+          );
           return false;
         }
 
-        setState(() {
-          _errorMessage = null;
-        });
         return true;
       },
       onAcceptWithDetails: (details) {
@@ -2299,7 +2319,6 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
         widget.engine.playCard(details.data.cardIndex);
         setState(() {
           _isHovering = false;
-          _errorMessage = null;
         });
       },
       onMove: (details) {
@@ -2312,12 +2331,9 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
       onLeave: (details) {
         setState(() {
           _isHovering = false;
-          _errorMessage = null;
         });
       },
       builder: (context, candidateData, rejectedData) {
-        final hasError = _errorMessage != null;
-
         return Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.center,
@@ -2327,23 +2343,19 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
               width: CardConstants.activePeggingCardWidth,
               height: CardConstants.activePeggingCardHeight,
               decoration: BoxDecoration(
-                color: hasError
-                    ? Colors.red.shade100.withValues(alpha: 0.2)
-                    : _isHovering
-                        ? Theme.of(context)
-                            .colorScheme
-                            .primaryContainer
-                            .withValues(alpha: 0.3)
-                        : Colors.transparent,
+                color: _isHovering
+                    ? Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.3)
+                    : Colors.transparent,
                 border: Border.all(
-                  color: hasError
-                      ? Colors.red.shade700
-                      : _isHovering
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context)
-                              .colorScheme
-                              .outline
-                              .withValues(alpha: 0.5),
+                  color: _isHovering
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withValues(alpha: 0.5),
                   width: 2,
                   strokeAlign: BorderSide.strokeAlignInside,
                 ),
@@ -2351,42 +2363,32 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
                     BorderRadius.circular(CardConstants.cardBorderRadius / 2),
               ),
               child: Center(
-                child: hasError
-                    ? Icon(
-                        Icons.close,
-                        color: Colors.red.shade700,
-                        size: 24,
-                      )
-                    : Icon(
-                        _isHovering ? Icons.add : Icons.more_horiz,
-                        color: _isHovering
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context)
-                                .colorScheme
-                                .outline
-                                .withValues(alpha: 0.5),
-                        size: 24,
-                      ),
+                child: Icon(
+                  _isHovering ? Icons.add : Icons.more_horiz,
+                  color: _isHovering
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withValues(alpha: 0.5),
+                  size: 24,
+                ),
               ),
             ),
-            if (_isHovering || hasError)
+            if (_isHovering)
               Positioned(
                 top: -16,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: hasError
-                        ? Colors.red.shade50
-                        : Theme.of(context).colorScheme.primaryContainer,
+                    color: Theme.of(context).colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    hasError ? _errorMessage! : 'Drop here',
+                    'Drop here',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: hasError
-                              ? Colors.red.shade700
-                              : Theme.of(context).colorScheme.primary,
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
                           fontSize: 11,
                         ),
