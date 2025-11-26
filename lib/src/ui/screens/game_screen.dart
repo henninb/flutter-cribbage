@@ -117,41 +117,41 @@ class _GameScreenState extends State<GameScreen> {
               children: [
                 Column(
                   children: [
-                // Zone 1: Score Header (only when game started)
-                if (state.gameStarted)
-                  _ScoreHeader(
-                    state: state,
-                    engine: widget.engine,
-                  ),
+                    // Zone 1: Score Header (only when game started)
+                    if (state.gameStarted)
+                      _ScoreHeader(
+                        state: state,
+                        engine: widget.engine,
+                      ),
 
-                // Zone 2: Game Area (flexible, NO SCROLL)
-                Expanded(
-                  child: _GameArea(
-                    state: state,
-                    engine: widget.engine,
-                    settings: widget.currentSettings,
-                  ),
-                ),
+                    // Zone 2: Game Area (flexible, NO SCROLL)
+                    Expanded(
+                      child: _GameArea(
+                        state: state,
+                        engine: widget.engine,
+                        settings: widget.currentSettings,
+                      ),
+                    ),
 
-                // Zone 3: Action Bar
-                ActionBar(
-                  state: state,
-                  onStartGame: widget.engine.startNewGame,
-                  onCutForDealer: widget.engine.cutForDealer,
-                  onDeal: widget.engine.dealCards,
-                  onConfirmCrib: widget.engine.confirmCribSelection,
-                  onGo: () => widget.engine.handleGo(),
-                  onStartCounting: widget.engine.startHandCounting,
-                  onAdvise: _handleAdvise,
-                ),
+                    // Zone 3: Action Bar
+                    ActionBar(
+                      state: state,
+                      onStartGame: widget.engine.startNewGame,
+                      onCutForDealer: widget.engine.cutForDealer,
+                      onDeal: widget.engine.dealCards,
+                      onConfirmCrib: widget.engine.confirmCribSelection,
+                      onGo: () => widget.engine.handleGo(),
+                      onStartCounting: widget.engine.startHandCounting,
+                      onAdvise: _handleAdvise,
+                    ),
 
-                // Zone 4: Cribbage Board
-                CribbageBoard(
-                  playerScore: state.playerScore,
-                  opponentScore: state.opponentScore,
-                  playerName: state.playerName,
-                  opponentName: state.opponentName,
-                ),
+                    // Zone 4: Cribbage Board
+                    CribbageBoard(
+                      playerScore: state.playerScore,
+                      opponentScore: state.opponentScore,
+                      playerName: state.playerName,
+                      opponentName: state.opponentName,
+                    ),
                   ],
                 ),
               ],
@@ -179,7 +179,8 @@ class _ScoreHeader extends StatefulWidget {
 
 class _ScoreHeaderState extends State<_ScoreHeader> {
   void _showNameDialog(BuildContext context, bool isPlayer) {
-    final currentName = isPlayer ? widget.state.playerName : widget.state.opponentName;
+    final currentName =
+        isPlayer ? widget.state.playerName : widget.state.opponentName;
     final controller = TextEditingController(text: currentName);
 
     showDialog(
@@ -209,8 +210,8 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
             Text(
               'Letters, numbers, spaces, and basic punctuation only',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
           ],
         ),
@@ -260,7 +261,8 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
   @override
   Widget build(BuildContext context) {
     // Debug: Print scores being displayed
-    debugPrint('[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}');
+    debugPrint(
+        '[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}');
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -280,12 +282,14 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
             label: widget.state.playerName,
             score: widget.state.playerScore,
             subtitle: widget.state.isPlayerDealer ? 'Dealer' : 'Pone',
-            isDealer: widget.state.currentPhase != GamePhase.cutForDealer && widget.state.isPlayerDealer,
+            isDealer: widget.state.currentPhase != GamePhase.cutForDealer &&
+                widget.state.isPlayerDealer,
             scoreAnimation: widget.state.playerScoreAnimation != null
                 ? ScoreAnimationWidget(
                     points: widget.state.playerScoreAnimation!.points,
                     isPlayer: widget.state.playerScoreAnimation!.isPlayer,
-                    onAnimationComplete: () => widget.engine.clearScoreAnimation(true),
+                    onAnimationComplete: () =>
+                        widget.engine.clearScoreAnimation(true),
                   )
                 : null,
             onLabelTap: () => _showNameDialog(context, true),
@@ -298,12 +302,14 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
             label: widget.state.opponentName,
             score: widget.state.opponentScore,
             subtitle: widget.state.isPlayerDealer ? 'Pone' : 'Dealer',
-            isDealer: widget.state.currentPhase != GamePhase.cutForDealer && !widget.state.isPlayerDealer,
+            isDealer: widget.state.currentPhase != GamePhase.cutForDealer &&
+                !widget.state.isPlayerDealer,
             scoreAnimation: widget.state.opponentScoreAnimation != null
                 ? ScoreAnimationWidget(
                     points: widget.state.opponentScoreAnimation!.points,
                     isPlayer: widget.state.opponentScoreAnimation!.isPlayer,
-                    onAnimationComplete: () => widget.engine.clearScoreAnimation(false),
+                    onAnimationComplete: () =>
+                        widget.engine.clearScoreAnimation(false),
                   )
                 : null,
             onLabelTap: () => _showNameDialog(context, false),
@@ -352,7 +358,8 @@ class _ScoreColumnState extends State<_ScoreColumn> {
     final now = DateTime.now();
 
     // Reset tap count if more than 500ms has passed since last tap
-    if (_lastTapTime == null || now.difference(_lastTapTime!) > const Duration(milliseconds: 500)) {
+    if (_lastTapTime == null ||
+        now.difference(_lastTapTime!) > const Duration(milliseconds: 500)) {
       _tapCount = 1;
     } else {
       _tapCount++;
@@ -386,9 +393,11 @@ class _ScoreColumnState extends State<_ScoreColumn> {
               child: Text(
                 widget.label,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  decoration: widget.onLabelTap != null ? TextDecoration.underline : null,
-                  decorationStyle: TextDecorationStyle.dotted,
-                ),
+                      decoration: widget.onLabelTap != null
+                          ? TextDecoration.underline
+                          : null,
+                      decorationStyle: TextDecorationStyle.dotted,
+                    ),
               ),
             ),
             if (widget.isDealer) ...[
@@ -433,9 +442,11 @@ class _ScoreColumnState extends State<_ScoreColumn> {
           child: Text(
             widget.subtitle,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              decoration: widget.onSubtitleTap != null ? TextDecoration.underline : null,
-              decorationStyle: TextDecorationStyle.dotted,
-            ),
+                  decoration: widget.onSubtitleTap != null
+                      ? TextDecoration.underline
+                      : null,
+                  decorationStyle: TextDecorationStyle.dotted,
+                ),
           ),
         ),
       ],
@@ -533,7 +544,8 @@ class _GameArea extends StatelessWidget {
       final isPlayerHandOrCrib = _isPlayerHandOrCrib(state);
 
       // Use manual counting only for player's hands/crib (not opponent's)
-      final useManualCounting = settings.countingMode == CountingMode.manual && isPlayerHandOrCrib;
+      final useManualCounting =
+          settings.countingMode == CountingMode.manual && isPlayerHandOrCrib;
 
       if (useManualCounting) {
         return ManualCountingDialog(
@@ -579,7 +591,8 @@ class _GameContent extends StatelessWidget {
           _buildMiddleSection(context),
 
           // Player hand (only show after cards are dealt)
-          if (_shouldShowOpponentHand()) _PlayerHand(state: state, engine: engine, settings: settings),
+          if (_shouldShowOpponentHand())
+            _PlayerHand(state: state, engine: engine, settings: settings),
         ],
       ),
     );
@@ -655,7 +668,7 @@ class _GameContent extends StatelessWidget {
   bool _shouldShowOpponentHand() {
     // Only show opponent hand after cards have been dealt
     return state.currentPhase != GamePhase.cutForDealer &&
-           state.currentPhase != GamePhase.dealing;
+        state.currentPhase != GamePhase.dealing;
   }
 }
 
@@ -667,10 +680,12 @@ class _OpponentHand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardsRemaining = state.opponentHand.length - state.opponentCardsPlayed.length;
+    final cardsRemaining =
+        state.opponentHand.length - state.opponentCardsPlayed.length;
 
     // Create sorted indices based on card rank (lowest to highest)
-    final sortedIndices = List<int>.generate(state.opponentHand.length, (i) => i);
+    final sortedIndices =
+        List<int>.generate(state.opponentHand.length, (i) => i);
     sortedIndices.sort((a, b) {
       final cardA = state.opponentHand[a];
       final cardB = state.opponentHand[b];
@@ -696,7 +711,8 @@ class _OpponentHand extends StatelessWidget {
             itemBuilder: (context, displayIndex) {
               // Get the original index from the sorted list
               final originalIndex = sortedIndices[displayIndex];
-              final isPlayed = state.opponentCardsPlayed.contains(originalIndex);
+              final isPlayed =
+                  state.opponentCardsPlayed.contains(originalIndex);
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Opacity(
@@ -758,7 +774,8 @@ class _PlayerHand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardsRemaining = state.playerHand.length - state.playerCardsPlayed.length;
+    final cardsRemaining =
+        state.playerHand.length - state.playerCardsPlayed.length;
 
     // Create sorted indices based on card rank (lowest to highest)
     final sortedIndices = List<int>.generate(state.playerHand.length, (i) => i);
@@ -785,93 +802,99 @@ class _PlayerHand extends StatelessWidget {
             shrinkWrap: true,
             itemCount: sortedIndices.length,
             itemBuilder: (context, displayIndex) {
-          // Get the original index from the sorted list
-          final originalIndex = sortedIndices[displayIndex];
-          final card = state.playerHand[originalIndex];
-          final isSelected = state.selectedCards.contains(originalIndex);
-          final isPlayed = state.playerCardsPlayed.contains(originalIndex);
-          final isPlayable = state.currentPhase == GamePhase.pegging &&
-              state.isPlayerTurn &&
-              !isPlayed &&
-              (state.peggingCount + card.value <= 31);
+              // Get the original index from the sorted list
+              final originalIndex = sortedIndices[displayIndex];
+              final card = state.playerHand[originalIndex];
+              final isSelected = state.selectedCards.contains(originalIndex);
+              final isPlayed = state.playerCardsPlayed.contains(originalIndex);
+              final isPlayable = state.currentPhase == GamePhase.pegging &&
+                  state.isPlayerTurn &&
+                  !isPlayed &&
+                  (state.peggingCount + card.value <= 31);
 
-          // Wrap card in draggable if drag mode is enabled
-          Widget cardWidget = _PlayingCard(
-            card: card,
-            isSelected: isSelected,
-            isPlayed: isPlayed,
-            isPlayable: isPlayable,
-            isDragMode: settings.cardSelectionMode == CardSelectionMode.drag,
-            onTap: settings.cardSelectionMode == CardSelectionMode.drag
-              ? null
-              : () {
-                if (state.currentPhase == GamePhase.cribSelection) {
-                  engine.toggleCardSelection(originalIndex);
-                } else if (state.currentPhase == GamePhase.pegging && state.isPlayerTurn && !isPlayed) {
-                  if (isPlayable) {
-                    engine.playCard(originalIndex);
-                  } else {
-                    // Card would exceed 31 - show feedback
-                    final wouldBeCount = state.peggingCount + card.value;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Cannot play ${card.label} - would exceed 31 (current: ${state.peggingCount}, would be: $wouldBeCount)',
-                        ),
-                        duration: const Duration(seconds: 2),
-                        backgroundColor: Colors.orange.shade700,
-                      ),
-                    );
-                  }
-                }
-              },
-          );
+              // Wrap card in draggable if drag mode is enabled
+              Widget cardWidget = _PlayingCard(
+                card: card,
+                isSelected: isSelected,
+                isPlayed: isPlayed,
+                isPlayable: isPlayable,
+                isDragMode:
+                    settings.cardSelectionMode == CardSelectionMode.drag,
+                onTap: settings.cardSelectionMode == CardSelectionMode.drag
+                    ? null
+                    : () {
+                        if (state.currentPhase == GamePhase.cribSelection) {
+                          engine.toggleCardSelection(originalIndex);
+                        } else if (state.currentPhase == GamePhase.pegging &&
+                            state.isPlayerTurn &&
+                            !isPlayed) {
+                          if (isPlayable) {
+                            engine.playCard(originalIndex);
+                          } else {
+                            // Card would exceed 31 - show feedback
+                            final wouldBeCount =
+                                state.peggingCount + card.value;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Cannot play ${card.label} - would exceed 31 (current: ${state.peggingCount}, would be: $wouldBeCount)',
+                                ),
+                                duration: const Duration(seconds: 2),
+                                backgroundColor: Colors.orange.shade700,
+                              ),
+                            );
+                          }
+                        }
+                      },
+              );
 
-          // Wrap in Draggable for drag mode
-          if (settings.cardSelectionMode == CardSelectionMode.drag && !isPlayed) {
-            final dragData = CardDragData(
-              cardIndex: originalIndex,
-              card: card,
-              phase: state.currentPhase,
-            );
-
-            cardWidget = Draggable<CardDragData>(
-              data: dragData,
-              feedback: Transform.scale(
-                scale: 1.2,
-                child: Opacity(
-                  opacity: 0.7,
-                  child: _PlayingCard(
-                    card: card,
-                    isSelected: false,
-                    isPlayed: false,
-                    isPlayable: isPlayable,
-                    isDragMode: true,
-                    onTap: null,
-                  ),
-                ),
-              ),
-              childWhenDragging: Opacity(
-                opacity: 0.3,
-                child: _PlayingCard(
+              // Wrap in Draggable for drag mode
+              if (settings.cardSelectionMode == CardSelectionMode.drag &&
+                  !isPlayed) {
+                final dragData = CardDragData(
+                  cardIndex: originalIndex,
                   card: card,
-                  isSelected: isSelected,
-                  isPlayed: isPlayed,
-                  isPlayable: isPlayable,
-                  isDragMode: true,
-                  onTap: null,
-                ),
-              ),
-              child: cardWidget,
-            );
-          }
+                  phase: state.currentPhase,
+                );
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: CardConstants.cardHorizontalSpacing),
-            child: cardWidget,
-          );
-        },
-      ),
+                cardWidget = Draggable<CardDragData>(
+                  data: dragData,
+                  feedback: Transform.scale(
+                    scale: 1.2,
+                    child: Opacity(
+                      opacity: 0.7,
+                      child: _PlayingCard(
+                        card: card,
+                        isSelected: false,
+                        isPlayed: false,
+                        isPlayable: isPlayable,
+                        isDragMode: true,
+                        onTap: null,
+                      ),
+                    ),
+                  ),
+                  childWhenDragging: Opacity(
+                    opacity: 0.3,
+                    child: _PlayingCard(
+                      card: card,
+                      isSelected: isSelected,
+                      isPlayed: isPlayed,
+                      isPlayable: isPlayable,
+                      isDragMode: true,
+                      onTap: null,
+                    ),
+                  ),
+                  child: cardWidget,
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: CardConstants.cardHorizontalSpacing),
+                child: cardWidget,
+              );
+            },
+          ),
         ),
       ],
     );
@@ -933,7 +956,9 @@ class _PlayingCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
           border: Border.all(
             color: borderColor,
-            width: isSelected ? CardConstants.selectedCardBorderWidth : CardConstants.cardBorderWidth,
+            width: isSelected
+                ? CardConstants.selectedCardBorderWidth
+                : CardConstants.cardBorderWidth,
           ),
           boxShadow: isPlayed
               ? []
@@ -974,7 +999,8 @@ class _SpreadDeck extends StatelessWidget {
     required this.engine,
   });
 
-  Widget _buildCutCard(BuildContext context, PlayingCard card, {required double width, required double height}) {
+  Widget _buildCutCard(BuildContext context, PlayingCard card,
+      {required double width, required double height}) {
     final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
         ? Colors.red.shade800
         : Colors.black;
@@ -1026,8 +1052,10 @@ class _SpreadDeck extends StatelessWidget {
 
     // Calculate spacing between cards to fit on screen with padding
     final availableWidth = screenWidth - 32; // 16px padding on each side
-    final spacing = (availableWidth - cardWidth) / (deckSize - 1).clamp(1, double.infinity);
-    final finalSpacing = spacing.clamp(0.0, cardWidth * 0.8).toDouble(); // Max 80% overlap
+    final spacing =
+        (availableWidth - cardWidth) / (deckSize - 1).clamp(1, double.infinity);
+    final finalSpacing =
+        spacing.clamp(0.0, cardWidth * 0.8).toDouble(); // Max 80% overlap
 
     // Calculate total width needed for the spread
     final totalWidth = ((deckSize - 1) * finalSpacing + cardWidth).toDouble();
@@ -1037,7 +1065,9 @@ class _SpreadDeck extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            state.playerHasSelectedCutCard ? 'Cut for Dealer' : 'Tap the deck to cut for dealer',
+            state.playerHasSelectedCutCard
+                ? 'Cut for Dealer'
+                : 'Tap the deck to cut for dealer',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -1054,7 +1084,9 @@ class _SpreadDeck extends StatelessWidget {
                   return Positioned(
                     left: index * finalSpacing,
                     child: GestureDetector(
-                      onTap: state.playerHasSelectedCutCard ? null : () => engine.selectCutCard(index),
+                      onTap: state.playerHasSelectedCutCard
+                          ? null
+                          : () => engine.selectCutCard(index),
                       child: _CardBackWidget(
                         width: cardWidth,
                         height: cardHeight,
@@ -1092,20 +1124,23 @@ class _SpreadDeck extends StatelessWidget {
                     ),
                     // Show dealer badge if player is dealer (and not a tie)
                     if (state.isPlayerDealer &&
-                        state.cutPlayerCard!.rank.index != state.cutOpponentCard!.rank.index) ...[
+                        state.cutPlayerCard!.rank.index !=
+                            state.cutOpponentCard!.rank.index) ...[
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.green.shade700,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           'DEALER',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ),
                     ],
@@ -1139,20 +1174,23 @@ class _SpreadDeck extends StatelessWidget {
                     ),
                     // Show dealer badge if opponent is dealer (and not a tie)
                     if (!state.isPlayerDealer &&
-                        state.cutPlayerCard!.rank.index != state.cutOpponentCard!.rank.index) ...[
+                        state.cutPlayerCard!.rank.index !=
+                            state.cutOpponentCard!.rank.index) ...[
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.green.shade700,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           'DEALER',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ),
                     ],
@@ -1161,7 +1199,8 @@ class _SpreadDeck extends StatelessWidget {
               ],
             ),
             // Show tie message if cards are equal
-            if (state.cutPlayerCard!.rank.index == state.cutOpponentCard!.rank.index) ...[
+            if (state.cutPlayerCard!.rank.index ==
+                state.cutOpponentCard!.rank.index) ...[
               const SizedBox(height: 16),
               Text(
                 'Tie! Cut again.',
@@ -1351,11 +1390,14 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
     );
   }
 
-  Widget _buildPileArea(BuildContext context, List<dynamic> completedRounds, bool hasHistory, bool hasCurrentCards) {
+  Widget _buildPileArea(BuildContext context, List<dynamic> completedRounds,
+      bool hasHistory, bool hasCurrentCards) {
     // Check if drag mode is enabled
-    final isDragMode = widget.settings?.cardSelectionMode == CardSelectionMode.drag;
+    final isDragMode =
+        widget.settings?.cardSelectionMode == CardSelectionMode.drag;
     final engine = widget.engine;
-    final showDropZone = isDragMode && engine != null && widget.state.isPlayerTurn;
+    final showDropZone =
+        isDragMode && engine != null && widget.state.isPlayerTurn;
 
     return SizedBox(
       height: CardConstants.activePeggingCardHeight + 8,
@@ -1459,27 +1501,197 @@ class _PendingResetDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pending = state.pendingReset!;
-    return Center(
-      child: Card(
-        margin: const EdgeInsets.all(32),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                pending.message,
-                style: Theme.of(context).textTheme.headlineSmall,
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onDismiss,
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: colorScheme.scrim.withOpacity(0.35),
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(
+                colors: [
+                  colorScheme.primaryContainer,
+                  colorScheme.tertiaryContainer,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 16),
-              Text('Count: ${pending.finalCount}'),
-              Text('Points: ${pending.scoreAwarded}'),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: onDismiss,
-                child: const Text('OK'),
-              ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.shadow.withOpacity(0.25),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.toll_outlined,
+                      size: 28,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Pile reset',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onPrimaryContainer,
+                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  pending.message,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pile',
+                        style:
+                            Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: colorScheme.onPrimaryContainer
+                                      .withOpacity(0.75),
+                                ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: pending.pile
+                            .map(
+                              (card) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surface.withOpacity(0.75),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: colorScheme.outline.withOpacity(0.4),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          colorScheme.shadow.withOpacity(0.15),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  card.label,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Count',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: colorScheme.onPrimaryContainer
+                                      .withOpacity(0.85),
+                                ),
+                          ),
+                          Text(
+                            '${pending.finalCount}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onPrimaryContainer,
+                                ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Points',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: colorScheme.onPrimaryContainer
+                                      .withOpacity(0.85),
+                                ),
+                          ),
+                          Text(
+                            '${pending.scoreAwarded}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onPrimaryContainer,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Tap anywhere to continue',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimaryContainer.withOpacity(0.8),
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1505,7 +1717,8 @@ class _WinnerModalState extends State<_WinnerModal> {
   @override
   Widget build(BuildContext context) {
     // Get engine from context to access current state
-    final engine = context.findAncestorStateOfType<_GameScreenState>()?.widget.engine;
+    final engine =
+        context.findAncestorStateOfType<_GameScreenState>()?.widget.engine;
     final playerName = engine?.state.playerName ?? 'You';
     final opponentName = engine?.state.opponentName ?? 'Opponent';
 
@@ -1535,11 +1748,11 @@ class _WinnerModalState extends State<_WinnerModal> {
                         end: Alignment.bottomRight,
                         colors: [
                           widget.data.playerWon
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : Theme.of(context).colorScheme.errorContainer,
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context).colorScheme.errorContainer,
                           widget.data.playerWon
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.error,
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error,
                         ],
                       ),
                     ),
@@ -1548,188 +1761,253 @@ class _WinnerModalState extends State<_WinnerModal> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                      // Trophy/Crown Icon
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: widget.data.playerWon
-                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                            : Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          widget.data.playerWon ? Icons.emoji_events : Icons.close,
-                          size: 40,
-                          color: widget.data.playerWon
-                            ? Theme.of(context).colorScheme.onPrimaryContainer
-                            : Theme.of(context).colorScheme.onErrorContainer,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Winner Name
-                      Text(
-                        '$winnerName Won!',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          // Trophy/Crown Icon
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
                               color: widget.data.playerWon
-                                ? Theme.of(context).colorScheme.onPrimaryContainer
-                                : Theme.of(context).colorScheme.onErrorContainer,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 26,
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.3)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .error
+                                      .withValues(alpha: 0.3),
+                              shape: BoxShape.circle,
                             ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 6),
+                            child: Icon(
+                              widget.data.playerWon
+                                  ? Icons.emoji_events
+                                  : Icons.close,
+                              size: 40,
+                              color: widget.data.playerWon
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onErrorContainer,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
 
-                      // Skunk Badge
-                      if (widget.data.wasDoubleSkunk)
-                        Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade600,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 3,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
+                          // Winner Name
+                          Text(
+                            '$winnerName Won!',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineLarge
+                                ?.copyWith(
+                                  color: widget.data.playerWon
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .onPrimaryContainer
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onErrorContainer,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 26,
+                                ),
+                            textAlign: TextAlign.center,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.whatshot, color: Colors.white, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                'DOUBLE SKUNK!',
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else if (widget.data.wasSkunk)
-                        Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.shade600,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 3,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.local_fire_department, color: Colors.white, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                'SKUNK!',
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
+                          const SizedBox(height: 6),
 
-                      const SizedBox(height: 16),
-
-                      // Final Score
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: widget.data.playerWon
-                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                            : Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Final Score',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: widget.data.playerWon
-                                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                                      : Theme.of(context).colorScheme.onErrorContainer,
-                                    letterSpacing: 1.0,
-                                    fontWeight: FontWeight.w500,
+                          // Skunk Badge
+                          if (widget.data.wasDoubleSkunk)
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.shade600,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
                                   ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${widget.data.playerScore} - ${widget.data.opponentScore}',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                    color: widget.data.playerWon
-                                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                                      : Theme.of(context).colorScheme.onErrorContainer,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.whatshot,
+                                      color: Colors.white, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'DOUBLE SKUNK!',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium
+                                        ?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                        ),
                                   ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Statistics Grid
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: widget.data.playerWon
-                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)
-                            : Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Overall Statistics',
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    color: widget.data.playerWon
-                                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                                      : Theme.of(context).colorScheme.onErrorContainer,
-                                    fontWeight: FontWeight.bold,
+                                ],
+                              ),
+                            )
+                          else if (widget.data.wasSkunk)
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.shade600,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
                                   ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.local_fire_department,
+                                      color: Colors.white, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'SKUNK!',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium
+                                        ?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                        ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 8),
-                            _StatRow(
-                              label: 'Record',
-                              value: '${widget.data.gamesWon} - ${widget.data.gamesLost}',
-                              icon: Icons.sports_score,
-                              isPlayerWin: widget.data.playerWon,
+
+                          const SizedBox(height: 16),
+
+                          // Final Score
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: widget.data.playerWon
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.3)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .error
+                                      .withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(height: 6),
-                            _StatRow(
-                              label: 'Skunks',
-                              value: '${widget.data.skunksFor} - ${widget.data.skunksAgainst}',
-                              icon: Icons.local_fire_department,
-                              isPlayerWin: widget.data.playerWon,
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Final Score',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        color: widget.data.playerWon
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .onPrimaryContainer
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onErrorContainer,
+                                        letterSpacing: 1.0,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${widget.data.playerScore} - ${widget.data.opponentScore}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium
+                                      ?.copyWith(
+                                        color: widget.data.playerWon
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .onPrimaryContainer
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onErrorContainer,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 28,
+                                      ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 6),
-                            _StatRow(
-                              label: 'Double Skunks',
-                              value: '${widget.data.doubleSkunksFor} - ${widget.data.doubleSkunksAgainst}',
-                              icon: Icons.whatshot,
-                              isPlayerWin: widget.data.playerWon,
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Statistics Grid
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: widget.data.playerWon
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.2)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .error
+                                      .withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ],
-                        ),
-                      ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Overall Statistics',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall
+                                      ?.copyWith(
+                                        color: widget.data.playerWon
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .onPrimaryContainer
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onErrorContainer,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                const SizedBox(height: 8),
+                                _StatRow(
+                                  label: 'Record',
+                                  value:
+                                      '${widget.data.gamesWon} - ${widget.data.gamesLost}',
+                                  icon: Icons.sports_score,
+                                  isPlayerWin: widget.data.playerWon,
+                                ),
+                                const SizedBox(height: 6),
+                                _StatRow(
+                                  label: 'Skunks',
+                                  value:
+                                      '${widget.data.skunksFor} - ${widget.data.skunksAgainst}',
+                                  icon: Icons.local_fire_department,
+                                  isPlayerWin: widget.data.playerWon,
+                                ),
+                                const SizedBox(height: 6),
+                                _StatRow(
+                                  label: 'Double Skunks',
+                                  value:
+                                      '${widget.data.doubleSkunksFor} - ${widget.data.doubleSkunksAgainst}',
+                                  icon: Icons.whatshot,
+                                  isPlayerWin: widget.data.playerWon,
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1761,8 +2039,8 @@ class _StatRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = isPlayerWin
-      ? Theme.of(context).colorScheme.onPrimaryContainer
-      : Theme.of(context).colorScheme.onErrorContainer;
+        ? Theme.of(context).colorScheme.onPrimaryContainer
+        : Theme.of(context).colorScheme.onErrorContainer;
 
     return Row(
       children: [
@@ -1831,7 +2109,7 @@ class _CribDropZoneState extends State<_CribDropZone> {
           onWillAcceptWithDetails: (details) {
             // Only accept cards during crib selection phase
             return details.data.phase == GamePhase.cribSelection &&
-                   widget.state.selectedCards.length < 2;
+                widget.state.selectedCards.length < 2;
           },
           onAcceptWithDetails: (details) {
             // Add card to crib selection
@@ -1858,8 +2136,14 @@ class _CribDropZoneState extends State<_CribDropZone> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: _isHovering
-                    ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5)
-                    : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    ? Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.5)
+                    : Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.3),
                 border: Border.all(
                   color: _isHovering
                       ? Theme.of(context).colorScheme.primary
@@ -1879,7 +2163,8 @@ class _CribDropZoneState extends State<_CribDropZone> {
                           color: _isHovering
                               ? Theme.of(context).colorScheme.primary
                               : Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontWeight: _isHovering ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              _isHovering ? FontWeight.bold : FontWeight.normal,
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -1904,7 +2189,8 @@ class _CribDropZoneState extends State<_CribDropZone> {
             tooltip: 'Undo selection',
             style: IconButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-              foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+              foregroundColor:
+                  Theme.of(context).colorScheme.onSecondaryContainer,
             ),
           ),
         ],
@@ -1936,7 +2222,8 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
     return DragTarget<CardDragData>(
       onWillAcceptWithDetails: (details) {
         // Only accept cards during pegging phase
-        if (details.data.phase != GamePhase.pegging || !widget.state.isPlayerTurn) {
+        if (details.data.phase != GamePhase.pegging ||
+            !widget.state.isPlayerTurn) {
           return false;
         }
 
@@ -1991,18 +2278,25 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
                 color: hasError
                     ? Colors.red.shade100.withValues(alpha: 0.2)
                     : _isHovering
-                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                        ? Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withValues(alpha: 0.3)
                         : Colors.transparent,
                 border: Border.all(
                   color: hasError
                       ? Colors.red.shade700
                       : _isHovering
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+                          : Theme.of(context)
+                              .colorScheme
+                              .outline
+                              .withValues(alpha: 0.5),
                   width: 2,
                   strokeAlign: BorderSide.strokeAlignInside,
                 ),
-                borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius / 2),
+                borderRadius:
+                    BorderRadius.circular(CardConstants.cardBorderRadius / 2),
               ),
               child: Center(
                 child: hasError
@@ -2015,7 +2309,10 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
                         _isHovering ? Icons.add : Icons.more_horiz,
                         color: _isHovering
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+                            : Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withValues(alpha: 0.5),
                         size: 24,
                       ),
               ),
@@ -2024,7 +2321,8 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
               Positioned(
                 top: -16,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: hasError
                         ? Colors.red.shade50
@@ -2032,9 +2330,7 @@ class _PeggingPileDropZoneState extends State<_PeggingPileDropZone> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    hasError
-                        ? _errorMessage!
-                        : 'Drop here',
+                    hasError ? _errorMessage! : 'Drop here',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: hasError
                               ? Colors.red.shade700

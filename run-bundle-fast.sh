@@ -3,8 +3,8 @@
 # Fast bundle build - uses incremental compilation (no clean)
 
 # Stop any existing Flutter daemon processes to clear file watchers
-echo "Stopping Flutter daemon..."
-flutter --suppress-analytics daemon shutdown 2>/dev/null || true
+#echo "Stopping Flutter daemon..."
+#flutter --suppress-analytics daemon shutdown 2>/dev/null || true
 
 # Kill any lingering Flutter processes
 pkill -f "flutter" 2>/dev/null || true
