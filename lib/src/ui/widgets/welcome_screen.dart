@@ -8,7 +8,7 @@ class WelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -20,8 +20,8 @@ class WelcomeScreen extends StatelessWidget {
               ),
               color: Theme.of(context).colorScheme.primaryContainer,
               child: Container(
-                width: 120,
-                height: 120,
+                width: 100,
+                height: 100,
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(12),
                 child: Image.asset(
@@ -30,7 +30,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
             // App title
             Text(
               'Cribbage',
@@ -46,12 +46,12 @@ class WelcomeScreen extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 24),
             // Welcome message
             Card(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Text(
@@ -72,7 +72,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
             // Instruction hint
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
