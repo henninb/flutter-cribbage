@@ -83,7 +83,7 @@ void main() {
       expect(state.playerScore, 0);
       expect(state.opponentScore, 0);
       expect(state.playerHand, isEmpty);
-      expect(state.gameStatus, contains('Cut cards'));
+      expect(state.gameStatus.toLowerCase(), contains('cut for dealer'));
     });
 
     test('cutForDealer reveals cut cards and persists them', () {
@@ -161,7 +161,7 @@ void main() {
 
       final state = goEngine.state;
       expect(state.pendingReset, isNotNull);
-      expect(state.pendingReset!.message, 'Go! Pile reset.');
+      expect(state.pendingReset!.message, 'Go!');
       expect(state.playerScore, playerScoreBefore + 1);
       expect(state.peggingCount, 0);
       expect(state.playerScoreAnimation?.points, 1);
@@ -332,10 +332,14 @@ void main() {
 
 void _cutUntilDealer(GameEngine engine, {int maxAttempts = 10}) {
   for (var i = 0; i < maxAttempts; i++) {
-    engine.cutForDealer();
-    if (engine.state.currentPhase == GamePhase.dealing) {
-      return;
+    // Ensure a deck exists to cut from, then pick a predictable card
+    if (engine.state.cutDeck.isEmpty) {
+      engine.cutForDealer();
     }
+    engine.selectCutCard(i % (engine.state.cutDeck.length));
+    if (engine.state.currentPhase == GamePhase.dealing) return;
+    // Tie -> try again with a fresh deck
+    engine.cutForDealer();
   }
   fail('Failed to determine dealer after $maxAttempts attempts');
 }

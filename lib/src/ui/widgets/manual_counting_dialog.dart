@@ -7,6 +7,7 @@ import 'card_constants.dart';
 /// Controller to trigger Accept from outside the dialog (e.g., ActionBar button)
 class ManualCountingController extends ChangeNotifier {
   VoidCallback? _onAccept;
+  VoidCallback? _onShowBreakdown;
   int _currentScore = 0;
   bool _isShowingBreakdown = false;
 
@@ -20,6 +21,18 @@ class ManualCountingController extends ChangeNotifier {
 
   void triggerAccept() {
     _onAccept?.call();
+  }
+
+  void attachShowBreakdown(VoidCallback handler) {
+    _onShowBreakdown = handler;
+  }
+
+  void detachShowBreakdown() {
+    _onShowBreakdown = null;
+  }
+
+  void triggerShowBreakdown() {
+    _onShowBreakdown?.call();
   }
 
   void updateScore(int score) {
@@ -161,11 +174,13 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     _sliderValue = 0;
     widget.controller.reset();
     widget.controller.attach(_handleAccept);
+    widget.controller.attachShowBreakdown(_showBreakdown);
   }
 
   @override
   void dispose() {
     widget.controller.detach();
+    widget.controller.detachShowBreakdown();
     super.dispose();
   }
 
@@ -179,6 +194,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       });
       widget.controller.reset();
       widget.controller.attach(_handleAccept);
+      widget.controller.attachShowBreakdown(_showBreakdown);
     }
   }
 
@@ -346,32 +362,15 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
           ),
         ),
       ),
-      child: Row(
-        children: [
-          // Spacer for symmetry
-          const SizedBox(width: 40),
-          // Title (centered)
-          Expanded(
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          // Help icon button
-          IconButton(
-            onPressed: _showBreakdown,
-            icon: Icon(
-              Icons.help_outline,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            tooltip: 'Show answer',
-            iconSize: 28,
-          ),
-        ],
+      child: Center(
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../../utils/string_sanitizer.dart';
 class ActionBar extends StatelessWidget {
   final GameState state;
   final VoidCallback onStartGame;
+  final VoidCallback onEndGame;
   final VoidCallback onCutForDealer;
   final VoidCallback onDeal;
   final VoidCallback onConfirmCrib;
@@ -14,6 +15,7 @@ class ActionBar extends StatelessWidget {
   final VoidCallback onStartCounting;
   final VoidCallback onCountingAccept;
   final VoidCallback onAdvise;
+  final VoidCallback? onShowBreakdown;
   final bool showHandCountingAccept;
   final int? manualCountingScore;
   final bool isShowingBreakdown;
@@ -22,6 +24,7 @@ class ActionBar extends StatelessWidget {
     super.key,
     required this.state,
     required this.onStartGame,
+    required this.onEndGame,
     required this.onCutForDealer,
     required this.onDeal,
     required this.onConfirmCrib,
@@ -29,6 +32,7 @@ class ActionBar extends StatelessWidget {
     required this.onStartCounting,
     required this.onCountingAccept,
     required this.onAdvise,
+    this.onShowBreakdown,
     this.showHandCountingAccept = false,
     this.manualCountingScore,
     this.isShowingBreakdown = false,
@@ -126,7 +130,7 @@ class ActionBar extends StatelessWidget {
       buttons.add(
         Expanded(
           child: FilledButton(
-            onPressed: onStartGame,
+            onPressed: onEndGame,
             child: const Text('End Game'),
           ),
         ),
@@ -224,6 +228,23 @@ class ActionBar extends StatelessWidget {
           ),
         ),
       );
+
+      // Add light bulb button for manual counting mode
+      if (onShowBreakdown != null) {
+        buttons.add(const SizedBox(width: 8));
+        buttons.add(
+          IconButton(
+            onPressed: onShowBreakdown,
+            icon: Icon(
+              Icons.lightbulb_outline,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            tooltip: 'Show answer',
+            iconSize: 28,
+          ),
+        );
+      }
+
       return buttons;
     }
 
