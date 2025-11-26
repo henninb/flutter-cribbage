@@ -66,20 +66,20 @@ class HandCountingDialog extends StatelessWidget {
     debugPrint('[DIALOG DEBUG] ===== _getDialogData called =====');
     debugPrint('[DIALOG DEBUG] CountingPhase: ${state.countingPhase}');
     debugPrint(
-        '[DIALOG DEBUG] isInHandCountingPhase: ${state.isInHandCountingPhase}');
+        '[DIALOG DEBUG] isInHandCountingPhase: ${state.isInHandCountingPhase}',);
     debugPrint('[DIALOG DEBUG] gameOver: ${state.gameOver}');
     debugPrint('[DIALOG DEBUG] showWinnerModal: ${state.showWinnerModal}');
     debugPrint(
-        '[DIALOG DEBUG] NonDealer breakdown: ${scores.nonDealerBreakdown?.entries.length} entries');
+        '[DIALOG DEBUG] NonDealer breakdown: ${scores.nonDealerBreakdown?.entries.length} entries',);
     debugPrint(
-        '[DIALOG DEBUG] Dealer breakdown: ${scores.dealerBreakdown?.entries.length} entries');
+        '[DIALOG DEBUG] Dealer breakdown: ${scores.dealerBreakdown?.entries.length} entries',);
     debugPrint(
-        '[DIALOG DEBUG] Crib breakdown: ${scores.cribBreakdown?.entries.length} entries');
+        '[DIALOG DEBUG] Crib breakdown: ${scores.cribBreakdown?.entries.length} entries',);
 
     switch (state.countingPhase) {
       case CountingPhase.nonDealer:
         debugPrint(
-            '[DIALOG DEBUG] Showing nonDealer - breakdown is ${scores.nonDealerBreakdown == null ? "null" : "not null with ${scores.nonDealerBreakdown!.entries.length} entries"}');
+            '[DIALOG DEBUG] Showing nonDealer - breakdown is ${scores.nonDealerBreakdown == null ? "null" : "not null with ${scores.nonDealerBreakdown!.entries.length} entries"}',);
         return _DialogData(
           title: state.isPlayerDealer
               ? "${StringSanitizer.possessive(state.opponentName)} Hand"
@@ -90,7 +90,7 @@ class HandCountingDialog extends StatelessWidget {
 
       case CountingPhase.dealer:
         debugPrint(
-            '[DIALOG DEBUG] Showing dealer - breakdown is ${scores.dealerBreakdown == null ? "null" : "not null with ${scores.dealerBreakdown!.entries.length} entries"}');
+            '[DIALOG DEBUG] Showing dealer - breakdown is ${scores.dealerBreakdown == null ? "null" : "not null with ${scores.dealerBreakdown!.entries.length} entries"}',);
         return _DialogData(
           title: state.isPlayerDealer
               ? "${StringSanitizer.possessive(state.playerName)} Hand"
@@ -101,7 +101,7 @@ class HandCountingDialog extends StatelessWidget {
 
       case CountingPhase.crib:
         debugPrint(
-            '[DIALOG DEBUG] Showing crib - breakdown is ${scores.cribBreakdown == null ? "null" : "not null with ${scores.cribBreakdown!.entries.length} entries"}');
+            '[DIALOG DEBUG] Showing crib - breakdown is ${scores.cribBreakdown == null ? "null" : "not null with ${scores.cribBreakdown!.entries.length} entries"}',);
         return _DialogData(
           title: state.isPlayerDealer
               ? "${StringSanitizer.possessive(state.playerName)} Crib"
@@ -112,7 +112,7 @@ class HandCountingDialog extends StatelessWidget {
 
       default:
         debugPrint(
-            '[DIALOG DEBUG] Counting phase is ${state.countingPhase} - returning null');
+            '[DIALOG DEBUG] Counting phase is ${state.countingPhase} - returning null',);
         return null;
     }
   }

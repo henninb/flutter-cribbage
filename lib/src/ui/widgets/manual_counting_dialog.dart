@@ -285,7 +285,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                        horizontal: 16, vertical: 12,),
                     child: Column(
                       children: [
                         // Cards display

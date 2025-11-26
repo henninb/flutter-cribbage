@@ -74,7 +74,7 @@ class ThemeDefinitions {
       surface: Color(0xFF37474F), // Dark surface
       cardBack: Color(0xFF90CAF9), // Light blue
       boardPrimary: Color(0xFF42A5F5), // Medium blue
-      boardSecondary: Color(0xFF64B5F6), // Sky blue
+      boardSecondary: Color(0xFFE3F2FD), // Very pale blue - high contrast for card backs
       accentLight: Color(0xFFFFFFFF), // Snow white
       accentDark: Color(0xFF0D47A1), // Navy blue
     ),

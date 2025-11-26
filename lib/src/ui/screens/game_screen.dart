@@ -291,7 +291,7 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
   Widget build(BuildContext context) {
     // Debug: Print scores being displayed
     debugPrint(
-        '[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}');
+        '[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}',);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -490,22 +490,43 @@ class _StarterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    // Determine suit color for better visibility
+    final isRedSuit = card.label.contains('♥') || card.label.contains('♦');
+    final suitColor = isRedSuit ? Colors.red.shade700 : Colors.black87;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.tertiaryContainer,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: colorScheme.primary,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Text(
             'Starter',
-            style: Theme.of(context).textTheme.labelSmall,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           Text(
             card.label,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: suitColor,
+                  fontSize: 20,
                 ),
           ),
         ],
@@ -921,7 +942,7 @@ class _PlayerHand extends StatelessWidget {
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: CardConstants.cardHorizontalSpacing),
+                    horizontal: CardConstants.cardHorizontalSpacing,),
                 child: cardWidget,
               );
             },
@@ -1031,7 +1052,7 @@ class _SpreadDeck extends StatelessWidget {
   });
 
   Widget _buildCutCard(BuildContext context, PlayingCard card,
-      {required double width, required double height}) {
+      {required double width, required double height,}) {
     final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
         ? Colors.red.shade800
         : Colors.black;
@@ -1160,7 +1181,7 @@ class _SpreadDeck extends StatelessWidget {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
+                            horizontal: 12, vertical: 4,),
                         decoration: BoxDecoration(
                           color: Colors.green.shade700,
                           borderRadius: BorderRadius.circular(12),
@@ -1210,7 +1231,7 @@ class _SpreadDeck extends StatelessWidget {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
+                            horizontal: 12, vertical: 4,),
                         decoration: BoxDecoration(
                           color: Colors.green.shade700,
                           borderRadius: BorderRadius.circular(12),
@@ -1422,7 +1443,7 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
   }
 
   Widget _buildPileArea(BuildContext context, List<dynamic> completedRounds,
-      bool hasHistory, bool hasCurrentCards) {
+      bool hasHistory, bool hasCurrentCards,) {
     // Check if drag mode is enabled
     final isDragMode =
         widget.settings?.cardSelectionMode == CardSelectionMode.drag;
@@ -1540,7 +1561,7 @@ class _PendingResetDialog extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: colorScheme.scrim.withOpacity(0.35),
+        color: colorScheme.scrim.withValues(alpha: 0.35),
         child: Center(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 420),
@@ -1557,7 +1578,7 @@ class _PendingResetDialog extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: colorScheme.shadow.withOpacity(0.25),
+                  color: colorScheme.shadow.withValues(alpha: 0.25),
                   blurRadius: 24,
                   offset: const Offset(0, 12),
                 ),
@@ -1576,7 +1597,7 @@ class _PendingResetDialog extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Pile reset',
+                      'Pegging',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: colorScheme.onPrimaryContainer,
@@ -1596,7 +1617,7 @@ class _PendingResetDialog extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: colorScheme.surface.withOpacity(0.15),
+                    color: colorScheme.surface.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -1607,7 +1628,7 @@ class _PendingResetDialog extends StatelessWidget {
                         style:
                             Theme.of(context).textTheme.labelMedium?.copyWith(
                                   color: colorScheme.onPrimaryContainer
-                                      .withOpacity(0.75),
+                                      .withValues(alpha: 0.75),
                                 ),
                       ),
                       const SizedBox(height: 8),
@@ -1618,17 +1639,17 @@ class _PendingResetDialog extends StatelessWidget {
                             .map(
                               (card) => Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 8),
+                                    horizontal: 10, vertical: 8,),
                                 decoration: BoxDecoration(
-                                  color: colorScheme.surface.withOpacity(0.75),
+                                  color: colorScheme.surface.withValues(alpha: 0.75),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: colorScheme.outline.withOpacity(0.4),
+                                    color: colorScheme.outline.withValues(alpha: 0.4),
                                   ),
                                   boxShadow: [
                                     BoxShadow(
                                       color:
-                                          colorScheme.shadow.withOpacity(0.15),
+                                          colorScheme.shadow.withValues(alpha: 0.15),
                                       blurRadius: 6,
                                       offset: const Offset(0, 3),
                                     ),
@@ -1655,7 +1676,7 @@ class _PendingResetDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: colorScheme.surface.withOpacity(0.18),
+                    color: colorScheme.surface.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -1671,7 +1692,7 @@ class _PendingResetDialog extends StatelessWidget {
                                 .labelMedium
                                 ?.copyWith(
                                   color: colorScheme.onPrimaryContainer
-                                      .withOpacity(0.85),
+                                      .withValues(alpha: 0.85),
                                 ),
                           ),
                           Text(
@@ -1696,7 +1717,7 @@ class _PendingResetDialog extends StatelessWidget {
                                 .labelMedium
                                 ?.copyWith(
                                   color: colorScheme.onPrimaryContainer
-                                      .withOpacity(0.85),
+                                      .withValues(alpha: 0.85),
                                 ),
                           ),
                           Text(
@@ -1718,7 +1739,7 @@ class _PendingResetDialog extends StatelessWidget {
                 Text(
                   'Tap anywhere to continue',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onPrimaryContainer.withOpacity(0.8),
+                        color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
                       ),
                 ),
               ],
@@ -1849,7 +1870,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4),
+                                  horizontal: 12, vertical: 4,),
                               decoration: BoxDecoration(
                                 color: Colors.amber.shade600,
                                 borderRadius: BorderRadius.circular(16),
@@ -1865,7 +1886,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(Icons.whatshot,
-                                      color: Colors.white, size: 16),
+                                      color: Colors.white, size: 16,),
                                   const SizedBox(width: 4),
                                   Text(
                                     'DOUBLE SKUNK!',
@@ -1885,7 +1906,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4),
+                                  horizontal: 12, vertical: 4,),
                               decoration: BoxDecoration(
                                 color: Colors.orange.shade600,
                                 borderRadius: BorderRadius.circular(16),
@@ -1901,7 +1922,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(Icons.local_fire_department,
-                                      color: Colors.white, size: 16),
+                                      color: Colors.white, size: 16,),
                                   const SizedBox(width: 4),
                                   Text(
                                     'SKUNK!',
