@@ -1406,8 +1406,8 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
         // Turn indicator
         Text(
           widget.state.isPlayerTurn
-              ? "${widget.state.playerName}'s turn"
-              : "${widget.state.opponentName}'s turn",
+              ? "${StringSanitizer.possessive(widget.state.playerName)} turn"
+              : "${StringSanitizer.possessive(widget.state.opponentName)} turn",
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: widget.state.isPlayerTurn
                     ? Theme.of(context).colorScheme.primary

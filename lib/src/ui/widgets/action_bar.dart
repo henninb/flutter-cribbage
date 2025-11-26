@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
+import '../../utils/string_sanitizer.dart';
 
 /// Context-sensitive action bar (Zone 3)
 /// Shows different buttons based on game phase
@@ -124,7 +125,7 @@ class ActionBar extends StatelessWidget {
       buttons.add(const SizedBox(width: 8));
       buttons.add(
         Expanded(
-          child: OutlinedButton(
+          child: FilledButton(
             onPressed: onStartGame,
             child: const Text('End Game'),
           ),
@@ -151,7 +152,11 @@ class ActionBar extends StatelessWidget {
           Expanded(
             child: FilledButton(
               onPressed: onConfirmCrib,
-              child: Text(state.isPlayerDealer ? 'My Crib' : "Opponent's Crib"),
+              child: Text(
+                state.isPlayerDealer
+                    ? "${StringSanitizer.possessive(state.playerName)} Crib"
+                    : "${StringSanitizer.possessive(state.opponentName)} Crib",
+              ),
             ),
           ),
         );

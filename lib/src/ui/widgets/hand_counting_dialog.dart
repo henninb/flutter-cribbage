@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
+import '../../utils/string_sanitizer.dart';
 import 'card_constants.dart';
 
 /// Full-screen hand counting dialog matching Android app
@@ -81,8 +82,8 @@ class HandCountingDialog extends StatelessWidget {
             '[DIALOG DEBUG] Showing nonDealer - breakdown is ${scores.nonDealerBreakdown == null ? "null" : "not null with ${scores.nonDealerBreakdown!.entries.length} entries"}');
         return _DialogData(
           title: state.isPlayerDealer
-              ? "${state.opponentName}'s Hand"
-              : "${state.playerName}'s Hand",
+              ? "${StringSanitizer.possessive(state.opponentName)} Hand"
+              : "${StringSanitizer.possessive(state.playerName)} Hand",
           hand: state.isPlayerDealer ? state.opponentHand : state.playerHand,
           breakdown: scores.nonDealerBreakdown,
         );
@@ -92,8 +93,8 @@ class HandCountingDialog extends StatelessWidget {
             '[DIALOG DEBUG] Showing dealer - breakdown is ${scores.dealerBreakdown == null ? "null" : "not null with ${scores.dealerBreakdown!.entries.length} entries"}');
         return _DialogData(
           title: state.isPlayerDealer
-              ? "${state.playerName}'s Hand"
-              : "${state.opponentName}'s Hand",
+              ? "${StringSanitizer.possessive(state.playerName)} Hand"
+              : "${StringSanitizer.possessive(state.opponentName)} Hand",
           hand: state.isPlayerDealer ? state.playerHand : state.opponentHand,
           breakdown: scores.dealerBreakdown,
         );
@@ -103,8 +104,8 @@ class HandCountingDialog extends StatelessWidget {
             '[DIALOG DEBUG] Showing crib - breakdown is ${scores.cribBreakdown == null ? "null" : "not null with ${scores.cribBreakdown!.entries.length} entries"}');
         return _DialogData(
           title: state.isPlayerDealer
-              ? "${state.playerName}'s Crib"
-              : "${state.opponentName}'s Crib",
+              ? "${StringSanitizer.possessive(state.playerName)} Crib"
+              : "${StringSanitizer.possessive(state.opponentName)} Crib",
           hand: state.cribHand,
           breakdown: scores.cribBreakdown,
         );

@@ -15,6 +15,7 @@ void main() {
     required VoidCallback onConfirmCrib,
     required VoidCallback onGo,
     required VoidCallback onStartCounting,
+    required VoidCallback onCountingAccept,
     required VoidCallback onAdvise,
   }) {
     return tester.pumpWidget(
@@ -28,6 +29,7 @@ void main() {
             onConfirmCrib: onConfirmCrib,
             onGo: onGo,
             onStartCounting: onStartCounting,
+            onCountingAccept: onCountingAccept,
             onAdvise: onAdvise,
           ),
         ),
@@ -46,6 +48,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onCountingAccept: () {},
       onAdvise: () {},
     );
 
@@ -53,13 +56,16 @@ void main() {
     expect(started, isTrue);
   });
 
-  testWidgets('shows Cut for Dealer button during phase', (tester) async {
+  testWidgets('shows Cut Again button when there is a tie', (tester) async {
     var cut = false;
     await pumpBar(
       tester,
-      state: const GameState(
+      state: GameState(
         gameStarted: true,
         currentPhase: GamePhase.cutForDealer,
+        playerHasSelectedCutCard: true,
+        cutPlayerCard: const PlayingCard(rank: Rank.five, suit: Suit.hearts),
+        cutOpponentCard: const PlayingCard(rank: Rank.five, suit: Suit.clubs),
       ),
       onStartGame: () {},
       onCutForDealer: () => cut = true,
@@ -67,10 +73,11 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onCountingAccept: () {},
       onAdvise: () {},
     );
 
-    await tester.tap(find.text('Cut for Dealer'));
+    await tester.tap(find.text('Cut Again'));
     expect(cut, isTrue);
   });
 
@@ -90,6 +97,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onCountingAccept: () {},
       onAdvise: () {},
     );
 
@@ -102,7 +110,6 @@ void main() {
 
   testWidgets('crib selection enables confirm button only with two cards', (tester) async {
     var confirmed = false;
-    var advised = false;
     await pumpBar(
       tester,
       state: GameState(
@@ -117,16 +124,14 @@ void main() {
       onConfirmCrib: () => confirmed = true,
       onGo: () {},
       onStartCounting: () {},
-      onAdvise: () => advised = true,
+      onCountingAccept: () {},
+      onAdvise: () {},
     );
 
-    final button = find.widgetWithText(FilledButton, 'My Crib');
+    final button = find.widgetWithText(FilledButton, "Your Crib");
     expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
     await tester.tap(button);
     expect(confirmed, isTrue);
-
-    await tester.tap(find.text('Advise'));
-    expect(advised, isTrue);
   });
 
   testWidgets('pegging phase shows Go button when player cannot play', (tester) async {
@@ -148,6 +153,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () => went = true,
       onStartCounting: () {},
+      onCountingAccept: () {},
       onAdvise: () {},
     );
 
@@ -170,6 +176,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () => counted = true,
+      onCountingAccept: () {},
       onAdvise: () {},
     );
 
@@ -192,6 +199,7 @@ void main() {
       onConfirmCrib: () {},
       onGo: () {},
       onStartCounting: () {},
+      onCountingAccept: () {},
       onAdvise: () {},
     );
 

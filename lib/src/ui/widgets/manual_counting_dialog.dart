@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
+import '../../utils/string_sanitizer.dart';
 import 'card_constants.dart';
 
 /// Controller to trigger Accept from outside the dialog (e.g., ActionBar button)
@@ -323,8 +324,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       case CountingPhase.nonDealer:
         return _DialogData(
           title: widget.state.isPlayerDealer
-              ? "${widget.state.opponentName}'s Hand"
-              : "${widget.state.playerName}'s Hand",
+              ? "${StringSanitizer.possessive(widget.state.opponentName)} Hand"
+              : "${StringSanitizer.possessive(widget.state.playerName)} Hand",
           hand: widget.state.isPlayerDealer
               ? widget.state.opponentHand
               : widget.state.playerHand,
@@ -333,8 +334,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       case CountingPhase.dealer:
         return _DialogData(
           title: widget.state.isPlayerDealer
-              ? "${widget.state.playerName}'s Hand"
-              : "${widget.state.opponentName}'s Hand",
+              ? "${StringSanitizer.possessive(widget.state.playerName)} Hand"
+              : "${StringSanitizer.possessive(widget.state.opponentName)} Hand",
           hand: widget.state.isPlayerDealer
               ? widget.state.playerHand
               : widget.state.opponentHand,
@@ -343,8 +344,8 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
       case CountingPhase.crib:
         return _DialogData(
           title: widget.state.isPlayerDealer
-              ? "${widget.state.playerName}'s Crib"
-              : "${widget.state.opponentName}'s Crib",
+              ? "${StringSanitizer.possessive(widget.state.playerName)} Crib"
+              : "${StringSanitizer.possessive(widget.state.opponentName)} Crib",
           hand: widget.state.cribHand,
         );
 
@@ -663,16 +664,6 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
                 ),
               ],
             ),
-          ),
-
-          // Action bar hosts the accept button during manual counting
-          Text(
-            'Use the Accept button below to submit your score.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),

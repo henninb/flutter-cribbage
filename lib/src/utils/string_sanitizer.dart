@@ -58,4 +58,40 @@ class StringSanitizer {
     final sanitized = sanitizeName(input);
     return sanitized.isEmpty ? defaultName : sanitized;
   }
+
+  /// Converts a name to its possessive form
+  ///
+  /// Handles special cases:
+  /// - "You" -> "Your"
+  /// - "you" -> "your"
+  /// - "I" -> "My"
+  /// - All other names -> adds "'s" (e.g., "Brian" -> "Brian's")
+  static String possessive(String name) {
+    final trimmed = name.trim();
+
+    if (trimmed.isEmpty) {
+      return trimmed;
+    }
+
+    // Handle special pronouns
+    if (trimmed.toLowerCase() == 'you') {
+      // Preserve the original case pattern
+      if (trimmed[0] == trimmed[0].toUpperCase()) {
+        return 'Your';
+      } else {
+        return 'your';
+      }
+    }
+
+    if (trimmed == 'I') {
+      return 'My';
+    }
+
+    if (trimmed == 'i') {
+      return 'my';
+    }
+
+    // For all other names, add 's
+    return "$trimmed's";
+  }
 }
