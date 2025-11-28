@@ -1,62 +1,167 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <linearGradient id="feltGradient" x1="15%" y1="5%" x2="85%" y2="95%">
+      <stop offset="0%" stop-color="#0c3627"/>
+      <stop offset="50%" stop-color="#0f5f43"/>
+      <stop offset="100%" stop-color="#0d3f2f"/>
+    </linearGradient>
+    <linearGradient id="boardGradient" x1="0%" y1="0%" x2="100%" y2="85%">
+      <stop offset="0%" stop-color="#e0b06d"/>
+      <stop offset="100%" stop-color="#9c642d"/>
+    </linearGradient>
+    <linearGradient id="boardSheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cardFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f2f2f7"/>
+    </linearGradient>
+    <linearGradient id="pegRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff9a8b"/>
+      <stop offset="100%" stop-color="#c62828"/>
+    </linearGradient>
+    <linearGradient id="pegBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7ab4ff"/>
+      <stop offset="100%" stop-color="#1c4ba8"/>
+    </linearGradient>
+    <linearGradient id="pegGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffd68a"/>
+      <stop offset="100%" stop-color="#c57a12"/>
+    </linearGradient>
+    <linearGradient id="pegGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9be6c3"/>
+      <stop offset="100%" stop-color="#1f8a53"/>
+    </linearGradient>
+    <radialGradient id="holeGlow" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#f8e8cc" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#5a3518" stop-opacity="0"/>
+    </radialGradient>
     <filter id="shadow">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-opacity="0.35"/>
     </filter>
   </defs>
+  <g transform="translate(512 560) rotate(-14)" filter="url(#shadow)">
+    <rect x="-330" y="-120" width="660" height="240" rx="62" fill="url(#boardGradient)" stroke="rgba(34,16,6,0.4)" stroke-width="6"/>
+    <rect x="-330" y="-120" width="660" height="240" rx="62" fill="url(#boardSheen)"/>
+    <g transform="translate(0, -54.0)">
+      <circle cx="-280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="0" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="0" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+    </g>
 
-  <!-- Playing Cards (foreground only) -->
-  <g transform="translate(512, 420)">
-    <!-- Left card -->
-    <g transform="translate(-160, 40) rotate(-18)">
-          <g filter="url(#shadow)">
-      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
-      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
-            fill="#000000" text-anchor="middle" dominant-baseline="middle">A♠</text>
-    </g>
+    <g transform="translate(0, 0.0)">
+      <circle cx="-280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="0" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="0" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
     </g>
 
-    <!-- Center card -->
-    <g transform="translate(0, -20)">
-          <g filter="url(#shadow)">
-      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
-      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
-            fill="#C62828" text-anchor="middle" dominant-baseline="middle">5♥</text>
-    </g>
+    <g transform="translate(0, 54.0)">
+      <circle cx="-280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="0" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="0" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
     </g>
 
-    <!-- Right card -->
-    <g transform="translate(160, 40) rotate(18)">
-          <g filter="url(#shadow)">
-      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
-      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
-            fill="#000000" text-anchor="middle" dominant-baseline="middle">J♣</text>
-    </g>
-    </g>
+    <rect x="-304" y="-92" width="608" height="20" rx="10" fill="rgba(255,255,255,0.08)"/>
+    <rect x="-304" y="72" width="608" height="20" rx="10" fill="rgba(0,0,0,0.12)"/>
+    <text x="250" y="18" font-family="Montserrat, Arial, sans-serif" font-size="64" font-weight="800" fill="#f7d561">15·2</text>
   </g>
 
-  <!-- Cribbage Pegs -->
-  <g transform="translate(512, 720)">
-        <g transform="translate(-90.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#C62828" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+  <g transform="translate(430 360)">
+        <g transform="translate(-60.0, 30.0) rotate(-12.0)" filter="url(#shadow)">
+      <rect x="-92" y="-128" width="184" height="256" rx="26"
+fill="url(#cardFace)" stroke="rgba(0,0,0,0.08)" stroke-width="4"/>
+      <rect x="-92" y="-128" width="184" height="256" rx="26" fill="white" opacity="0.08"/>
+      <text x="-62" y="-80" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#d32f2f" text-anchor="middle" dominant-baseline="middle">5</text>
+      <text x="0" y="26" font-family="Montserrat, Arial, sans-serif" font-size="110" font-weight="800"
+            fill="#d32f2f" text-anchor="middle" dominant-baseline="middle">5♥</text>
+      <text x="62" y="110" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#d32f2f" text-anchor="middle" dominant-baseline="middle">♥</text>
+    </g>
+        <g transform="translate(90.0, 80.0) rotate(10.0)" filter="url(#shadow)">
+      <rect x="-92" y="-128" width="184" height="256" rx="26"
+fill="url(#cardFace)" stroke="rgba(0,0,0,0.08)" stroke-width="4"/>
+      <rect x="-92" y="-128" width="184" height="256" rx="26" fill="white" opacity="0.08"/>
+      <text x="-62" y="-80" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#0d0d0d" text-anchor="middle" dominant-baseline="middle">J</text>
+      <text x="0" y="26" font-family="Montserrat, Arial, sans-serif" font-size="110" font-weight="800"
+            fill="#0d0d0d" text-anchor="middle" dominant-baseline="middle">J♣</text>
+      <text x="62" y="110" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#0d0d0d" text-anchor="middle" dominant-baseline="middle">♣</text>
+    </g>
+  </g>
+  <g transform="translate(512 648) rotate(-14)">
+        <g transform="translate(-190.0, 0)">
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegRed)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
+    </g>
+        <g transform="translate(-110.0, 0)">
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegBlue)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
     </g>
         <g transform="translate(-30.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#1565C0" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegGold)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
     </g>
-        <g transform="translate(30.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#F9A825" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
-    </g>
-        <g transform="translate(90.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#EF6C00" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+        <g transform="translate(70.0, 0)">
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegGreen)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
     </g>
   </g>
 </svg>

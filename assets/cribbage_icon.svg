@@ -1,175 +1,169 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1B5E20;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#2E7D32;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#43A047;stop-opacity:1" />
+    <linearGradient id="feltGradient" x1="15%" y1="5%" x2="85%" y2="95%">
+      <stop offset="0%" stop-color="#0c3627"/>
+      <stop offset="50%" stop-color="#0f5f43"/>
+      <stop offset="100%" stop-color="#0d3f2f"/>
     </linearGradient>
+    <linearGradient id="boardGradient" x1="0%" y1="0%" x2="100%" y2="85%">
+      <stop offset="0%" stop-color="#e0b06d"/>
+      <stop offset="100%" stop-color="#9c642d"/>
+    </linearGradient>
+    <linearGradient id="boardSheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cardFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f2f2f7"/>
+    </linearGradient>
+    <linearGradient id="pegRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff9a8b"/>
+      <stop offset="100%" stop-color="#c62828"/>
+    </linearGradient>
+    <linearGradient id="pegBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7ab4ff"/>
+      <stop offset="100%" stop-color="#1c4ba8"/>
+    </linearGradient>
+    <linearGradient id="pegGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffd68a"/>
+      <stop offset="100%" stop-color="#c57a12"/>
+    </linearGradient>
+    <linearGradient id="pegGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9be6c3"/>
+      <stop offset="100%" stop-color="#1f8a53"/>
+    </linearGradient>
+    <radialGradient id="holeGlow" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#f8e8cc" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#5a3518" stop-opacity="0"/>
+    </radialGradient>
     <filter id="shadow">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-opacity="0.35"/>
     </filter>
   </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#feltGradient)"/>
+  <g transform="translate(512 560) rotate(-14)" filter="url(#shadow)">
+    <rect x="-330" y="-120" width="660" height="240" rx="62" fill="url(#boardGradient)" stroke="rgba(34,16,6,0.4)" stroke-width="6"/>
+    <rect x="-330" y="-120" width="660" height="240" rx="62" fill="url(#boardSheen)"/>
+    <g transform="translate(0, -54.0)">
+      <circle cx="-280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="0" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="0" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+    </g>
 
-  <!-- Background with rounded corners -->
-  <rect width="1024" height="1024" rx="180" fill="url(#bgGradient)"/>
+    <g transform="translate(0, 0.0)">
+      <circle cx="-280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="0" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="0" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+    </g>
 
-  <!-- Decorative pegging holes pattern -->
-    <!-- Pegging holes pattern -->
-  <g opacity="0.15">
-    <circle cx="128" cy="128" r="12" fill="white"/>
-    <circle cx="256" cy="128" r="12" fill="white"/>
-    <circle cx="384" cy="128" r="12" fill="white"/>
-    <circle cx="512" cy="128" r="12" fill="white"/>
-    <circle cx="640" cy="128" r="12" fill="white"/>
-    <circle cx="768" cy="128" r="12" fill="white"/>
-    <circle cx="896" cy="128" r="12" fill="white"/>
-    <circle cx="1024" cy="128" r="12" fill="white"/>
-    <circle cx="192" cy="256" r="12" fill="white"/>
-    <circle cx="320" cy="256" r="12" fill="white"/>
-    <circle cx="448" cy="256" r="12" fill="white"/>
-    <circle cx="576" cy="256" r="12" fill="white"/>
-    <circle cx="704" cy="256" r="12" fill="white"/>
-    <circle cx="832" cy="256" r="12" fill="white"/>
-    <circle cx="960" cy="256" r="12" fill="white"/>
-    <circle cx="1088" cy="256" r="12" fill="white"/>
-    <circle cx="128" cy="384" r="12" fill="white"/>
-    <circle cx="256" cy="384" r="12" fill="white"/>
-    <circle cx="384" cy="384" r="12" fill="white"/>
-    <circle cx="512" cy="384" r="12" fill="white"/>
-    <circle cx="640" cy="384" r="12" fill="white"/>
-    <circle cx="768" cy="384" r="12" fill="white"/>
-    <circle cx="896" cy="384" r="12" fill="white"/>
-    <circle cx="1024" cy="384" r="12" fill="white"/>
-    <circle cx="192" cy="512" r="12" fill="white"/>
-    <circle cx="320" cy="512" r="12" fill="white"/>
-    <circle cx="448" cy="512" r="12" fill="white"/>
-    <circle cx="576" cy="512" r="12" fill="white"/>
-    <circle cx="704" cy="512" r="12" fill="white"/>
-    <circle cx="832" cy="512" r="12" fill="white"/>
-    <circle cx="960" cy="512" r="12" fill="white"/>
-    <circle cx="1088" cy="512" r="12" fill="white"/>
-    <circle cx="128" cy="640" r="12" fill="white"/>
-    <circle cx="256" cy="640" r="12" fill="white"/>
-    <circle cx="384" cy="640" r="12" fill="white"/>
-    <circle cx="512" cy="640" r="12" fill="white"/>
-    <circle cx="640" cy="640" r="12" fill="white"/>
-    <circle cx="768" cy="640" r="12" fill="white"/>
-    <circle cx="896" cy="640" r="12" fill="white"/>
-    <circle cx="1024" cy="640" r="12" fill="white"/>
-    <circle cx="192" cy="768" r="12" fill="white"/>
-    <circle cx="320" cy="768" r="12" fill="white"/>
-    <circle cx="448" cy="768" r="12" fill="white"/>
-    <circle cx="576" cy="768" r="12" fill="white"/>
-    <circle cx="704" cy="768" r="12" fill="white"/>
-    <circle cx="832" cy="768" r="12" fill="white"/>
-    <circle cx="960" cy="768" r="12" fill="white"/>
-    <circle cx="1088" cy="768" r="12" fill="white"/>
-    <circle cx="128" cy="896" r="12" fill="white"/>
-    <circle cx="256" cy="896" r="12" fill="white"/>
-    <circle cx="384" cy="896" r="12" fill="white"/>
-    <circle cx="512" cy="896" r="12" fill="white"/>
-    <circle cx="640" cy="896" r="12" fill="white"/>
-    <circle cx="768" cy="896" r="12" fill="white"/>
-    <circle cx="896" cy="896" r="12" fill="white"/>
-    <circle cx="1024" cy="896" r="12" fill="white"/>
-    <circle cx="192" cy="1024" r="12" fill="white"/>
-    <circle cx="320" cy="1024" r="12" fill="white"/>
-    <circle cx="448" cy="1024" r="12" fill="white"/>
-    <circle cx="576" cy="1024" r="12" fill="white"/>
-    <circle cx="704" cy="1024" r="12" fill="white"/>
-    <circle cx="832" cy="1024" r="12" fill="white"/>
-    <circle cx="960" cy="1024" r="12" fill="white"/>
-    <circle cx="1088" cy="1024" r="12" fill="white"/>
-    <circle cx="942.0" cy="512.0" r="15" fill="white"/>
-    <circle cx="933.7376705733891" cy="595.8888384669351" r="15" fill="white"/>
-    <circle cx="909.2681989798533" cy="676.5538759169885" r="15" fill="white"/>
-    <circle cx="869.5319332900945" cy="750.8952001984289" r="15" fill="white"/>
-    <circle cx="816.0559159102154" cy="816.0559159102154" r="15" fill="white"/>
-    <circle cx="750.8952001984289" cy="869.5319332900945" r="15" fill="white"/>
-    <circle cx="676.5538759169887" cy="909.2681989798533" r="15" fill="white"/>
-    <circle cx="595.8888384669352" cy="933.7376705733891" r="15" fill="white"/>
-    <circle cx="512.0" cy="942.0" r="15" fill="white"/>
-    <circle cx="428.1111615330649" cy="933.7376705733891" r="15" fill="white"/>
-    <circle cx="347.44612408301145" cy="909.2681989798533" r="15" fill="white"/>
-    <circle cx="273.1047998015712" cy="869.5319332900946" r="15" fill="white"/>
-    <circle cx="207.9440840897846" cy="816.0559159102154" r="15" fill="white"/>
-    <circle cx="154.4680667099055" cy="750.8952001984289" r="15" fill="white"/>
-    <circle cx="114.73180102014669" cy="676.5538759169887" r="15" fill="white"/>
-    <circle cx="90.2623294266109" cy="595.8888384669353" r="15" fill="white"/>
-    <circle cx="82.0" cy="512.0" r="15" fill="white"/>
-    <circle cx="90.2623294266109" cy="428.1111615330648" r="15" fill="white"/>
-    <circle cx="114.73180102014663" cy="347.44612408301145" r="15" fill="white"/>
-    <circle cx="154.46806670990543" cy="273.1047998015712" r="15" fill="white"/>
-    <circle cx="207.9440840897845" cy="207.9440840897846" r="15" fill="white"/>
-    <circle cx="273.10479980157106" cy="154.46806670990554" r="15" fill="white"/>
-    <circle cx="347.4461240830111" cy="114.7318010201468" r="15" fill="white"/>
-    <circle cx="428.11116153306466" cy="90.26232942661096" r="15" fill="white"/>
-    <circle cx="511.99999999999994" cy="82.0" r="15" fill="white"/>
-    <circle cx="595.8888384669351" cy="90.2623294266109" r="15" fill="white"/>
-    <circle cx="676.5538759169888" cy="114.73180102014675" r="15" fill="white"/>
-    <circle cx="750.8952001984288" cy="154.46806670990543" r="15" fill="white"/>
-    <circle cx="816.0559159102154" cy="207.9440840897845" r="15" fill="white"/>
-    <circle cx="869.5319332900945" cy="273.10479980157106" r="15" fill="white"/>
-    <circle cx="909.2681989798532" cy="347.4461240830111" r="15" fill="white"/>
-    <circle cx="933.7376705733891" cy="428.11116153306466" r="15" fill="white"/>
+    <g transform="translate(0, 54.0)">
+      <circle cx="-280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="-70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="-70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="0" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="0" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="70" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="70" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="140" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="140" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="210" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="210" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+      <circle cx="280" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>
+      <circle cx="280" cy="-4" r="8" fill="url(#holeGlow)" opacity="0.75"/>
+    </g>
+
+    <rect x="-304" y="-92" width="608" height="20" rx="10" fill="rgba(255,255,255,0.08)"/>
+    <rect x="-304" y="72" width="608" height="20" rx="10" fill="rgba(0,0,0,0.12)"/>
+    <text x="250" y="18" font-family="Montserrat, Arial, sans-serif" font-size="64" font-weight="800" fill="#f7d561">15·2</text>
   </g>
 
-
-  <!-- Playing Cards -->
-  <g transform="translate(512, 380)">
-    <!-- Left card (Ace of Spades) -->
-    <g transform="translate(-160, 40) rotate(-18)">
-          <g filter="url(#shadow)">
-      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
-      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
-            fill="#000000" text-anchor="middle" dominant-baseline="middle">A♠</text>
+  <g transform="translate(430 360)">
+        <g transform="translate(-60.0, 30.0) rotate(-12.0)" filter="url(#shadow)">
+      <rect x="-92" y="-128" width="184" height="256" rx="26"
+fill="url(#cardFace)" stroke="rgba(0,0,0,0.08)" stroke-width="4"/>
+      <rect x="-92" y="-128" width="184" height="256" rx="26" fill="white" opacity="0.08"/>
+      <text x="-62" y="-80" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#d32f2f" text-anchor="middle" dominant-baseline="middle">5</text>
+      <text x="0" y="26" font-family="Montserrat, Arial, sans-serif" font-size="110" font-weight="800"
+            fill="#d32f2f" text-anchor="middle" dominant-baseline="middle">5♥</text>
+      <text x="62" y="110" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#d32f2f" text-anchor="middle" dominant-baseline="middle">♥</text>
     </g>
-    </g>
-
-    <!-- Center card (5 of Hearts) -->
-    <g transform="translate(0, -20)">
-          <g filter="url(#shadow)">
-      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
-      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
-            fill="#C62828" text-anchor="middle" dominant-baseline="middle">5♥</text>
-    </g>
-    </g>
-
-    <!-- Right card (Jack of Clubs) -->
-    <g transform="translate(160, 40) rotate(18)">
-          <g filter="url(#shadow)">
-      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
-      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
-            fill="#000000" text-anchor="middle" dominant-baseline="middle">J♣</text>
-    </g>
+        <g transform="translate(90.0, 80.0) rotate(10.0)" filter="url(#shadow)">
+      <rect x="-92" y="-128" width="184" height="256" rx="26"
+fill="url(#cardFace)" stroke="rgba(0,0,0,0.08)" stroke-width="4"/>
+      <rect x="-92" y="-128" width="184" height="256" rx="26" fill="white" opacity="0.08"/>
+      <text x="-62" y="-80" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#0d0d0d" text-anchor="middle" dominant-baseline="middle">J</text>
+      <text x="0" y="26" font-family="Montserrat, Arial, sans-serif" font-size="110" font-weight="800"
+            fill="#0d0d0d" text-anchor="middle" dominant-baseline="middle">J♣</text>
+      <text x="62" y="110" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="#0d0d0d" text-anchor="middle" dominant-baseline="middle">♣</text>
     </g>
   </g>
-
-  <!-- Cribbage Pegs -->
-  <g transform="translate(512, 720)">
-        <g transform="translate(-90.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#C62828" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+  <g transform="translate(512 648) rotate(-14)">
+        <g transform="translate(-190.0, 0)">
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegRed)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
+    </g>
+        <g transform="translate(-110.0, 0)">
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegBlue)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
     </g>
         <g transform="translate(-30.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#1565C0" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegGold)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
     </g>
-        <g transform="translate(30.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#F9A825" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
-    </g>
-        <g transform="translate(90.0, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="#EF6C00" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
+        <g transform="translate(70.0, 0)">
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="url(#pegGreen)"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
     </g>
   </g>
-
-  <!-- Border accent -->
-  <rect width="1024" height="1024" rx="180" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+  <rect width="1024" height="1024" rx="220" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="8"/>
 </svg>

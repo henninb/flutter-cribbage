@@ -1,18 +1,15 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
-import 'dart:math' as math;
 
 /// Simple SVG icon generator for Cribbage app
 /// Creates a modern, eye-catching icon with cribbage theme
 void main() {
   final iconSvg = generateCribbageIconSVG();
 
-  // Save main icon
   File('assets/cribbage_icon.svg').writeAsStringSync(iconSvg);
   print('✓ Created assets/cribbage_icon.svg');
 
-  // Save foreground (for adaptive icon)
   final foregroundSvg = generateCribbageIconForegroundSVG();
   File('assets/cribbage_icon_foreground.svg').writeAsStringSync(foregroundSvg);
   print('✓ Created assets/cribbage_icon_foreground.svg');
@@ -25,134 +22,194 @@ void main() {
 }
 
 String generateCribbageIconSVG() {
-  return '''<?xml version="1.0" encoding="UTF-8"?>
-<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1B5E20;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#2E7D32;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#43A047;stop-opacity:1" />
-    </linearGradient>
-    <filter id="shadow">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.5"/>
-    </filter>
-  </defs>
-
-  <!-- Background with rounded corners -->
-  <rect width="1024" height="1024" rx="180" fill="url(#bgGradient)"/>
-
-  <!-- Decorative pegging holes pattern -->
-  ${_generatePeggingHoles()}
-
-  <!-- Playing Cards -->
-  <g transform="translate(512, 380)">
-    <!-- Left card (Ace of Spades) -->
-    <g transform="translate(-160, 40) rotate(-18)">
-      ${_generateCard('A♠', '#000000')}
-    </g>
-
-    <!-- Center card (5 of Hearts) -->
-    <g transform="translate(0, -20)">
-      ${_generateCard('5♥', '#C62828')}
-    </g>
-
-    <!-- Right card (Jack of Clubs) -->
-    <g transform="translate(160, 40) rotate(18)">
-      ${_generateCard('J♣', '#000000')}
-    </g>
-  </g>
-
-  <!-- Cribbage Pegs -->
-  <g transform="translate(512, 720)">
-    ${_generatePeg(-90, '#C62828')}
-    ${_generatePeg(-30, '#1565C0')}
-    ${_generatePeg(30, '#F9A825')}
-    ${_generatePeg(90, '#EF6C00')}
-  </g>
-
-  <!-- Border accent -->
-  <rect width="1024" height="1024" rx="180" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
-</svg>''';
+  return _buildSvg(includeBackground: true);
 }
 
 String generateCribbageIconForegroundSVG() {
-  return '''<?xml version="1.0" encoding="UTF-8"?>
-<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <filter id="shadow">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.5"/>
-    </filter>
-  </defs>
-
-  <!-- Playing Cards (foreground only) -->
-  <g transform="translate(512, 420)">
-    <!-- Left card -->
-    <g transform="translate(-160, 40) rotate(-18)">
-      ${_generateCard('A♠', '#000000')}
-    </g>
-
-    <!-- Center card -->
-    <g transform="translate(0, -20)">
-      ${_generateCard('5♥', '#C62828')}
-    </g>
-
-    <!-- Right card -->
-    <g transform="translate(160, 40) rotate(18)">
-      ${_generateCard('J♣', '#000000')}
-    </g>
-  </g>
-
-  <!-- Cribbage Pegs -->
-  <g transform="translate(512, 720)">
-    ${_generatePeg(-90, '#C62828')}
-    ${_generatePeg(-30, '#1565C0')}
-    ${_generatePeg(30, '#F9A825')}
-    ${_generatePeg(90, '#EF6C00')}
-  </g>
-</svg>''';
+  return _buildSvg(includeBackground: false);
 }
 
-String _generateCard(String label, String color) {
-  return '''
-    <g filter="url(#shadow)">
-      <rect x="-70" y="-100" width="140" height="200" rx="16" fill="white" stroke="#333" stroke-width="2"/>
-      <text x="0" y="30" font-family="Arial, sans-serif" font-size="80" font-weight="bold"
-            fill="$color" text-anchor="middle" dominant-baseline="middle">$label</text>
-    </g>''';
-}
-
-String _generatePeg(double x, String color) {
-  return '''
-    <g transform="translate($x, 0)">
-      <ellipse cx="0" cy="30" rx="16" ry="6" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-15" y="-30" width="30" height="60" rx="15" fill="$color" filter="url(#shadow)"/>
-      <ellipse cx="0" cy="-25" rx="12" ry="8" fill="rgba(255,255,255,0.4)"/>
-    </g>''';
-}
-
-String _generatePeggingHoles() {
+String _buildSvg({required bool includeBackground}) {
   final buffer = StringBuffer();
-  buffer.writeln('  <!-- Pegging holes pattern -->');
-  buffer.writeln('  <g opacity="0.15">');
+  buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
+  buffer.writeln(
+    '<svg width="1024" height="1024" viewBox="0 0 1024 1024" '
+    'xmlns="http://www.w3.org/2000/svg">',
+  );
+  buffer.writeln(_defs());
 
-  // Grid pattern
-  for (int row = 1; row <= 8; row++) {
-    for (int col = 1; col <= 8; col++) {
-      final x = 128 * col + (row % 2 == 0 ? 64 : 0);
-      final y = 128 * row;
-      buffer.writeln('    <circle cx="$x" cy="$y" r="12" fill="white"/>');
-    }
+  if (includeBackground) {
+    buffer.writeln(
+      '  <rect width="1024" height="1024" rx="220" '
+      'fill="url(#feltGradient)"/>',
+    );
   }
 
-  // Border holes
-  const borderHoles = 32;
-  for (int i = 0; i < borderHoles; i++) {
-    final angle = (2 * math.pi * i) / borderHoles;
-    final x = 512 + 430 * math.cos(angle);
-    final y = 512 + 430 * math.sin(angle);
-    buffer.writeln('    <circle cx="$x" cy="$y" r="15" fill="white"/>');
+  buffer.writeln(_board());
+  buffer.writeln(_cardStack());
+  buffer.writeln(_pegCluster());
+
+  if (includeBackground) {
+    buffer.writeln(
+      '  <rect width="1024" height="1024" rx="220" fill="none" '
+      'stroke="rgba(255,255,255,0.16)" stroke-width="8"/>',
+    );
   }
 
+  buffer.writeln('</svg>');
+  return buffer.toString();
+}
+
+String _defs() {
+  return '''
+  <defs>
+    <linearGradient id="feltGradient" x1="15%" y1="5%" x2="85%" y2="95%">
+      <stop offset="0%" stop-color="#0c3627"/>
+      <stop offset="50%" stop-color="#0f5f43"/>
+      <stop offset="100%" stop-color="#0d3f2f"/>
+    </linearGradient>
+    <linearGradient id="boardGradient" x1="0%" y1="0%" x2="100%" y2="85%">
+      <stop offset="0%" stop-color="#e0b06d"/>
+      <stop offset="100%" stop-color="#9c642d"/>
+    </linearGradient>
+    <linearGradient id="boardSheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cardFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f2f2f7"/>
+    </linearGradient>
+    <linearGradient id="pegRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff9a8b"/>
+      <stop offset="100%" stop-color="#c62828"/>
+    </linearGradient>
+    <linearGradient id="pegBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7ab4ff"/>
+      <stop offset="100%" stop-color="#1c4ba8"/>
+    </linearGradient>
+    <linearGradient id="pegGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffd68a"/>
+      <stop offset="100%" stop-color="#c57a12"/>
+    </linearGradient>
+    <linearGradient id="pegGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9be6c3"/>
+      <stop offset="100%" stop-color="#1f8a53"/>
+    </linearGradient>
+    <radialGradient id="holeGlow" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#f8e8cc" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#5a3518" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-opacity="0.35"/>
+    </filter>
+  </defs>''';
+}
+
+String _board() {
+  final buffer = StringBuffer();
+  buffer.writeln(
+    '  <g transform="translate(512 560) rotate(-14)" filter="url(#shadow)">',
+  );
+  buffer.writeln(
+    '    <rect x="-330" y="-120" width="660" height="240" rx="62" '
+    'fill="url(#boardGradient)" stroke="rgba(34,16,6,0.4)" stroke-width="6"/>',
+  );
+  buffer.writeln(
+    '    <rect x="-330" y="-120" width="660" height="240" rx="62" '
+    'fill="url(#boardSheen)"/>',
+  );
+  buffer.writeln(_pegHoleRow(-54));
+  buffer.writeln(_pegHoleRow(0));
+  buffer.writeln(_pegHoleRow(54));
+  buffer.writeln(
+    '    <rect x="-304" y="-92" width="608" height="20" rx="10" '
+    'fill="rgba(255,255,255,0.08)"/>',
+  );
+  buffer.writeln(
+    '    <rect x="-304" y="72" width="608" height="20" rx="10" '
+    'fill="rgba(0,0,0,0.12)"/>',
+  );
+  buffer.writeln(
+    '    <text x="250" y="18" font-family="Montserrat, Arial, sans-serif" '
+    'font-size="64" font-weight="800" fill="#f7d561">15·2</text>',
+  );
   buffer.writeln('  </g>');
   return buffer.toString();
+}
+
+String _pegHoleRow(double y) {
+  const spacing = 70;
+  const holes = 9;
+  const start = -280;
+
+  final buffer = StringBuffer();
+  buffer.writeln('    <g transform="translate(0, $y)">');
+
+  for (var i = 0; i < holes; i++) {
+    final x = start + i * spacing;
+    buffer.writeln(
+      '      <circle cx="$x" cy="0" r="16" fill="#2e1a0d" opacity="0.92"/>',
+    );
+    buffer.writeln(
+      '      <circle cx="$x" cy="-4" r="8" fill="url(#holeGlow)" '
+      'opacity="0.75"/>',
+    );
+  }
+
+  buffer.writeln('    </g>');
+  return buffer.toString();
+}
+
+String _cardStack() {
+  return '''
+  <g transform="translate(430 360)">
+    ${_card(x: -60, y: 30, rotation: -12, label: '5♥', color: '#d32f2f')}
+    ${_card(x: 90, y: 80, rotation: 10, label: 'J♣', color: '#0d0d0d')}
+  </g>''';
+}
+
+String _card({
+  required double x,
+  required double y,
+  required double rotation,
+  required String label,
+  required String color,
+}) {
+  final rank = label.substring(0, label.length - 1);
+  final suit = label.substring(label.length - 1);
+
+  return '''
+    <g transform="translate($x, $y) rotate($rotation)" filter="url(#shadow)">
+      <rect x="-92" y="-128" width="184" height="256" rx="26"
+fill="url(#cardFace)" stroke="rgba(0,0,0,0.08)" stroke-width="4"/>
+      <rect x="-92" y="-128" width="184" height="256" rx="26" fill="white" opacity="0.08"/>
+      <text x="-62" y="-80" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="$color" text-anchor="middle" dominant-baseline="middle">$rank</text>
+      <text x="0" y="26" font-family="Montserrat, Arial, sans-serif" font-size="110" font-weight="800"
+            fill="$color" text-anchor="middle" dominant-baseline="middle">$label</text>
+      <text x="62" y="110" font-family="Montserrat, Arial, sans-serif" font-size="46" font-weight="800"
+            fill="$color" text-anchor="middle" dominant-baseline="middle">$suit</text>
+    </g>''';
+}
+
+String _pegCluster() {
+  return '''
+  <g transform="translate(512 648) rotate(-14)">
+    ${_peg(x: -190, color: 'url(#pegRed)')}
+    ${_peg(x: -110, color: 'url(#pegBlue)')}
+    ${_peg(x: -30, color: 'url(#pegGold)')}
+    ${_peg(x: 70, color: 'url(#pegGreen)')}
+  </g>''';
+}
+
+String _peg({required double x, required String color}) {
+  return '''
+    <g transform="translate($x, 0)">
+      <ellipse cx="0" cy="60" rx="20" ry="9" fill="rgba(0,0,0,0.28)"/>
+      <rect x="-18" y="-56" width="36" height="112" rx="18" fill="$color"
+            stroke="rgba(255,255,255,0.25)" stroke-width="3" filter="url(#shadow)"/>
+      <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
+    </g>''';
 }
