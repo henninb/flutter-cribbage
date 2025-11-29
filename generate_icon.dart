@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
+import 'dart:math';
+import 'package:image/image.dart' as img;
 
 /// Simple SVG icon generator for Cribbage app
 /// Creates a modern, eye-catching icon with cribbage theme
@@ -14,9 +16,10 @@ void main() {
   File('assets/cribbage_icon_foreground.svg').writeAsStringSync(foregroundSvg);
   print('✓ Created assets/cribbage_icon_foreground.svg');
 
+  _writePngs();
+
   print('\nNext steps:');
-  print('1. Convert SVG to PNG (1024x1024) using an online tool or ImageMagick:');
-  print('   - Visit https://svgtopng.com/ or use: convert -resize 1024x1024 assets/cribbage_icon.svg assets/cribbage_icon.png');
+  print('1. Run: dart run generate_icon.dart');
   print('2. Run: dart run flutter_launcher_icons');
   print('3. Rebuild your app to see the new icon!');
 }
@@ -213,3 +216,136 @@ String _peg({required double x, required String color}) {
       <ellipse cx="0" cy="-48" rx="12" ry="10" fill="rgba(255,255,255,0.42)"/>
     </g>''';
 }
+
+void _writePngs() {
+  const size = 1024;
+
+  final background = _buildBackgroundPng(size);
+  File('assets/cribbage_icon.png').writeAsBytesSync(img.encodePng(background));
+  print('✓ Created assets/cribbage_icon.png');
+
+  final foreground = _buildForegroundPng(size);
+  File('assets/cribbage_icon_foreground.png').writeAsBytesSync(img.encodePng(foreground));
+  print('✓ Created assets/cribbage_icon_foreground.png');
+}
+
+img.Image _buildBackgroundPng(int size) {
+  final canvas = img.Image(width: size, height: size);
+  const start = [11, 39, 64];
+  const end = [15, 93, 95];
+
+  for (var y = 0; y < size; y++) {
+    for (var x = 0; x < size; x++) {
+      final tx = x / (size - 1);
+      final ty = y / (size - 1);
+      final t = (tx + ty) / 2;
+      final r = _lerp(start[0], end[0], t);
+      final g = _lerp(start[1], end[1], t);
+      final b = _lerp(start[2], end[2], t);
+      canvas.setPixelRgba(x, y, r, g, b, 255);
+    }
+  }
+
+  // Subtle vignette
+  final cx = size / 2;
+  final cy = size / 2;
+  final maxDist = sqrt(cx * cx + cy * cy);
+  for (var y = 0; y < size; y++) {
+    for (var x = 0; x < size; x++) {
+      final dist = sqrt(pow(x - cx, 2) + pow(y - cy, 2));
+      final factor = 1 - pow(dist / maxDist, 1.3);
+      final darken = (1 - factor.clamp(0.0, 1.0)) * 0.2;
+      final pixel = canvas.getPixel(x, y);
+      final r = (img.getRed(pixel) * (1 - darken)).round();
+      final g = (img.getGreen(pixel) * (1 - darken)).round();
+      final b = (img.getBlue(pixel) * (1 - darken)).round();
+      canvas.setPixelRgba(x, y, r, g, b, 255);
+    }
+  }
+
+  return canvas;
+}
+
+img.Image _buildForegroundPng(int size) {
+  final canvas = img.Image(width: size, height: size);
+  img.fill(canvas, img.getColor(0, 0, 0, 0));
+
+  final centerX = size ~/ 2;
+  final centerY = size ~/ 2;
+
+  // Card shadow
+  _drawRoundedRect(
+    canvas,
+    centerX - 240 + 12,
+    centerY - 320 + 16,
+    480,
+    640,
+    48,
+    img.getColor(0, 0, 0, 80),
+  );
+
+  // Card face
+  _drawRoundedRect(
+    canvas,
+    centerX - 240,
+    centerY - 320,
+    480,
+    640,
+    48,
+    img.getColor(246, 246, 246),
+  );
+
+  // Accent stripe
+  _drawRoundedRect(
+    canvas,
+    centerX - 240,
+    centerY - 50,
+    480,
+    100,
+    38,
+    img.getColor(13, 130, 110),
+  );
+
+  // Suit markers
+  img.fillCircle(canvas, centerX - 120, centerY - 160, 32, img.getColor(194, 24, 7));
+  img.fillCircle(canvas, centerX + 120, centerY - 160, 32, img.getColor(15, 45, 80));
+
+  // "500" text
+  const textColor = 0xff0b2740;
+  final text = '500';
+  final font = img.arial48;
+  final textWidth = text.length * font.fontWidth;
+  final textHeight = font.fontHeight;
+  final textX = centerX - (textWidth ~/ 2);
+  final textY = centerY - (textHeight ~/ 2);
+  img.drawString(canvas, font, textX, textY, text, color: textColor);
+
+  // Corner pips for extra detail
+  img.drawString(canvas, img.arial24, centerX - 205, centerY - 290, '5', color: textColor);
+  img.drawString(canvas, img.arial24, centerX + 160, centerY + 230, '5', color: textColor);
+
+  return canvas;
+}
+
+void _drawRoundedRect(
+  img.Image canvas,
+  int x,
+  int y,
+  int width,
+  int height,
+  int radius,
+  int color,
+) {
+  final right = x + width;
+  final bottom = y + height;
+  img.fillRect(canvas, x + radius, y, right - radius, bottom, color: color);
+  img.fillRect(canvas, x, y + radius, right, bottom - radius, color: color);
+
+  // Corners
+  img.fillCircle(canvas, x + radius, y + radius, radius, color);
+  img.fillCircle(canvas, right - radius, y + radius, radius, color);
+  img.fillCircle(canvas, x + radius, bottom - radius, radius, color);
+  img.fillCircle(canvas, right - radius, bottom - radius, radius, color);
+}
+
+int _lerp(int a, int b, double t) => (a + (b - a) * t).round();
