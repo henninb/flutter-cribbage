@@ -52,6 +52,69 @@ void main() {
       final opponent = const PlayingCard(rank: Rank.two, suit: Suit.hearts);
       expect(dealerFromCut(player, opponent), Player.opponent);
     });
+
+    test('ace beats all other cards', () {
+      final player = const PlayingCard(rank: Rank.ace, suit: Suit.hearts);
+      final opponent = const PlayingCard(rank: Rank.king, suit: Suit.spades);
+      expect(dealerFromCut(player, opponent), Player.player);
+    });
+
+    test('two beats three and higher', () {
+      final player = const PlayingCard(rank: Rank.two, suit: Suit.diamonds);
+      final opponent = const PlayingCard(rank: Rank.nine, suit: Suit.clubs);
+      expect(dealerFromCut(player, opponent), Player.player);
+    });
+
+    test('king loses to all cards except queen and jack', () {
+      final player = const PlayingCard(rank: Rank.king, suit: Suit.hearts);
+      final opponent = const PlayingCard(rank: Rank.three, suit: Suit.clubs);
+      expect(dealerFromCut(player, opponent), Player.opponent);
+    });
+  });
+
+  group('deal edge cases', () {
+    test('deals with empty remaining deck', () {
+      final smallDeck = [
+        const PlayingCard(rank: Rank.ace, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.two, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.three, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.four, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.five, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.six, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.seven, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.eight, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.nine, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.ten, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.jack, suit: Suit.clubs),
+        const PlayingCard(rank: Rank.queen, suit: Suit.clubs),
+      ];
+      final result = dealSixToEach(smallDeck, true);
+      expect(result.remainingDeck, isEmpty);
+    });
+
+    test('player hand has no duplicates from opponent hand', () {
+      final result = dealSixToEach(_orderedDeck(), true);
+      final combined = [...result.playerHand, ...result.opponentHand];
+      expect(combined.length, 12);
+      expect(combined.toSet().length, 12); // All unique
+    });
+
+    test('alternating pattern maintained for full deal', () {
+      final result = dealSixToEach(_orderedDeck(), false);
+      // Player is not dealer, so player gets first card
+      expect(result.playerHand[0], _orderedDeck()[0]);
+      expect(result.opponentHand[0], _orderedDeck()[1]);
+      expect(result.playerHand[1], _orderedDeck()[2]);
+      expect(result.opponentHand[1], _orderedDeck()[3]);
+      expect(result.playerHand[2], _orderedDeck()[4]);
+      expect(result.opponentHand[2], _orderedDeck()[5]);
+    });
+
+    test('remaining deck preserves order', () {
+      final result = dealSixToEach(_orderedDeck(), true);
+      expect(result.remainingDeck[0], _orderedDeck()[12]);
+      expect(result.remainingDeck[1], _orderedDeck()[13]);
+    });
   });
 }
 

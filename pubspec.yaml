@@ -1,5 +1,5 @@
 name: cribbage
-version: 1.0.86+86
+version: 1.0.87+87
 description: Flutter implementation of the Cribbage game with full gameplay.
 publish_to: 'none'
 

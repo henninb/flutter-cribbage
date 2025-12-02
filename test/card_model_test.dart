@@ -46,5 +46,101 @@ void main() {
       final deckB = createDeck(random: Random(42));
       expect(deckA, deckB);
     });
+
+    test('deck contains all 4 suits', () {
+      final deck = createDeck();
+      expect(deck.where((c) => c.suit == Suit.hearts).length, 13);
+      expect(deck.where((c) => c.suit == Suit.diamonds).length, 13);
+      expect(deck.where((c) => c.suit == Suit.clubs).length, 13);
+      expect(deck.where((c) => c.suit == Suit.spades).length, 13);
+    });
+
+    test('deck contains all 13 ranks', () {
+      final deck = createDeck();
+      for (final rank in Rank.values) {
+        expect(deck.where((c) => c.rank == rank).length, 4);
+      }
+    });
+  });
+
+  group('Card equality and hashCode', () {
+    test('cards with same rank and suit are equal', () {
+      const card1 = PlayingCard(rank: Rank.seven, suit: Suit.hearts);
+      const card2 = PlayingCard(rank: Rank.seven, suit: Suit.hearts);
+      expect(card1, equals(card2));
+      expect(card1.hashCode, equals(card2.hashCode));
+    });
+
+    test('cards with different ranks are not equal', () {
+      const card1 = PlayingCard(rank: Rank.seven, suit: Suit.hearts);
+      const card2 = PlayingCard(rank: Rank.eight, suit: Suit.hearts);
+      expect(card1, isNot(equals(card2)));
+    });
+
+    test('cards with different suits are not equal', () {
+      const card1 = PlayingCard(rank: Rank.seven, suit: Suit.hearts);
+      const card2 = PlayingCard(rank: Rank.seven, suit: Suit.clubs);
+      expect(card1, isNot(equals(card2)));
+    });
+  });
+
+  group('Card labels', () {
+    test('number cards show rank', () {
+      const two = PlayingCard(rank: Rank.two, suit: Suit.hearts);
+      const ten = PlayingCard(rank: Rank.ten, suit: Suit.diamonds);
+      expect(two.label, '2♥');
+      expect(ten.label, '10♦');
+    });
+
+    test('face cards show letter', () {
+      const jack = PlayingCard(rank: Rank.jack, suit: Suit.clubs);
+      const queen = PlayingCard(rank: Rank.queen, suit: Suit.spades);
+      const king = PlayingCard(rank: Rank.king, suit: Suit.hearts);
+      expect(jack.label, 'J♣');
+      expect(queen.label, 'Q♠');
+      expect(king.label, 'K♥');
+    });
+
+    test('ace shows A', () {
+      const ace = PlayingCard(rank: Rank.ace, suit: Suit.diamonds);
+      expect(ace.label, 'A♦');
+    });
+  });
+
+  group('Card values', () {
+    test('number cards have face value', () {
+      expect(const PlayingCard(rank: Rank.two, suit: Suit.hearts).value, 2);
+      expect(const PlayingCard(rank: Rank.five, suit: Suit.clubs).value, 5);
+      expect(const PlayingCard(rank: Rank.nine, suit: Suit.diamonds).value, 9);
+    });
+
+    test('ten has value 10', () {
+      expect(const PlayingCard(rank: Rank.ten, suit: Suit.spades).value, 10);
+    });
+
+    test('all face cards have value 10', () {
+      expect(const PlayingCard(rank: Rank.jack, suit: Suit.hearts).value, 10);
+      expect(const PlayingCard(rank: Rank.queen, suit: Suit.clubs).value, 10);
+      expect(const PlayingCard(rank: Rank.king, suit: Suit.diamonds).value, 10);
+    });
+
+    test('ace has value 1', () {
+      expect(const PlayingCard(rank: Rank.ace, suit: Suit.spades).value, 1);
+    });
+  });
+
+  test('toString returns label', () {
+    const card = PlayingCard(rank: Rank.king, suit: Suit.hearts);
+    expect(card.toString(), 'K♥');
+  });
+
+  test('encode produces parseable string', () {
+    const card = PlayingCard(rank: Rank.five, suit: Suit.clubs);
+    final encoded = card.encode();
+    expect(encoded, contains('|'));
+    final parts = encoded.split('|');
+    expect(parts.length, 2);
+    expect(int.tryParse(parts[0]), isNotNull);
+    expect(int.tryParse(parts[1]), isNotNull);
   });
 }
