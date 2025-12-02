@@ -242,33 +242,29 @@ img.Image _buildBackgroundPng(int size) {
       final r = _lerp(start[0], end[0], t);
       final g = _lerp(start[1], end[1], t);
       final b = _lerp(start[2], end[2], t);
-      canvas.setPixelRgba(x, y, r, g, b, 255);
-    }
-  }
-
-  // Subtle vignette
-  final cx = size / 2;
-  final cy = size / 2;
-  final maxDist = sqrt(cx * cx + cy * cy);
-  for (var y = 0; y < size; y++) {
-    for (var x = 0; x < size; x++) {
+      // Vignette factor baked in to avoid a second pass
+      final cx = size / 2;
+      final cy = size / 2;
+      final maxDist = sqrt(cx * cx + cy * cy);
       final dist = sqrt(pow(x - cx, 2) + pow(y - cy, 2));
-      final factor = 1 - pow(dist / maxDist, 1.3);
-      final darken = (1 - factor.clamp(0.0, 1.0)) * 0.2;
-      final pixel = canvas.getPixel(x, y);
-      final r = (img.getRed(pixel) * (1 - darken)).round();
-      final g = (img.getGreen(pixel) * (1 - darken)).round();
-      final b = (img.getBlue(pixel) * (1 - darken)).round();
-      canvas.setPixelRgba(x, y, r, g, b, 255);
+      final vignette = pow(1 - (dist / maxDist), 1.2).clamp(0.0, 1.0);
+      final scale = 0.8 + 0.2 * vignette;
+      canvas.setPixelRgba(
+        x,
+        y,
+        (r * scale).round(),
+        (g * scale).round(),
+        (b * scale).round(),
+        255,
+      );
     }
   }
-
   return canvas;
 }
 
 img.Image _buildForegroundPng(int size) {
   final canvas = img.Image(width: size, height: size);
-  img.fill(canvas, img.getColor(0, 0, 0, 0));
+  img.fill(canvas, color: img.ColorUint8.rgba(0, 0, 0, 0));
 
   final centerX = size ~/ 2;
   final centerY = size ~/ 2;
@@ -276,76 +272,134 @@ img.Image _buildForegroundPng(int size) {
   // Card shadow
   _drawRoundedRect(
     canvas,
-    centerX - 240 + 12,
-    centerY - 320 + 16,
-    480,
-    640,
-    48,
-    img.getColor(0, 0, 0, 80),
+    x: centerX - 240 + 12,
+    y: centerY - 320 + 16,
+    width: 480,
+    height: 640,
+    radius: 48,
+    color: img.ColorUint8.rgba(0, 0, 0, 80),
   );
 
   // Card face
   _drawRoundedRect(
     canvas,
-    centerX - 240,
-    centerY - 320,
-    480,
-    640,
-    48,
-    img.getColor(246, 246, 246),
+    x: centerX - 240,
+    y: centerY - 320,
+    width: 480,
+    height: 640,
+    radius: 48,
+    color: img.ColorUint8.rgba(246, 246, 246, 255),
   );
 
   // Accent stripe
   _drawRoundedRect(
     canvas,
-    centerX - 240,
-    centerY - 50,
-    480,
-    100,
-    38,
-    img.getColor(13, 130, 110),
+    x: centerX - 240,
+    y: centerY - 50,
+    width: 480,
+    height: 100,
+    radius: 38,
+    color: img.ColorUint8.rgba(13, 130, 110, 255),
   );
 
   // Suit markers
-  img.fillCircle(canvas, centerX - 120, centerY - 160, 32, img.getColor(194, 24, 7));
-  img.fillCircle(canvas, centerX + 120, centerY - 160, 32, img.getColor(15, 45, 80));
+  img.fillCircle(
+    canvas,
+    x: centerX - 120,
+    y: centerY - 160,
+    radius: 32,
+    color: img.ColorUint8.rgba(194, 24, 7, 255),
+  );
+  img.fillCircle(
+    canvas,
+    x: centerX + 120,
+    y: centerY - 160,
+    radius: 32,
+    color: img.ColorUint8.rgba(15, 45, 80, 255),
+  );
 
   // "500" text
-  const textColor = 0xff0b2740;
+  final textColor = img.ColorUint8.rgba(11, 39, 64, 255);
   final text = '500';
   final font = img.arial48;
-  final textWidth = text.length * font.fontWidth;
-  final textHeight = font.fontHeight;
-  final textX = centerX - (textWidth ~/ 2);
-  final textY = centerY - (textHeight ~/ 2);
-  img.drawString(canvas, font, textX, textY, text, color: textColor);
+  final metrics = _measureText(font, text);
+  final textX = centerX - (metrics.width ~/ 2);
+  final textY = centerY - (metrics.height ~/ 2);
+  img.drawString(
+    canvas,
+    text,
+    font: font,
+    x: textX,
+    y: textY,
+    color: textColor,
+  );
 
   // Corner pips for extra detail
-  img.drawString(canvas, img.arial24, centerX - 205, centerY - 290, '5', color: textColor);
-  img.drawString(canvas, img.arial24, centerX + 160, centerY + 230, '5', color: textColor);
+  img.drawString(
+    canvas,
+    '5',
+    font: img.arial24,
+    x: centerX - 205,
+    y: centerY - 290,
+    color: textColor,
+  );
+  img.drawString(
+    canvas,
+    '5',
+    font: img.arial24,
+    x: centerX + 160,
+    y: centerY + 230,
+    color: textColor,
+  );
 
   return canvas;
 }
 
 void _drawRoundedRect(
-  img.Image canvas,
-  int x,
-  int y,
-  int width,
-  int height,
-  int radius,
-  int color,
-) {
+  img.Image canvas, {
+  required int x,
+  required int y,
+  required int width,
+  required int height,
+  required int radius,
+  required img.Color color,
+}) {
   final right = x + width;
   final bottom = y + height;
-  img.fillRect(canvas, x + radius, y, right - radius, bottom, color: color);
-  img.fillRect(canvas, x, y + radius, right, bottom - radius, color: color);
+  img.fillRect(
+    canvas,
+    x1: x + radius,
+    y1: y,
+    x2: right - radius,
+    y2: bottom,
+    color: color,
+  );
+  img.fillRect(
+    canvas,
+    x1: x,
+    y1: y + radius,
+    x2: right,
+    y2: bottom - radius,
+    color: color,
+  );
 
   // Corners
-  img.fillCircle(canvas, x + radius, y + radius, radius, color);
-  img.fillCircle(canvas, right - radius, y + radius, radius, color);
-  img.fillCircle(canvas, x + radius, bottom - radius, radius, color);
-  img.fillCircle(canvas, right - radius, bottom - radius, radius, color);
+  img.fillCircle(canvas, x: x + radius, y: y + radius, radius: radius, color: color);
+  img.fillCircle(canvas, x: right - radius, y: y + radius, radius: radius, color: color);
+  img.fillCircle(canvas, x: x + radius, y: bottom - radius, radius: radius, color: color);
+  img.fillCircle(canvas, x: right - radius, y: bottom - radius, radius: radius, color: color);
+}
+
+({int width, int height}) _measureText(img.BitmapFont font, String text) {
+  var width = 0;
+  var height = 0;
+  for (final code in text.codeUnits) {
+    final ch = font.characters[code];
+    if (ch == null) continue;
+    width += ch.xAdvance;
+    height = max(height, ch.height + ch.yOffset);
+  }
+  return (width: width, height: height == 0 ? font.lineHeight : height);
 }
 
 int _lerp(int a, int b, double t) => (a + (b - a) * t).round();

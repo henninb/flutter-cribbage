@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/card.dart';
 
 class DetailedScoreBreakdown {
@@ -41,6 +43,7 @@ class CribbageScorer {
     PlayingCard starter,
     bool isCrib,
   ) {
+    debugPrint('[SCORER] Scoring ${isCrib ? "crib" : "hand"}: ${hand.map((c) => c.label).join(", ")} + starter: ${starter.label}');
     final allCards = [...hand, starter];
     final entries = <ScoreEntry>[];
 
@@ -139,10 +142,17 @@ class CribbageScorer {
     }
 
     final total = entries.fold<int>(0, (sum, entry) => sum + entry.points);
+    debugPrint('[SCORER] Total score: $total from ${entries.length} scoring combinations');
+    if (entries.isNotEmpty) {
+      for (final entry in entries) {
+        debugPrint('[SCORER]   ${entry.type}: ${entry.cards.map((c) => c.label).join(",")} = ${entry.points}');
+      }
+    }
     return DetailedScoreBreakdown(total, entries);
   }
 
   static PeggingPoints pointsForPile(List<PlayingCard> pile, int newCount) {
+    debugPrint('[PEGGING SCORER] Evaluating pile: ${pile.map((c) => c.label).join(", ")} | Count: $newCount');
     var total = 0;
     var fifteen = 0;
     var thirtyOne = 0;
@@ -153,10 +163,12 @@ class CribbageScorer {
     if (newCount == 15) {
       fifteen = 2;
       total += 2;
+      debugPrint('[PEGGING SCORER]   15 for 2 points');
     }
     if (newCount == 31) {
       thirtyOne = 2;
       total += 2;
+      debugPrint('[PEGGING SCORER]   31 for 2 points');
     }
 
     if (pile.isNotEmpty) {
@@ -173,14 +185,17 @@ class CribbageScorer {
         case 2:
           pairPoints = 2;
           total += 2;
+          debugPrint('[PEGGING SCORER]   Pair for 2 points');
           break;
         case 3:
           pairPoints = 6;
           total += 6;
+          debugPrint('[PEGGING SCORER]   Pair royal (3-of-kind) for 6 points');
           break;
         case 4:
           pairPoints = 12;
           total += 12;
+          debugPrint('[PEGGING SCORER]   Double pair royal (4-of-kind) for 12 points');
           break;
         default:
           break;
@@ -204,10 +219,12 @@ class CribbageScorer {
       if (consecutive) {
         runPoints = runLength;
         total += runPoints;
+        debugPrint('[PEGGING SCORER]   Run of $runLength for $runLength points');
         break;
       }
     }
 
+    debugPrint('[PEGGING SCORER] Total pegging points: $total');
     return PeggingPoints(
       total: total,
       fifteen: fifteen,

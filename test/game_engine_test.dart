@@ -28,14 +28,14 @@ class _FakePersistence implements GamePersistence {
   PlayerNames? loadPlayerNames() => namesToLoad;
 
   @override
-  void saveStats({
+  Future<void> saveStats({
     required int gamesWon,
     required int gamesLost,
     required int skunksFor,
     required int skunksAgainst,
     required int doubleSkunksFor,
     required int doubleSkunksAgainst,
-  }) {
+  }) async {
     lastSavedStats = StoredStats(
       gamesWon: gamesWon,
       gamesLost: gamesLost,
@@ -47,13 +47,13 @@ class _FakePersistence implements GamePersistence {
   }
 
   @override
-  void saveCutCards(PlayingCard player, PlayingCard opponent) {
+  Future<void> saveCutCards(PlayingCard player, PlayingCard opponent) async {
     savedCutPlayer = player;
     savedCutOpponent = opponent;
   }
 
   @override
-  void savePlayerNames({required String playerName, required String opponentName}) {
+  Future<void> savePlayerNames({required String playerName, required String opponentName}) async {
     savedPlayerName = playerName;
     savedOpponentName = opponentName;
   }

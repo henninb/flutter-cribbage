@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+
 import '../models/card.dart';
 
 typedef PeggingMove = ({int index, PlayingCard card});
@@ -8,16 +10,26 @@ class OpponentAI {
   const OpponentAI._();
 
   static List<PlayingCard> chooseCribCards(List<PlayingCard> hand, bool isDealer) {
+    debugPrint('[OPPONENT AI - CRIB] Choosing crib cards from hand of ${hand.length}: ${hand.map((c) => c.label).join(", ")}');
+    debugPrint('[OPPONENT AI - CRIB] Position: ${isDealer ? "Dealer" : "Pone"}');
     if (hand.length != 6) {
+      debugPrint('[OPPONENT AI - CRIB WARNING] Hand size != 6, taking first 2 cards');
       return hand.take(2).toList();
     }
     final combos = _generateCombinations(hand);
+    debugPrint('[OPPONENT AI - CRIB] Evaluating ${combos.length} possible combinations...');
     combos.sort((a, b) {
       final scoreA = _evaluateCribChoice(a.keep, a.discard, isDealer);
       final scoreB = _evaluateCribChoice(b.keep, b.discard, isDealer);
       return scoreB.compareTo(scoreA);
     });
-    return combos.firstOrNull?.discard ?? hand.take(2).toList();
+    final bestChoice = combos.firstOrNull;
+    final result = bestChoice?.discard ?? hand.take(2).toList();
+    debugPrint('[OPPONENT AI - CRIB] Selected discard: ${result.map((c) => c.label).join(", ")}');
+    if (bestChoice != null) {
+      debugPrint('[OPPONENT AI - CRIB] Keeping: ${bestChoice.keep.map((c) => c.label).join(", ")}');
+    }
+    return result;
   }
 
   static PeggingMove? choosePeggingCard({
@@ -27,6 +39,8 @@ class OpponentAI {
     required List<PlayingCard> peggingPile,
     required int opponentCardsRemaining,
   }) {
+    debugPrint('[OPPONENT AI - PEGGING] Choosing pegging card: count=$currentCount, pile=${peggingPile.map((c) => c.label).join(",")}');
+    debugPrint('[OPPONENT AI - PEGGING] Hand: ${hand.asMap().entries.where((e) => !playedIndices.contains(e.key)).map((e) => "${e.key}:${e.value.label}").join(", ")}');
     final legalMoves = <PeggingMove>[];
     for (var i = 0; i < hand.length; i++) {
       if (playedIndices.contains(i)) continue;
@@ -35,7 +49,9 @@ class OpponentAI {
         legalMoves.add((index: i, card: card));
       }
     }
+    debugPrint('[OPPONENT AI - PEGGING] Legal moves: ${legalMoves.length}');
     if (legalMoves.isEmpty) {
+      debugPrint('[OPPONENT AI - PEGGING] No legal moves available');
       return null;
     }
     legalMoves.sort((a, b) {
@@ -53,6 +69,7 @@ class OpponentAI {
       );
       return scoreB.compareTo(scoreA);
     });
+    debugPrint('[OPPONENT AI - PEGGING] Best move: ${legalMoves.first.card.label} at index ${legalMoves.first.index}');
     return legalMoves.first;
   }
 

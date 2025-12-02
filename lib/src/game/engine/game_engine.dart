@@ -29,8 +29,10 @@ class GameEngine extends ChangeNotifier {
   GameState get state => _state;
 
   void initialize() {
+    debugPrint('[INIT] Initializing game engine...');
     final stats = _persistence?.loadStats();
     if (stats != null) {
+      debugPrint('[INIT] Loaded stats: Won=${stats.gamesWon}, Lost=${stats.gamesLost}, Skunks=${stats.skunksFor}/${stats.skunksAgainst}, DoubleSkunks=${stats.doubleSkunksFor}/${stats.doubleSkunksAgainst}');
       _state = _state.copyWith(
         gamesWon: stats.gamesWon,
         gamesLost: stats.gamesLost,
@@ -39,9 +41,12 @@ class GameEngine extends ChangeNotifier {
         doubleSkunksFor: stats.doubleSkunksFor,
         doubleSkunksAgainst: stats.doubleSkunksAgainst,
       );
+    } else {
+      debugPrint('[INIT] No saved stats found, starting fresh');
     }
     final cut = _persistence?.loadCutCards();
     if (cut != null) {
+      debugPrint('[INIT] Loaded previous cut cards: Player=${cut.player.label}, Opponent=${cut.opponent.label}');
       _state = _state.copyWith(
         cutPlayerCard: cut.player,
         cutOpponentCard: cut.opponent,
@@ -49,6 +54,7 @@ class GameEngine extends ChangeNotifier {
     }
     final names = _persistence?.loadPlayerNames();
     if (names != null) {
+      debugPrint('[INIT] Loaded player names: "${names.playerName}" vs "${names.opponentName}"');
       // Sanitize loaded names for security
       final sanitizedPlayerName = StringSanitizer.sanitizeNameWithDefault(
         names.playerName,
@@ -58,11 +64,15 @@ class GameEngine extends ChangeNotifier {
         names.opponentName,
         'Opponent',
       );
+      if (sanitizedPlayerName != names.playerName || sanitizedOpponentName != names.opponentName) {
+        debugPrint('[INIT] Names sanitized to: "$sanitizedPlayerName" vs "$sanitizedOpponentName"');
+      }
       _state = _state.copyWith(
         playerName: sanitizedPlayerName,
         opponentName: sanitizedOpponentName,
       );
     }
+    debugPrint('[INIT] Initialization complete');
     notifyListeners();
   }
 
@@ -127,11 +137,13 @@ class GameEngine extends ChangeNotifier {
 
   void selectCutCard(int index) {
     if (_state.cutDeck.isEmpty || index < 0 || index >= _state.cutDeck.length) {
+      debugPrint('[CUT ERROR] Invalid cut card selection: index=$index, deckSize=${_state.cutDeck.length}');
       return;
     }
 
     // Player selects their card
     final playerCut = _state.cutDeck[index];
+    debugPrint('[CUT] Player selected card at index $index: ${playerCut.label}');
 
     // Opponent selects a random card (different from player's card)
     final remainingIndices = List<int>.generate(_state.cutDeck.length, (i) => i)
@@ -140,6 +152,7 @@ class GameEngine extends ChangeNotifier {
     final opponentIndex =
         remainingIndices[_random.nextInt(remainingIndices.length)];
     final opponentCut = _state.cutDeck[opponentIndex];
+    debugPrint('[CUT] Opponent selected card at index $opponentIndex: ${opponentCut.label}');
 
     _state = _state.copyWith(
       cutPlayerCard: playerCut,
@@ -147,14 +160,17 @@ class GameEngine extends ChangeNotifier {
       playerHasSelectedCutCard: true,
       showCutForDealer: true,
     );
-    _persistence?.saveCutCards(playerCut, opponentCut);
+    // Fire and forget - don't block UI on save
+    unawaited(_persistence?.saveCutCards(playerCut, opponentCut));
 
     final dealer = dealerFromCut(playerCut, opponentCut);
     if (dealer == null) {
+      debugPrint('[CUT] TIE! Both players cut ${playerCut.rank.name} - need to cut again');
       _state =
           _state.copyWith(gameStatus: 'Tie! Cut again to determine dealer.');
     } else {
       final playerDeals = dealer == Player.player;
+      debugPrint('[CUT] ${playerDeals ? "Player" : "Opponent"} wins the cut and will be dealer (${playerCut.label} vs ${opponentCut.label})');
       _state = _state.copyWith(
         isPlayerDealer: playerDeals,
         currentPhase: GamePhase.dealing,
@@ -183,11 +199,16 @@ class GameEngine extends ChangeNotifier {
   }
 
   void toggleCardSelection(int index) {
+    debugPrint('[CRIB SELECTION] Toggling card at index $index');
     final selected = Set<int>.from(_state.selectedCards);
     if (selected.contains(index)) {
+      debugPrint('[CRIB SELECTION] Deselecting card at index $index');
       selected.remove(index);
     } else if (selected.length < 2) {
+      debugPrint('[CRIB SELECTION] Selecting card at index $index (${selected.length + 1}/2)');
       selected.add(index);
+    } else {
+      debugPrint('[CRIB SELECTION] Cannot select card at index $index - already have 2 cards selected');
     }
     _state = _state.copyWith(selectedCards: selected);
     notifyListeners();
@@ -196,10 +217,15 @@ class GameEngine extends ChangeNotifier {
   /// Get AI advice for which 2 cards to discard to the crib
   /// Returns the indices of the cards to discard
   List<int> getAdvice() {
+    debugPrint('[AI ADVICE] Requesting crib selection advice');
     if (_state.currentPhase != GamePhase.cribSelection ||
         _state.playerHand.length != 6) {
+      debugPrint('[AI ADVICE ERROR] Cannot give advice: phase=${_state.currentPhase}, handSize=${_state.playerHand.length}');
       return [];
     }
+
+    debugPrint('[AI ADVICE] Hand: ${_state.playerHand.map((c) => c.label).join(", ")}');
+    debugPrint('[AI ADVICE] Position: ${_state.isPlayerDealer ? "Dealer" : "Pone"}, Score: ${_state.playerScore} vs ${_state.opponentScore}');
 
     // Generate all possible combinations
     final combos = _generateCombinations(_state.playerHand);
@@ -216,6 +242,7 @@ class GameEngine extends ChangeNotifier {
     // Get the best choice
     final bestChoice = combos.firstOrNull;
     if (bestChoice == null) {
+      debugPrint('[AI ADVICE ERROR] No valid combinations found');
       return [];
     }
 
@@ -227,6 +254,9 @@ class GameEngine extends ChangeNotifier {
         if (indices.length == 2) break;
       }
     }
+
+    debugPrint('[AI ADVICE] Recommended discard: ${bestChoice.discard.map((c) => c.label).join(", ")} (indices: $indices)');
+    debugPrint('[AI ADVICE] Keep: ${bestChoice.keep.map((c) => c.label).join(", ")}');
 
     return indices;
   }
@@ -1511,9 +1541,12 @@ class GameEngine extends ChangeNotifier {
     } else {
       _state = _state.copyWith(opponentName: sanitizedName);
     }
-    _persistence?.savePlayerNames(
-      playerName: _state.playerName,
-      opponentName: _state.opponentName,
+    // Fire and forget - don't block UI on save
+    unawaited(
+      _persistence?.savePlayerNames(
+        playerName: _state.playerName,
+        opponentName: _state.opponentName,
+      ),
     );
     notifyListeners();
   }
@@ -1720,12 +1753,19 @@ class GameEngine extends ChangeNotifier {
     if (_state.playerScore <= 120 && _state.opponentScore <= 120) {
       return;
     }
+    debugPrint('[GAME OVER] Game finished! Player: ${_state.playerScore}, Opponent: ${_state.opponentScore}');
     final playerWins = _state.playerScore > _state.opponentScore;
     final loserScore = playerWins ? _state.opponentScore : _state.playerScore;
 
     // Check for skunk (< 91) and double skunk (< 61)
     final doubleSkunk = loserScore < 61;
     final skunk = loserScore < 91;
+
+    if (doubleSkunk) {
+      debugPrint('[GAME OVER] DOUBLE SKUNK! Loser score: $loserScore');
+    } else if (skunk) {
+      debugPrint('[GAME OVER] SKUNK! Loser score: $loserScore');
+    }
 
     final gamesWon = playerWins ? _state.gamesWon + 1 : _state.gamesWon;
     final gamesLost = playerWins ? _state.gamesLost : _state.gamesLost + 1;
@@ -1744,13 +1784,17 @@ class GameEngine extends ChangeNotifier {
         ? _state.doubleSkunksAgainst + 1
         : _state.doubleSkunksAgainst;
 
-    _persistence?.saveStats(
-      gamesWon: gamesWon,
-      gamesLost: gamesLost,
-      skunksFor: skunksFor,
-      skunksAgainst: skunksAgainst,
-      doubleSkunksFor: doubleSkunksFor,
-      doubleSkunksAgainst: doubleSkunksAgainst,
+    debugPrint('[GAME OVER] Saving stats: Won=$gamesWon, Lost=$gamesLost, Skunks=$skunksFor/$skunksAgainst, DoubleSkunks=$doubleSkunksFor/$doubleSkunksAgainst');
+    // Fire and forget - don't block UI on save
+    unawaited(
+      _persistence?.saveStats(
+        gamesWon: gamesWon,
+        gamesLost: gamesLost,
+        skunksFor: skunksFor,
+        skunksAgainst: skunksAgainst,
+        doubleSkunksFor: doubleSkunksFor,
+        doubleSkunksAgainst: doubleSkunksAgainst,
+      ),
     );
 
     _state = _state.copyWith(
@@ -1778,31 +1822,71 @@ class GameEngine extends ChangeNotifier {
       ),
       gameStatus: playerWins ? 'You win!' : 'Opponent wins!',
     );
+    debugPrint('[GAME OVER] Winner modal displayed');
     notifyListeners();
   }
 
   void _maybeAutoplayOpponent() {
     if (_state.currentPhase != GamePhase.pegging || _state.isPlayerTurn) {
+      debugPrint('[OPPONENT AUTOPLAY] Skipping autoplay: phase=${_state.currentPhase}, isPlayerTurn=${_state.isPlayerTurn}');
       return;
     }
     if (_state.pendingReset != null) {
       // Don't autoplay while showing pending reset dialog
+      debugPrint('[OPPONENT AUTOPLAY] Skipping autoplay: pending reset dialog active');
       return;
     }
     // Don't check if opponent has played all cards here - they still need to say Go if needed
     if (_opponentAutoplayScheduled) {
+      debugPrint('[OPPONENT AUTOPLAY] Skipping autoplay: already scheduled');
       return;
     }
+
+    // Capture current state snapshot for validation after delay
+    final expectedPhase = _state.currentPhase;
+    final expectedTurn = _state.isPlayerTurn;
+    final expectedPendingReset = _state.pendingReset;
+
+    debugPrint('[OPPONENT AUTOPLAY] Scheduling opponent autoplay in 400ms...');
     _opponentAutoplayScheduled = true;
     Future<void>.delayed(const Duration(milliseconds: 400)).then((_) {
       _opponentAutoplayScheduled = false;
-      if (_state.isPlayerTurn || _state.currentPhase != GamePhase.pegging) {
+
+      // Comprehensive state validation - ensure state hasn't changed during delay
+      if (_state.currentPhase != expectedPhase) {
+        debugPrint('[OPPONENT AUTOPLAY] Phase changed during delay (${expectedPhase.name} -> ${_state.currentPhase.name}), aborting');
         return;
       }
+      if (_state.isPlayerTurn != expectedTurn) {
+        debugPrint('[OPPONENT AUTOPLAY] Turn changed during delay (was opponent turn, now ${_state.isPlayerTurn ? "player" : "opponent"} turn), aborting');
+        return;
+      }
+      if (_state.pendingReset != expectedPendingReset) {
+        debugPrint('[OPPONENT AUTOPLAY] Pending reset state changed during delay, aborting');
+        return;
+      }
+      if (_state.currentPhase != GamePhase.pegging || _state.isPlayerTurn) {
+        debugPrint('[OPPONENT AUTOPLAY] State invalid after delay: phase=${_state.currentPhase}, isPlayerTurn=${_state.isPlayerTurn}');
+        return;
+      }
+      if (_state.pendingReset != null) {
+        debugPrint('[OPPONENT AUTOPLAY] Pending reset dialog appeared during delay, aborting');
+        return;
+      }
+
       final mgr = _peggingManager;
       if (mgr == null) {
+        debugPrint('[OPPONENT AUTOPLAY ERROR] Pegging manager is null, cannot autoplay');
         return;
       }
+
+      // Final validation: ensure turn is still opponent's
+      if (mgr.isPlayerTurn != Player.opponent) {
+        debugPrint('[OPPONENT AUTOPLAY] Manager turn mismatch (expected opponent, got ${mgr.isPlayerTurn.name}), aborting');
+        return;
+      }
+
+      debugPrint('[OPPONENT AUTOPLAY] All validations passed, choosing move (count=${mgr.peggingCount}, cardsRemaining=${_state.opponentHand.length - _state.opponentCardsPlayed.length})');
       final move = OpponentAI.choosePeggingCard(
         hand: _state.opponentHand,
         playedIndices: _state.opponentCardsPlayed,
@@ -1815,6 +1899,7 @@ class GameEngine extends ChangeNotifier {
         debugPrint('[OPPONENT AI] No legal move - saying Go');
         handleGo(fromPlayer: false);
       } else {
+        debugPrint('[OPPONENT AI] Playing card: ${move.card.label} at index ${move.index}');
         playCard(move.index, isPlayer: false);
       }
     });
