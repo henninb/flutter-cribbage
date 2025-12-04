@@ -7,7 +7,6 @@ import '../../utils/string_sanitizer.dart';
 class ActionBar extends StatelessWidget {
   final GameState state;
   final VoidCallback onStartGame;
-  final VoidCallback onEndGame;
   final VoidCallback onCutForDealer;
   final VoidCallback onDeal;
   final VoidCallback onConfirmCrib;
@@ -24,7 +23,6 @@ class ActionBar extends StatelessWidget {
     super.key,
     required this.state,
     required this.onStartGame,
-    required this.onEndGame,
     required this.onCutForDealer,
     required this.onDeal,
     required this.onConfirmCrib,
@@ -123,15 +121,6 @@ class ActionBar extends StatelessWidget {
           child: FilledButton(
             onPressed: onDeal,
             child: const Text('Deal Cards'),
-          ),
-        ),
-      );
-      buttons.add(const SizedBox(width: 8));
-      buttons.add(
-        Expanded(
-          child: FilledButton(
-            onPressed: onEndGame,
-            child: const Text('End Game'),
           ),
         ),
       );

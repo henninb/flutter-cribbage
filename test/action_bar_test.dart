@@ -10,7 +10,6 @@ void main() {
     WidgetTester tester, {
     required GameState state,
     required VoidCallback onStartGame,
-    required VoidCallback onEndGame,
     required VoidCallback onCutForDealer,
     required VoidCallback onDeal,
     required VoidCallback onConfirmCrib,
@@ -25,7 +24,6 @@ void main() {
           body: ActionBar(
             state: state,
             onStartGame: onStartGame,
-            onEndGame: onEndGame,
             onCutForDealer: onCutForDealer,
             onDeal: onDeal,
             onConfirmCrib: onConfirmCrib,
@@ -45,7 +43,6 @@ void main() {
       tester,
       state: const GameState(),
       onStartGame: () => started = true,
-      onEndGame: () {},
       onCutForDealer: () {},
       onDeal: () {},
       onConfirmCrib: () {},
@@ -71,7 +68,6 @@ void main() {
         cutOpponentCard: const PlayingCard(rank: Rank.five, suit: Suit.clubs),
       ),
       onStartGame: () {},
-      onEndGame: () {},
       onCutForDealer: () => cut = true,
       onDeal: () {},
       onConfirmCrib: () {},
@@ -85,9 +81,8 @@ void main() {
     expect(cut, isTrue);
   });
 
-  testWidgets('dealing phase shows deal and end game buttons', (tester) async {
+  testWidgets('dealing phase shows deal button', (tester) async {
     var dealt = false;
-    var ended = false;
 
     await pumpBar(
       tester,
@@ -96,7 +91,6 @@ void main() {
         currentPhase: GamePhase.dealing,
       ),
       onStartGame: () {},
-      onEndGame: () => ended = true,
       onCutForDealer: () {},
       onDeal: () => dealt = true,
       onConfirmCrib: () {},
@@ -107,10 +101,8 @@ void main() {
     );
 
     await tester.tap(find.text('Deal Cards'));
-    await tester.tap(find.text('End Game'));
 
     expect(dealt, isTrue);
-    expect(ended, isTrue);
   });
 
   testWidgets('crib selection enables confirm button only with two cards', (tester) async {
@@ -124,7 +116,6 @@ void main() {
         isPlayerDealer: true,
       ),
       onStartGame: () {},
-      onEndGame: () {},
       onCutForDealer: () {},
       onDeal: () {},
       onConfirmCrib: () => confirmed = true,
@@ -154,7 +145,6 @@ void main() {
         peggingCount: 30,
       ),
       onStartGame: () {},
-      onEndGame: () {},
       onCutForDealer: () {},
       onDeal: () {},
       onConfirmCrib: () {},
@@ -178,7 +168,6 @@ void main() {
         isInHandCountingPhase: false,
       ),
       onStartGame: () {},
-      onEndGame: () {},
       onCutForDealer: () {},
       onDeal: () {},
       onConfirmCrib: () {},
@@ -202,7 +191,6 @@ void main() {
         showWinnerModal: false,
       ),
       onStartGame: () => restarted = true,
-      onEndGame: () {},
       onCutForDealer: () {},
       onDeal: () {},
       onConfirmCrib: () {},

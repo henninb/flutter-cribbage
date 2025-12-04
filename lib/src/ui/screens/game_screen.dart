@@ -84,32 +84,6 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  void _handleEndGame() {
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('End Game?'),
-        content: const Text(
-          'Are you sure you want to end the current game? All progress will be lost.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              widget.engine.startNewGame();
-            },
-            child: const Text('End Game'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +162,6 @@ class _GameScreenState extends State<GameScreen> {
                       builder: (context, _) => ActionBar(
                         state: state,
                         onStartGame: widget.engine.startNewGame,
-                        onEndGame: _handleEndGame,
                         onCutForDealer: widget.engine.cutForDealer,
                         onDeal: widget.engine.dealCards,
                         onConfirmCrib: widget.engine.confirmCribSelection,
