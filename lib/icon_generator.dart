@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 /// Modern Cribbage App Icon Generator
-/// Run this file to generate a 1024x1024 icon
+/// Run this file to generate a 512x512 icon
 void main() {
   runApp(const IconGeneratorApp());
 }
@@ -112,8 +112,8 @@ class _IconGeneratorScreenState extends State<IconGeneratorScreen> {
               child: RepaintBoundary(
                 key: _iconKey,
                 child: const SizedBox(
-                  width: 1024,
-                  height: 1024,
+                  width: 512,
+                  height: 512,
                   child: CribbageIcon(),
                 ),
               ),
@@ -127,7 +127,7 @@ class _IconGeneratorScreenState extends State<IconGeneratorScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.download),
-              label: Text(_isSaving ? 'Saving...' : 'Save Icon (1024x1024)'),
+              label: Text(_isSaving ? 'Saving...' : 'Save Icon (512x512)'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               ),

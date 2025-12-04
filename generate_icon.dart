@@ -218,8 +218,24 @@ String _peg({required double x, required String color}) {
 }
 
 void _writePngs() {
-  const size = 1024;
+  const size = 512;
 
+  if (_hasRsvgConvert()) {
+    _renderSvgToPng(
+      svgPath: 'assets/cribbage_icon.svg',
+      pngPath: 'assets/cribbage_icon.png',
+      size: size,
+    );
+    _renderSvgToPng(
+      svgPath: 'assets/cribbage_icon_foreground.svg',
+      pngPath: 'assets/cribbage_icon_foreground.png',
+      size: size,
+    );
+    print('✓ Rasterized SVGs to 512x512 PNGs');
+    return;
+  }
+
+  // Fallback renderer using image library if rsvg-convert is unavailable.
   final background = _buildBackgroundPng(size);
   File('assets/cribbage_icon.png').writeAsBytesSync(img.encodePng(background));
   print('✓ Created assets/cribbage_icon.png');
@@ -227,6 +243,31 @@ void _writePngs() {
   final foreground = _buildForegroundPng(size);
   File('assets/cribbage_icon_foreground.png').writeAsBytesSync(img.encodePng(foreground));
   print('✓ Created assets/cribbage_icon_foreground.png');
+}
+
+bool _hasRsvgConvert() {
+  final result = Process.runSync('which', ['rsvg-convert']);
+  return result.exitCode == 0;
+}
+
+void _renderSvgToPng({
+  required String svgPath,
+  required String pngPath,
+  required int size,
+}) {
+  final result = Process.runSync(
+    'rsvg-convert',
+    ['-w', '$size', '-h', '$size', svgPath, '-o', pngPath],
+  );
+
+  if (result.exitCode != 0) {
+    throw ProcessException(
+      'rsvg-convert',
+      ['-w', '$size', '-h', '$size', svgPath, '-o', pngPath],
+      result.stderr,
+      result.exitCode,
+    );
+  }
 }
 
 img.Image _buildBackgroundPng(int size) {
