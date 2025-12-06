@@ -1608,22 +1608,12 @@ class _PendingResetDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.toll_outlined,
-                      size: 28,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Pegging',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onPrimaryContainer,
-                          ),
-                    ),
-                  ],
+                Text(
+                  'Pegging',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
                 ),
                 const SizedBox(height: 12),
                 Text(
