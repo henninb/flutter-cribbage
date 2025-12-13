@@ -1,0 +1,22 @@
+name: "CodeQL Config for Flutter Project"
+
+# Disable auto-detection to prevent scanning unsupported languages
+disable-default-queries: false
+
+# Paths to exclude from scanning
+paths-ignore:
+  - '**/build/**'
+  - '**/generated/**'
+  - '**/node_modules/**'
+  - '**/.dart_tool/**'
+  - '**/test/**'
+  - '**/ios/Pods/**'
+
+# Only scan specific paths (Android native code)
+paths:
+  - 'android/app/src/**'
+  - 'android/app/build.gradle.kts'
+
+# Use security-and-quality query suite for thorough scanning
+queries:
+  - uses: security-and-quality
