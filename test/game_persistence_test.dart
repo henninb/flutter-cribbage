@@ -60,7 +60,7 @@ void main() {
 
     test('loadCutCards returns null when storage missing entries', () async {
       await prefs.setString(
-          'playerCut', PlayingCard(rank: Rank.five, suit: Suit.clubs).encode());
+          'playerCut', PlayingCard(rank: Rank.five, suit: Suit.clubs).encode(),);
       final loaded = persistence.loadCutCards();
       expect(loaded, isNull);
     });

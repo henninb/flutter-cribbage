@@ -92,9 +92,9 @@ class _GameScreenState extends State<GameScreen> {
     debugPrint('cardWidth: ${CardConstants.cardWidth}');
     debugPrint('cardHeight: ${CardConstants.cardHeight}');
     debugPrint(
-        'activePeggingCardWidth: ${CardConstants.activePeggingCardWidth}');
+        'activePeggingCardWidth: ${CardConstants.activePeggingCardWidth}',);
     debugPrint(
-        'activePeggingCardHeight: ${CardConstants.activePeggingCardHeight}');
+        'activePeggingCardHeight: ${CardConstants.activePeggingCardHeight}',);
     debugPrint('==========================');
 
     return AnimatedBuilder(
@@ -876,7 +876,7 @@ class _PlayerHand extends StatelessWidget {
 
               // Wrap card in draggable if drag mode is enabled
               debugPrint(
-                  '[PLAYER HAND] Creating card ${card.label} with width=${CardConstants.cardWidth}');
+                  '[PLAYER HAND] Creating card ${card.label} with width=${CardConstants.cardWidth}',);
               Widget cardWidget = PlayingCardWidget(
                 card: card,
                 width: CardConstants.cardWidth,
@@ -999,7 +999,7 @@ class _SpreadDeck extends StatelessWidget {
     required double height,
   }) {
     debugPrint(
-        '[CUT CARD] Creating card ${card.label} with width=$width, height=$height');
+        '[CUT CARD] Creating card ${card.label} with width=$width, height=$height',);
     return SizedBox(
       width: width,
       height: height,
@@ -1256,7 +1256,7 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
     double opacity = 1.0,
   }) {
     debugPrint(
-        '[PEGGING PILE] Creating card ${card.label} with width=$width, height=$height');
+        '[PEGGING PILE] Creating card ${card.label} with width=$width, height=$height',);
     return Align(
       alignment: Alignment.center,
       child: SizedBox(

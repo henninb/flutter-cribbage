@@ -37,7 +37,7 @@ void main() {
     final mgr = PeggingRoundManager();
     mgr.onPlay(const PlayingCard(rank: Rank.nine, suit: Suit.clubs)); // player
     mgr.onPlay(
-        const PlayingCard(rank: Rank.six, suit: Suit.hearts)); // opponent
+        const PlayingCard(rank: Rank.six, suit: Suit.hearts),); // opponent
 
     final reset = mgr.onGo(opponentHasLegalMove: false);
     expect(reset, isNotNull);
@@ -155,7 +155,7 @@ void main() {
     mgr.onPlay(const PlayingCard(rank: Rank.queen, suit: Suit.clubs));
     mgr.onPlay(const PlayingCard(rank: Rank.jack, suit: Suit.diamonds));
     mgr.onPlay(const PlayingCard(
-        rank: Rank.ace, suit: Suit.spades)); // Opponent plays last
+        rank: Rank.ace, suit: Suit.spades,),); // Opponent plays last
 
     // After reset, player should start next round (opponent made the 31)
     expect(mgr.isPlayerTurn, Player.player);
