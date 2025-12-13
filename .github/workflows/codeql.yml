@@ -51,9 +51,12 @@ jobs:
         languages: ${{ matrix.language }}
         config-file: ./.github/codeql/codeql-config.yml
 
-    # Autobuild attempts to build Java/Kotlin code automatically
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+    # Manual build for Flutter Android (autobuild fails with signing configs)
+    - name: Build Android for CodeQL
+      run: |
+        cd android
+        # Build debug variant only (doesn't require signing credentials)
+        ./gradlew assembleDebug --no-daemon -x lint
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
