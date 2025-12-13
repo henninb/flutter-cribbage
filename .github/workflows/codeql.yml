@@ -54,9 +54,8 @@ jobs:
     # Manual build for Flutter Android (autobuild fails with signing configs)
     - name: Build Android for CodeQL
       run: |
-        cd android
-        # Build debug variant only (doesn't require signing credentials)
-        ./gradlew assembleDebug --no-daemon -x lint
+        # Use Flutter build command which properly invokes Gradle
+        flutter build apk --debug --no-tree-shake-icons
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
