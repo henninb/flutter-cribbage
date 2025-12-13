@@ -50,8 +50,10 @@ abstract class GamePersistence {
   Future<void> saveCutCards(PlayingCard player, PlayingCard opponent);
 
   PlayerNames? loadPlayerNames();
-  Future<void> savePlayerNames(
-      {required String playerName, required String opponentName,});
+  Future<void> savePlayerNames({
+    required String playerName,
+    required String opponentName,
+  });
 }
 
 class SharedPrefsPersistence implements GamePersistence {
@@ -92,7 +94,8 @@ class SharedPrefsPersistence implements GamePersistence {
     required int doubleSkunksAgainst,
   }) async {
     debugPrint(
-        '[PERSISTENCE] Saving stats: Won=$gamesWon, Lost=$gamesLost, Skunks=$skunksFor/$skunksAgainst, DoubleSkunks=$doubleSkunksFor/$doubleSkunksAgainst',);
+      '[PERSISTENCE] Saving stats: Won=$gamesWon, Lost=$gamesLost, Skunks=$skunksFor/$skunksAgainst, DoubleSkunks=$doubleSkunksFor/$doubleSkunksAgainst',
+    );
     try {
       await Future.wait([
         _prefs.setInt(_gamesWonKey, gamesWon),
@@ -124,7 +127,8 @@ class SharedPrefsPersistence implements GamePersistence {
   @override
   Future<void> saveCutCards(PlayingCard player, PlayingCard opponent) async {
     debugPrint(
-        '[PERSISTENCE] Saving cut cards: Player=${player.label}, Opponent=${opponent.label}',);
+      '[PERSISTENCE] Saving cut cards: Player=${player.label}, Opponent=${opponent.label}',
+    );
     try {
       await Future.wait([
         _prefs.setString(_playerCutKey, player.encode()),
@@ -147,10 +151,13 @@ class SharedPrefsPersistence implements GamePersistence {
   }
 
   @override
-  Future<void> savePlayerNames(
-      {required String playerName, required String opponentName,}) async {
+  Future<void> savePlayerNames({
+    required String playerName,
+    required String opponentName,
+  }) async {
     debugPrint(
-        '[PERSISTENCE] Saving player names: "$playerName" vs "$opponentName"',);
+      '[PERSISTENCE] Saving player names: "$playerName" vs "$opponentName"',
+    );
     try {
       await Future.wait([
         _prefs.setString(_playerNameKey, playerName),

@@ -18,8 +18,10 @@ void main() {
           CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
       // 2 for fifteen, 6 for the three pairs, and 9 for the triple run = 17 total
       expect(breakdown.totalScore, 17);
-      expect(breakdown.entries.where((e) => e.type == 'Fifteen').length,
-          greaterThan(0),);
+      expect(
+        breakdown.entries.where((e) => e.type == 'Fifteen').length,
+        greaterThan(0),
+      );
     });
 
     test('pegging scorer detects pairs and runs', () {
@@ -52,8 +54,10 @@ void main() {
 
       final cribNoStarter =
           CribbageScorer.scoreHandWithBreakdown(hand, starterClub, true);
-      expect(cribNoStarter.entries.where((e) => e.type.contains('Flush')),
-          isEmpty,);
+      expect(
+        cribNoStarter.entries.where((e) => e.type.contains('Flush')),
+        isEmpty,
+      );
 
       final cribAllMatch =
           CribbageScorer.scoreHandWithBreakdown(hand, starterHeart, true);
@@ -130,8 +134,10 @@ void main() {
 
       final breakdown =
           CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
-      expect(breakdown.totalScore,
-          28,); // 4 fives + J = 28 (29 requires right nobs)
+      expect(
+        breakdown.totalScore,
+        28,
+      ); // 4 fives + J = 28 (29 requires right nobs)
     });
 
     test('scores pair royal (three of a kind) as 6 points', () {
@@ -182,8 +188,10 @@ void main() {
       final fifteenCount =
           breakdown.entries.where((e) => e.type == 'Fifteen').length;
       expect(fifteenCount, 4); // 5+10, 5+J, 5+Q, 5+K
-      expect(breakdown.totalScore,
-          12,); // 4 fifteens * 2 points + 1 run (10-J-Q-K) * 4 points
+      expect(
+        breakdown.totalScore,
+        12,
+      ); // 4 fifteens * 2 points + 1 run (10-J-Q-K) * 4 points
     });
 
     test('scores 4-card run correctly', () {

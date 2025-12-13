@@ -42,16 +42,26 @@ void main() {
     });
 
     test('season boundaries switch on astronomical dates', () {
-      expect(ThemeCalculator.getCurrentTheme(DateTime(2024, 3, 19)).type,
-          ThemeType.winter,);
-      expect(ThemeCalculator.getCurrentTheme(DateTime(2024, 3, 20)).type,
-          ThemeType.spring,);
-      expect(ThemeCalculator.getCurrentTheme(DateTime(2024, 6, 21)).type,
-          ThemeType.summer,);
-      expect(ThemeCalculator.getCurrentTheme(DateTime(2024, 9, 22)).type,
-          ThemeType.fall,);
-      expect(ThemeCalculator.getCurrentTheme(DateTime(2024, 12, 21)).type,
-          ThemeType.winter,);
+      expect(
+        ThemeCalculator.getCurrentTheme(DateTime(2024, 3, 19)).type,
+        ThemeType.winter,
+      );
+      expect(
+        ThemeCalculator.getCurrentTheme(DateTime(2024, 3, 20)).type,
+        ThemeType.spring,
+      );
+      expect(
+        ThemeCalculator.getCurrentTheme(DateTime(2024, 6, 21)).type,
+        ThemeType.summer,
+      );
+      expect(
+        ThemeCalculator.getCurrentTheme(DateTime(2024, 9, 22)).type,
+        ThemeType.fall,
+      );
+      expect(
+        ThemeCalculator.getCurrentTheme(DateTime(2024, 12, 21)).type,
+        ThemeType.winter,
+      );
     });
   });
 }
