@@ -53,7 +53,8 @@ class _FakePersistence implements GamePersistence {
   }
 
   @override
-  Future<void> savePlayerNames({required String playerName, required String opponentName}) async {
+  Future<void> savePlayerNames(
+      {required String playerName, required String opponentName}) async {
     savedPlayerName = playerName;
     savedOpponentName = opponentName;
   }
@@ -138,7 +139,8 @@ void main() {
       final match = _findMatchingRankIndices(customEngine)!;
 
       expect(customEngine.state.currentPhase, GamePhase.pegging);
-      expect(customEngine.state.isPlayerTurn, isFalse); // opponent starts when player is dealer
+      expect(customEngine.state.isPlayerTurn,
+          isFalse); // opponent starts when player is dealer
 
       final startingScore = customEngine.state.playerScore;
 
@@ -147,7 +149,8 @@ void main() {
 
       customEngine.playCard(match.playerIndex, isPlayer: true);
       expect(customEngine.state.playerScore, startingScore + 2);
-      expect(customEngine.state.playerCardsPlayed.contains(match.playerIndex), isTrue);
+      expect(customEngine.state.playerCardsPlayed.contains(match.playerIndex),
+          isTrue);
     });
 
     test('handleGo awards point and pending reset when player stuck', () {
@@ -200,7 +203,8 @@ void main() {
       expect(customPersistence.lastSavedStats!.gamesLost, 0);
     });
 
-    test('maybeAutoplayOpponent schedules opponent move when player dealer', () {
+    test('maybeAutoplayOpponent schedules opponent move when player dealer',
+        () {
       fakeAsync((async) {
         final engine = _setupPeggingEngine(
           playerDealer: true,
@@ -379,12 +383,14 @@ GameEngine _setupPeggingEngine({
 List<int> _selectFirstTwoDiscards(List<PlayingCard> hand) => [0, 1];
 
 List<int> _selectLowestValueDiscards(List<PlayingCard> hand) {
-  final entries = List.generate(hand.length, (index) => (index: index, value: hand[index].value));
+  final entries = List.generate(
+      hand.length, (index) => (index: index, value: hand[index].value));
   entries.sort((a, b) => a.value.compareTo(b.value));
   return entries.take(2).map((e) => e.index).toList();
 }
 
-({int playerIndex, int opponentIndex})? _findMatchingRankIndices(GameEngine engine) {
+({int playerIndex, int opponentIndex})? _findMatchingRankIndices(
+    GameEngine engine) {
   final playerHand = engine.state.playerHand;
   final opponentHand = engine.state.opponentHand;
   for (var pi = 0; pi < playerHand.length; pi++) {
@@ -413,22 +419,29 @@ GameEngine _setupGoScenarioEngine() {
     }
 
     // Sort both hands by value (low to high)
-    final playerOrder = List.generate(engine.state.playerHand.length, (index) => index)
-      ..sort((a, b) => engine.state.playerHand[a].value.compareTo(engine.state.playerHand[b].value));
-    final opponentOrder = List.generate(engine.state.opponentHand.length, (index) => index)
-      ..sort((a, b) => engine.state.opponentHand[b].value.compareTo(engine.state.opponentHand[a].value));
+    final playerOrder =
+        List.generate(engine.state.playerHand.length, (index) => index)
+          ..sort((a, b) => engine.state.playerHand[a].value
+              .compareTo(engine.state.playerHand[b].value));
+    final opponentOrder =
+        List.generate(engine.state.opponentHand.length, (index) => index)
+          ..sort((a, b) => engine.state.opponentHand[b].value
+              .compareTo(engine.state.opponentHand[a].value));
 
     var playerIdx = 0;
     var opponentIdx = 0;
     var success = false;
 
     // Try to create a scenario where both players get stuck
-    while (opponentIdx < opponentOrder.length || playerIdx < playerOrder.length) {
+    while (
+        opponentIdx < opponentOrder.length || playerIdx < playerOrder.length) {
       // Opponent plays
       if (opponentIdx < opponentOrder.length) {
         final oppIndex = opponentOrder[opponentIdx];
         if (!engine.state.opponentCardsPlayed.contains(oppIndex) &&
-            engine.state.peggingCount + engine.state.opponentHand[oppIndex].value <= 31) {
+            engine.state.peggingCount +
+                    engine.state.opponentHand[oppIndex].value <=
+                31) {
           engine.playCard(oppIndex, isPlayer: false);
           opponentIdx++;
         } else {
@@ -467,5 +480,6 @@ GameEngine _setupGoScenarioEngine() {
       return engine;
     }
   }
-  fail('Failed to create Go scenario where both players stuck after 2000 attempts');
+  fail(
+      'Failed to create Go scenario where both players stuck after 2000 attempts');
 }

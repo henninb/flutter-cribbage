@@ -48,7 +48,8 @@ class _IconGeneratorScreenState extends State<IconGeneratorScreen> {
       RenderRepaintBoundary boundary =
           _iconKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
       ui.Image image = await boundary.toImage(pixelRatio: 1.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
       // Save to downloads or documents
@@ -129,7 +130,8 @@ class _IconGeneratorScreenState extends State<IconGeneratorScreen> {
                   : const Icon(Icons.download),
               label: Text(_isSaving ? 'Saving...' : 'Save Icon (512x512)'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               ),
             ),
           ],

@@ -9,15 +9,20 @@ typedef PeggingMove = ({int index, PlayingCard card});
 class OpponentAI {
   const OpponentAI._();
 
-  static List<PlayingCard> chooseCribCards(List<PlayingCard> hand, bool isDealer) {
-    debugPrint('[OPPONENT AI - CRIB] Choosing crib cards from hand of ${hand.length}: ${hand.map((c) => c.label).join(", ")}');
-    debugPrint('[OPPONENT AI - CRIB] Position: ${isDealer ? "Dealer" : "Pone"}');
+  static List<PlayingCard> chooseCribCards(
+      List<PlayingCard> hand, bool isDealer) {
+    debugPrint(
+        '[OPPONENT AI - CRIB] Choosing crib cards from hand of ${hand.length}: ${hand.map((c) => c.label).join(", ")}');
+    debugPrint(
+        '[OPPONENT AI - CRIB] Position: ${isDealer ? "Dealer" : "Pone"}');
     if (hand.length != 6) {
-      debugPrint('[OPPONENT AI - CRIB WARNING] Hand size != 6, taking first 2 cards');
+      debugPrint(
+          '[OPPONENT AI - CRIB WARNING] Hand size != 6, taking first 2 cards');
       return hand.take(2).toList();
     }
     final combos = _generateCombinations(hand);
-    debugPrint('[OPPONENT AI - CRIB] Evaluating ${combos.length} possible combinations...');
+    debugPrint(
+        '[OPPONENT AI - CRIB] Evaluating ${combos.length} possible combinations...');
     combos.sort((a, b) {
       final scoreA = _evaluateCribChoice(a.keep, a.discard, isDealer);
       final scoreB = _evaluateCribChoice(b.keep, b.discard, isDealer);
@@ -25,9 +30,11 @@ class OpponentAI {
     });
     final bestChoice = combos.firstOrNull;
     final result = bestChoice?.discard ?? hand.take(2).toList();
-    debugPrint('[OPPONENT AI - CRIB] Selected discard: ${result.map((c) => c.label).join(", ")}');
+    debugPrint(
+        '[OPPONENT AI - CRIB] Selected discard: ${result.map((c) => c.label).join(", ")}');
     if (bestChoice != null) {
-      debugPrint('[OPPONENT AI - CRIB] Keeping: ${bestChoice.keep.map((c) => c.label).join(", ")}');
+      debugPrint(
+          '[OPPONENT AI - CRIB] Keeping: ${bestChoice.keep.map((c) => c.label).join(", ")}');
     }
     return result;
   }
@@ -39,8 +46,10 @@ class OpponentAI {
     required List<PlayingCard> peggingPile,
     required int opponentCardsRemaining,
   }) {
-    debugPrint('[OPPONENT AI - PEGGING] Choosing pegging card: count=$currentCount, pile=${peggingPile.map((c) => c.label).join(",")}');
-    debugPrint('[OPPONENT AI - PEGGING] Hand: ${hand.asMap().entries.where((e) => !playedIndices.contains(e.key)).map((e) => "${e.key}:${e.value.label}").join(", ")}');
+    debugPrint(
+        '[OPPONENT AI - PEGGING] Choosing pegging card: count=$currentCount, pile=${peggingPile.map((c) => c.label).join(",")}');
+    debugPrint(
+        '[OPPONENT AI - PEGGING] Hand: ${hand.asMap().entries.where((e) => !playedIndices.contains(e.key)).map((e) => "${e.key}:${e.value.label}").join(", ")}');
     final legalMoves = <PeggingMove>[];
     for (var i = 0; i < hand.length; i++) {
       if (playedIndices.contains(i)) continue;
@@ -69,7 +78,8 @@ class OpponentAI {
       );
       return scoreB.compareTo(scoreA);
     });
-    debugPrint('[OPPONENT AI - PEGGING] Best move: ${legalMoves.first.card.label} at index ${legalMoves.first.index}');
+    debugPrint(
+        '[OPPONENT AI - PEGGING] Best move: ${legalMoves.first.card.label} at index ${legalMoves.first.index}');
     return legalMoves.first;
   }
 
@@ -96,9 +106,8 @@ class OpponentAI {
     bool isDealer,
   ) {
     final handValue = _estimateHandValue(keep);
-    final cribValue = isDealer
-        ? _estimateCribValue(discard)
-        : -_estimateCribValue(discard);
+    final cribValue =
+        isDealer ? _estimateCribValue(discard) : -_estimateCribValue(discard);
 
     // Adjust weights based on dealer status
     // As dealer: prioritize hand more (you get crib bonus anyway)
@@ -169,7 +178,10 @@ class OpponentAI {
     score += cards.where((card) => card.rank == Rank.five).length * 1.0;
 
     // Middle-range cards (4-9) are versatile for making 15s
-    score += cards.where((card) => card.rank.index >= 3 && card.rank.index <= 8).length * 0.5;
+    score += cards
+            .where((card) => card.rank.index >= 3 && card.rank.index <= 8)
+            .length *
+        0.5;
 
     // Aces are flexible but less valuable
     score += cards.where((card) => card.rank == Rank.ace).length * 0.3;
@@ -235,7 +247,10 @@ class OpponentAI {
     }
 
     // Aces and twos are decent for crib
-    value += cards.where((card) => card.rank == Rank.ace || card.rank == Rank.two).length * 0.8;
+    value += cards
+            .where((card) => card.rank == Rank.ace || card.rank == Rank.two)
+            .length *
+        0.8;
 
     // Kings and Queens together are bad (no flexibility)
     if (cards.any((card) => card.rank == Rank.king) &&
@@ -299,7 +314,8 @@ class OpponentAI {
       }
 
       // Triple pair (we make the third of a kind)
-      if (peggingPile.length >= 2 && peggingPile[peggingPile.length - 2].rank == card.rank) {
+      if (peggingPile.length >= 2 &&
+          peggingPile[peggingPile.length - 2].rank == card.rank) {
         score += 200; // Triples are worth a lot!
       }
     }
@@ -382,7 +398,8 @@ class OpponentAI {
     return score;
   }
 
-  static double _evaluateRunPotential(PlayingCard card, List<PlayingCard> pile) {
+  static double _evaluateRunPotential(
+      PlayingCard card, List<PlayingCard> pile) {
     if (pile.isEmpty) {
       return 0;
     }

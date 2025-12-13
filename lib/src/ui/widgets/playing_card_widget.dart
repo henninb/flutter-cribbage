@@ -116,7 +116,8 @@ class PlayingCardWidget extends StatelessWidget {
         height: _height,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(width * 0.1), // Proportional radius
+          borderRadius:
+              BorderRadius.circular(width * 0.1), // Proportional radius
           border: Border.all(
             color: borderColor,
             width: isSelected ? 3.0 : 1.5,

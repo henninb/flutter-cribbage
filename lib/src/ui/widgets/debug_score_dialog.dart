@@ -199,8 +199,10 @@ class _ScoreAdjuster extends StatelessWidget {
                 minHeight: 32,
               ),
               style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                backgroundColor:
+                    Theme.of(context).colorScheme.secondaryContainer,
+                foregroundColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
                 padding: EdgeInsets.zero,
               ),
             ),
@@ -216,8 +218,10 @@ class _ScoreAdjuster extends StatelessWidget {
                 minHeight: 32,
               ),
               style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                backgroundColor:
+                    Theme.of(context).colorScheme.secondaryContainer,
+                foregroundColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
                 padding: EdgeInsets.zero,
               ),
             ),
@@ -226,7 +230,8 @@ class _ScoreAdjuster extends StatelessWidget {
             Flexible(
               child: Container(
                 constraints: const BoxConstraints(minWidth: 50),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(8),
@@ -253,8 +258,10 @@ class _ScoreAdjuster extends StatelessWidget {
                 minHeight: 32,
               ),
               style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                backgroundColor:
+                    Theme.of(context).colorScheme.secondaryContainer,
+                foregroundColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
                 padding: EdgeInsets.zero,
               ),
             ),
@@ -270,8 +277,10 @@ class _ScoreAdjuster extends StatelessWidget {
                 minHeight: 32,
               ),
               style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                backgroundColor:
+                    Theme.of(context).colorScheme.secondaryContainer,
+                foregroundColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
                 padding: EdgeInsets.zero,
               ),
             ),

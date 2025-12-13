@@ -85,15 +85,16 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     // Debug: Print card size constants on first build
     debugPrint('=== CARD SIZE CONSTANTS ===');
     debugPrint('cardWidth: ${CardConstants.cardWidth}');
     debugPrint('cardHeight: ${CardConstants.cardHeight}');
-    debugPrint('activePeggingCardWidth: ${CardConstants.activePeggingCardWidth}');
-    debugPrint('activePeggingCardHeight: ${CardConstants.activePeggingCardHeight}');
+    debugPrint(
+        'activePeggingCardWidth: ${CardConstants.activePeggingCardWidth}');
+    debugPrint(
+        'activePeggingCardHeight: ${CardConstants.activePeggingCardHeight}');
     debugPrint('==========================');
 
     return AnimatedBuilder(
@@ -279,7 +280,8 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
                       ),
                     ),
                     duration: const Duration(milliseconds: 2500),
-                    backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.errorContainer,
                   ),
                 );
                 return;
@@ -299,7 +301,8 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
                       ),
                     ),
                     duration: const Duration(milliseconds: 2500),
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
                   ),
                 );
               }
@@ -317,7 +320,8 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
   Widget build(BuildContext context) {
     // Debug: Print scores being displayed
     debugPrint(
-        '[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}',);
+      '[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}',
+    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -817,7 +821,6 @@ class _OpponentHand extends StatelessWidget {
   }
 }
 
-
 /// Player hand display
 class _PlayerHand extends StatelessWidget {
   final GameState state;
@@ -872,7 +875,8 @@ class _PlayerHand extends StatelessWidget {
                   (state.peggingCount + card.value <= 31);
 
               // Wrap card in draggable if drag mode is enabled
-              debugPrint('[PLAYER HAND] Creating card ${card.label} with width=${CardConstants.cardWidth}');
+              debugPrint(
+                  '[PLAYER HAND] Creating card ${card.label} with width=${CardConstants.cardWidth}');
               Widget cardWidget = PlayingCardWidget(
                 card: card,
                 width: CardConstants.cardWidth,
@@ -899,11 +903,15 @@ class _PlayerHand extends StatelessWidget {
                                 content: Text(
                                   'Cannot play ${card.label} - would exceed 31 (current: ${state.peggingCount}, would be: $wouldBeCount)',
                                   style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onErrorContainer,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onErrorContainer,
                                   ),
                                 ),
                                 duration: const Duration(milliseconds: 2500),
-                                backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .errorContainer,
                               ),
                             );
                           }
@@ -955,7 +963,8 @@ class _PlayerHand extends StatelessWidget {
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: CardConstants.cardHorizontalSpacing,),
+                  horizontal: CardConstants.cardHorizontalSpacing,
+                ),
                 child: Align(
                   alignment: Alignment.center,
                   child: SizedBox(
@@ -973,7 +982,6 @@ class _PlayerHand extends StatelessWidget {
   }
 }
 
-
 /// Spread deck display for interactive cut selection
 class _SpreadDeck extends StatelessWidget {
   final GameState state;
@@ -984,9 +992,14 @@ class _SpreadDeck extends StatelessWidget {
     required this.engine,
   });
 
-  Widget _buildCutCard(BuildContext context, PlayingCard card,
-      {required double width, required double height,}) {
-    debugPrint('[CUT CARD] Creating card ${card.label} with width=$width, height=$height');
+  Widget _buildCutCard(
+    BuildContext context,
+    PlayingCard card, {
+    required double width,
+    required double height,
+  }) {
+    debugPrint(
+        '[CUT CARD] Creating card ${card.label} with width=$width, height=$height');
     return SizedBox(
       width: width,
       height: height,
@@ -1093,7 +1106,9 @@ class _SpreadDeck extends StatelessWidget {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4,),
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.green.shade700,
                           borderRadius: BorderRadius.circular(12),
@@ -1143,7 +1158,9 @@ class _SpreadDeck extends StatelessWidget {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4,),
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.green.shade700,
                           borderRadius: BorderRadius.circular(12),
@@ -1179,7 +1196,6 @@ class _SpreadDeck extends StatelessWidget {
     );
   }
 }
-
 
 /// Pegging display - count and pile with history
 class _PeggingDisplay extends StatefulWidget {
@@ -1239,7 +1255,8 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
     required double fontSize,
     double opacity = 1.0,
   }) {
-    debugPrint('[PEGGING PILE] Creating card ${card.label} with width=$width, height=$height');
+    debugPrint(
+        '[PEGGING PILE] Creating card ${card.label} with width=$width, height=$height');
     return Align(
       alignment: Alignment.center,
       child: SizedBox(
@@ -1299,8 +1316,12 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
     );
   }
 
-  Widget _buildPileArea(BuildContext context, List<dynamic> completedRounds,
-      bool hasHistory, bool hasCurrentCards,) {
+  Widget _buildPileArea(
+    BuildContext context,
+    List<dynamic> completedRounds,
+    bool hasHistory,
+    bool hasCurrentCards,
+  ) {
     // Check if drag mode is enabled
     final isDragMode =
         widget.settings?.cardSelectionMode == CardSelectionMode.drag;
@@ -1485,17 +1506,21 @@ class _PendingResetDialog extends StatelessWidget {
                             .map(
                               (card) => Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 8,),
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: colorScheme.surface.withValues(alpha: 0.75),
+                                  color: colorScheme.surface
+                                      .withValues(alpha: 0.75),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: colorScheme.outline.withValues(alpha: 0.4),
+                                    color: colorScheme.outline
+                                        .withValues(alpha: 0.4),
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          colorScheme.shadow.withValues(alpha: 0.15),
+                                      color: colorScheme.shadow
+                                          .withValues(alpha: 0.15),
                                       blurRadius: 6,
                                       offset: const Offset(0, 3),
                                     ),
@@ -1585,7 +1610,8 @@ class _PendingResetDialog extends StatelessWidget {
                 Text(
                   'Tap anywhere to continue',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                        color: colorScheme.onPrimaryContainer
+                            .withValues(alpha: 0.8),
                       ),
                 ),
               ],
@@ -1716,7 +1742,9 @@ class _WinnerModalState extends State<_WinnerModal> {
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4,),
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.amber.shade600,
                                 borderRadius: BorderRadius.circular(16),
@@ -1731,8 +1759,11 @@ class _WinnerModalState extends State<_WinnerModal> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.whatshot,
-                                      color: Colors.white, size: 16,),
+                                  const Icon(
+                                    Icons.whatshot,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'DOUBLE SKUNK!',
@@ -1752,7 +1783,9 @@ class _WinnerModalState extends State<_WinnerModal> {
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4,),
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.orange.shade600,
                                 borderRadius: BorderRadius.circular(16),
@@ -1767,8 +1800,11 @@ class _WinnerModalState extends State<_WinnerModal> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.local_fire_department,
-                                      color: Colors.white, size: 16,),
+                                  const Icon(
+                                    Icons.local_fire_department,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'SKUNK!',

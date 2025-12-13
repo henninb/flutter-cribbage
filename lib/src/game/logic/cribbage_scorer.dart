@@ -43,7 +43,8 @@ class CribbageScorer {
     PlayingCard starter,
     bool isCrib,
   ) {
-    debugPrint('[SCORER] Scoring ${isCrib ? "crib" : "hand"}: ${hand.map((c) => c.label).join(", ")} + starter: ${starter.label}');
+    debugPrint(
+        '[SCORER] Scoring ${isCrib ? "crib" : "hand"}: ${hand.map((c) => c.label).join(", ")} + starter: ${starter.label}');
     final allCards = [...hand, starter];
     final entries = <ScoreEntry>[];
 
@@ -64,7 +65,8 @@ class CribbageScorer {
 
     final rankGroups = <Rank, List<PlayingCard>>{};
     for (final card in allCards) {
-      rankGroups.update(card.rank, (value) => [...value, card], ifAbsent: () => [card]);
+      rankGroups.update(card.rank, (value) => [...value, card],
+          ifAbsent: () => [card]);
     }
     for (final cards in rankGroups.values) {
       if (cards.length >= 2) {
@@ -85,7 +87,8 @@ class CribbageScorer {
     for (var i = 0; i < sortedRanks.length; i++) {
       var runLength = 1;
       var j = i + 1;
-      while (j < sortedRanks.length && sortedRanks[j] == sortedRanks[j - 1] + 1) {
+      while (
+          j < sortedRanks.length && sortedRanks[j] == sortedRanks[j - 1] + 1) {
         runLength++;
         j++;
       }
@@ -100,14 +103,16 @@ class CribbageScorer {
         var runLength = 1;
         var runRanks = <int>[sortedRanks[i]];
         var j = i + 1;
-        while (j < sortedRanks.length && sortedRanks[j] == sortedRanks[j - 1] + 1) {
+        while (j < sortedRanks.length &&
+            sortedRanks[j] == sortedRanks[j - 1] + 1) {
           runLength++;
           runRanks.add(sortedRanks[j]);
           j++;
         }
         if (runLength == longestRun) {
           final cardsPerRank = runRanks
-              .map((rank) => allCards.where((card) => card.rank.index == rank).toList())
+              .map((rank) =>
+                  allCards.where((card) => card.rank.index == rank).toList())
               .toList();
           final combinations = _generateRunCombinations(cardsPerRank);
           for (final combo in combinations) {
@@ -142,17 +147,20 @@ class CribbageScorer {
     }
 
     final total = entries.fold<int>(0, (sum, entry) => sum + entry.points);
-    debugPrint('[SCORER] Total score: $total from ${entries.length} scoring combinations');
+    debugPrint(
+        '[SCORER] Total score: $total from ${entries.length} scoring combinations');
     if (entries.isNotEmpty) {
       for (final entry in entries) {
-        debugPrint('[SCORER]   ${entry.type}: ${entry.cards.map((c) => c.label).join(",")} = ${entry.points}');
+        debugPrint(
+            '[SCORER]   ${entry.type}: ${entry.cards.map((c) => c.label).join(",")} = ${entry.points}');
       }
     }
     return DetailedScoreBreakdown(total, entries);
   }
 
   static PeggingPoints pointsForPile(List<PlayingCard> pile, int newCount) {
-    debugPrint('[PEGGING SCORER] Evaluating pile: ${pile.map((c) => c.label).join(", ")} | Count: $newCount');
+    debugPrint(
+        '[PEGGING SCORER] Evaluating pile: ${pile.map((c) => c.label).join(", ")} | Count: $newCount');
     var total = 0;
     var fifteen = 0;
     var thirtyOne = 0;
@@ -195,7 +203,8 @@ class CribbageScorer {
         case 4:
           pairPoints = 12;
           total += 12;
-          debugPrint('[PEGGING SCORER]   Double pair royal (4-of-kind) for 12 points');
+          debugPrint(
+              '[PEGGING SCORER]   Double pair royal (4-of-kind) for 12 points');
           break;
         default:
           break;
@@ -219,7 +228,8 @@ class CribbageScorer {
       if (consecutive) {
         runPoints = runLength;
         total += runPoints;
-        debugPrint('[PEGGING SCORER]   Run of $runLength for $runLength points');
+        debugPrint(
+            '[PEGGING SCORER]   Run of $runLength for $runLength points');
         break;
       }
     }
@@ -235,7 +245,8 @@ class CribbageScorer {
     );
   }
 
-  static List<List<PlayingCard>> _generateRunCombinations(List<List<PlayingCard>> groups) {
+  static List<List<PlayingCard>> _generateRunCombinations(
+      List<List<PlayingCard>> groups) {
     if (groups.isEmpty) {
       return [<PlayingCard>[]];
     }

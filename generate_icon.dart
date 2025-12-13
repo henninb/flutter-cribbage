@@ -241,7 +241,8 @@ void _writePngs() {
   print('✓ Created assets/cribbage_icon.png');
 
   final foreground = _buildForegroundPng(size);
-  File('assets/cribbage_icon_foreground.png').writeAsBytesSync(img.encodePng(foreground));
+  File('assets/cribbage_icon_foreground.png')
+      .writeAsBytesSync(img.encodePng(foreground));
   print('✓ Created assets/cribbage_icon_foreground.png');
 }
 
@@ -425,10 +426,14 @@ void _drawRoundedRect(
   );
 
   // Corners
-  img.fillCircle(canvas, x: x + radius, y: y + radius, radius: radius, color: color);
-  img.fillCircle(canvas, x: right - radius, y: y + radius, radius: radius, color: color);
-  img.fillCircle(canvas, x: x + radius, y: bottom - radius, radius: radius, color: color);
-  img.fillCircle(canvas, x: right - radius, y: bottom - radius, radius: radius, color: color);
+  img.fillCircle(canvas,
+      x: x + radius, y: y + radius, radius: radius, color: color);
+  img.fillCircle(canvas,
+      x: right - radius, y: y + radius, radius: radius, color: color);
+  img.fillCircle(canvas,
+      x: x + radius, y: bottom - radius, radius: radius, color: color);
+  img.fillCircle(canvas,
+      x: right - radius, y: bottom - radius, radius: radius, color: color);
 }
 
 ({int width, int height}) _measureText(img.BitmapFont font, String text) {

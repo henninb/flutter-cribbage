@@ -1,5 +1,9 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    - generate_icon.dart
+
 linter:
   rules:
     require_trailing_commas: true

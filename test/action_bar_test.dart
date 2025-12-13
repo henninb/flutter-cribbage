@@ -105,7 +105,8 @@ void main() {
     expect(dealt, isTrue);
   });
 
-  testWidgets('crib selection enables confirm button only with two cards', (tester) async {
+  testWidgets('crib selection enables confirm button only with two cards',
+      (tester) async {
     var confirmed = false;
     await pumpBar(
       tester,
@@ -131,7 +132,8 @@ void main() {
     expect(confirmed, isTrue);
   });
 
-  testWidgets('pegging phase shows Go button when player cannot play', (tester) async {
+  testWidgets('pegging phase shows Go button when player cannot play',
+      (tester) async {
     var went = false;
     await pumpBar(
       tester,
@@ -181,7 +183,8 @@ void main() {
     expect(counted, isTrue);
   });
 
-  testWidgets('game over state shows New Game button when modal hidden', (tester) async {
+  testWidgets('game over state shows New Game button when modal hidden',
+      (tester) async {
     var restarted = false;
     await pumpBar(
       tester,

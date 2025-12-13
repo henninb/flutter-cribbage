@@ -277,7 +277,8 @@ class GameState {
       cutOpponentCard: cutOpponentCard ?? this.cutOpponentCard,
       showCutForDealer: showCutForDealer ?? this.showCutForDealer,
       cutDeck: cutDeck ?? this.cutDeck,
-      playerHasSelectedCutCard: playerHasSelectedCutCard ?? this.playerHasSelectedCutCard,
+      playerHasSelectedCutCard:
+          playerHasSelectedCutCard ?? this.playerHasSelectedCutCard,
       isPeggingPhase: isPeggingPhase ?? this.isPeggingPhase,
       isPlayerTurn: isPlayerTurn ?? this.isPlayerTurn,
       peggingCount: peggingCount ?? this.peggingCount,
@@ -286,13 +287,15 @@ class GameState {
       opponentCardsPlayed: opponentCardsPlayed ?? this.opponentCardsPlayed,
       consecutiveGoes: consecutiveGoes ?? this.consecutiveGoes,
       lastPlayerWhoPlayed: lastPlayerWhoPlayed ?? this.lastPlayerWhoPlayed,
-      isInHandCountingPhase: isInHandCountingPhase ?? this.isInHandCountingPhase,
+      isInHandCountingPhase:
+          isInHandCountingPhase ?? this.isInHandCountingPhase,
       countingPhase: countingPhase ?? this.countingPhase,
       handScores: handScores ?? this.handScores,
       gameStatus: gameStatus ?? this.gameStatus,
       isOpponentActionInProgress:
           isOpponentActionInProgress ?? this.isOpponentActionInProgress,
-      pendingReset: clearPendingReset ? null : (pendingReset ?? this.pendingReset),
+      pendingReset:
+          clearPendingReset ? null : (pendingReset ?? this.pendingReset),
       showWinnerModal: showWinnerModal ?? this.showWinnerModal,
       winnerModalData: winnerModalData ?? this.winnerModalData,
       peggingManager: peggingManager ?? this.peggingManager,

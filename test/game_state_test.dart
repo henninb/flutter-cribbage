@@ -29,8 +29,10 @@ void main() {
       scoreAwarded: 2,
       message: 'Go!',
     );
-    const playerAnimation = ScoreAnimation(points: 4, isPlayer: true, timestamp: 1);
-    const opponentAnimation = ScoreAnimation(points: 3, isPlayer: false, timestamp: 2);
+    const playerAnimation =
+        ScoreAnimation(points: 4, isPlayer: true, timestamp: 1);
+    const opponentAnimation =
+        ScoreAnimation(points: 3, isPlayer: false, timestamp: 2);
 
     test('supports clearing optional values via flags', () {
       final base = GameState(
@@ -45,7 +47,8 @@ void main() {
         clearStarterCard: true,
         clearPendingReset: true,
         clearPlayerScoreAnimation: true,
-        opponentScoreAnimation: const ScoreAnimation(points: 7, isPlayer: false, timestamp: 3),
+        opponentScoreAnimation:
+            const ScoreAnimation(points: 7, isPlayer: false, timestamp: 3),
       );
 
       expect(updated.playerScore, 12);

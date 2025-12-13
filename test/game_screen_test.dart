@@ -22,7 +22,8 @@ void main() {
     );
   }
 
-  testWidgets('GameScreen toggles settings overlay via AppBar action', (tester) async {
+  testWidgets('GameScreen toggles settings overlay via AppBar action',
+      (tester) async {
     final engine = GameEngine();
 
     await tester.pumpWidget(
@@ -47,7 +48,8 @@ void main() {
     expect(find.text('Settings'), findsNothing);
   });
 
-  testWidgets('changing theme in settings overlay invokes callback', (tester) async {
+  testWidgets('changing theme in settings overlay invokes callback',
+      (tester) async {
     final engine = GameEngine();
     GameSettings? updated;
 

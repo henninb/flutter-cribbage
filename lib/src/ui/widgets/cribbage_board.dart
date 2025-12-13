@@ -122,7 +122,10 @@ class CribbageBoard extends StatelessWidget {
                 child: Container(
                   width: 2,
                   height: 20,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.2),
                 ),
               );
             }),
