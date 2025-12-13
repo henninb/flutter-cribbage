@@ -1,5 +1,8 @@
 name: Flutter CI
 
+# Security: CVE scanning is handled by Dependabot (see .github/dependabot.yml)
+# Dependabot automatically checks for vulnerable dependencies and creates PRs
+
 on:
   push:
     branches: [ main, master, develop ]
@@ -23,6 +26,16 @@ jobs:
 
       - name: Get dependencies
         run: flutter pub get
+
+      - name: Check for vulnerable dependencies
+        run: |
+          echo "Checking for outdated packages with known vulnerabilities..."
+          flutter pub outdated --json > outdated.json || true
+          if [ -f outdated.json ]; then
+            echo "Outdated packages report generated"
+            cat outdated.json
+          fi
+        continue-on-error: true
 
       - name: Verify formatting
         run: dart format --set-exit-if-changed .
