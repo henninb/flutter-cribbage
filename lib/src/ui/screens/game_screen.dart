@@ -16,6 +16,7 @@ import '../widgets/manual_counting_dialog.dart';
 import '../widgets/card_constants.dart';
 import '../widgets/score_animation.dart';
 import '../widgets/debug_score_dialog.dart';
+import '../widgets/playing_card_widget.dart';
 import 'settings_screen.dart';
 
 /// Data passed when dragging a card
@@ -87,6 +88,14 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Debug: Print card size constants on first build
+    debugPrint('=== CARD SIZE CONSTANTS ===');
+    debugPrint('cardWidth: ${CardConstants.cardWidth}');
+    debugPrint('cardHeight: ${CardConstants.cardHeight}');
+    debugPrint('activePeggingCardWidth: ${CardConstants.activePeggingCardWidth}');
+    debugPrint('activePeggingCardHeight: ${CardConstants.activePeggingCardHeight}');
+    debugPrint('==========================');
+
     return AnimatedBuilder(
       animation: widget.engine,
       builder: (context, _) {
@@ -777,6 +786,7 @@ class _OpponentHand extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             itemCount: sortedIndices.length,
+            padding: EdgeInsets.zero,
             itemBuilder: (context, displayIndex) {
               // Get the original index from the sorted list
               final originalIndex = sortedIndices[displayIndex];
@@ -784,9 +794,19 @@ class _OpponentHand extends StatelessWidget {
                   state.opponentCardsPlayed.contains(originalIndex);
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Opacity(
-                  opacity: isPlayed ? 0.3 : 1.0,
-                  child: _CardBack(),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: CardConstants.cardBackWidth,
+                    height: CardConstants.cardBackHeight,
+                    child: Opacity(
+                      opacity: isPlayed ? 0.3 : 1.0,
+                      child: CardBackWidget(
+                        width: CardConstants.cardBackWidth,
+                        height: CardConstants.cardBackHeight,
+                      ),
+                    ),
+                  ),
                 ),
               );
             },
@@ -797,37 +817,6 @@ class _OpponentHand extends StatelessWidget {
   }
 }
 
-class _CardBack extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: CardConstants.cardBackWidth,
-      height: CardConstants.cardBackHeight,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.tertiaryContainer,
-        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.tertiary,
-          width: CardConstants.cardBorderWidth,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Icon(
-          Icons.style,
-          color: Theme.of(context).colorScheme.tertiary,
-          size: 28,
-        ),
-      ),
-    );
-  }
-}
 
 /// Player hand display
 class _PlayerHand extends StatelessWidget {
@@ -870,6 +859,7 @@ class _PlayerHand extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             itemCount: sortedIndices.length,
+            padding: EdgeInsets.zero,
             itemBuilder: (context, displayIndex) {
               // Get the original index from the sorted list
               final originalIndex = sortedIndices[displayIndex];
@@ -882,13 +872,14 @@ class _PlayerHand extends StatelessWidget {
                   (state.peggingCount + card.value <= 31);
 
               // Wrap card in draggable if drag mode is enabled
-              Widget cardWidget = _PlayingCard(
+              debugPrint('[PLAYER HAND] Creating card ${card.label} with width=${CardConstants.cardWidth}');
+              Widget cardWidget = PlayingCardWidget(
                 card: card,
+                width: CardConstants.cardWidth,
+                height: CardConstants.cardHeight,
                 isSelected: isSelected,
                 isPlayed: isPlayed,
                 isPlayable: isPlayable,
-                isDragMode:
-                    settings.cardSelectionMode == CardSelectionMode.drag,
                 onTap: settings.cardSelectionMode == CardSelectionMode.drag
                     ? null
                     : () {
@@ -935,24 +926,26 @@ class _PlayerHand extends StatelessWidget {
                     scale: 1.2,
                     child: Opacity(
                       opacity: 0.7,
-                      child: _PlayingCard(
+                      child: PlayingCardWidget(
                         card: card,
+                        width: CardConstants.cardWidth,
+                        height: CardConstants.cardHeight,
                         isSelected: false,
                         isPlayed: false,
                         isPlayable: isPlayable,
-                        isDragMode: true,
                         onTap: null,
                       ),
                     ),
                   ),
                   childWhenDragging: Opacity(
                     opacity: 0.3,
-                    child: _PlayingCard(
+                    child: PlayingCardWidget(
                       card: card,
+                      width: CardConstants.cardWidth,
+                      height: CardConstants.cardHeight,
                       isSelected: isSelected,
                       isPlayed: isPlayed,
                       isPlayable: isPlayable,
-                      isDragMode: true,
                       onTap: null,
                     ),
                   ),
@@ -963,7 +956,14 @@ class _PlayerHand extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.symmetric(
                     horizontal: CardConstants.cardHorizontalSpacing,),
-                child: cardWidget,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: CardConstants.cardWidth,
+                    height: CardConstants.cardHeight,
+                    child: cardWidget,
+                  ),
+                ),
               );
             },
           ),
@@ -973,93 +973,6 @@ class _PlayerHand extends StatelessWidget {
   }
 }
 
-/// Playing card widget (larger, better styled)
-class _PlayingCard extends StatelessWidget {
-  final dynamic card;
-  final bool isSelected;
-  final bool isPlayed;
-  final bool isPlayable;
-  final bool isDragMode;
-  final VoidCallback? onTap;
-
-  const _PlayingCard({
-    required this.card,
-    required this.isSelected,
-    required this.isPlayed,
-    required this.isPlayable,
-    required this.isDragMode,
-    required this.onTap,
-  });
-
-  Color _getSuitColor(String label) {
-    // Red for hearts (♥) and diamonds (♦), black for spades (♠) and clubs (♣)
-    if (label.contains('♥') || label.contains('♦')) {
-      return Colors.red.shade800;
-    }
-    return Colors.black;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final backgroundColor = isPlayed
-        ? Colors.grey.shade400
-        : isSelected
-            ? Theme.of(context).colorScheme.primaryContainer
-            : isPlayable
-                ? Colors.white
-                : Colors.grey.shade200;
-
-    final borderColor = isSelected
-        ? Theme.of(context).colorScheme.primary
-        : isPlayable
-            ? Theme.of(context).colorScheme.tertiary
-            : Colors.grey.shade700;
-
-    final suitColor = _getSuitColor(card.label);
-
-    return GestureDetector(
-      onTap: !isPlayed && onTap != null ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: CardConstants.cardWidth,
-        height: CardConstants.cardHeight,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
-          border: Border.all(
-            color: borderColor,
-            width: isSelected
-                ? CardConstants.selectedCardBorderWidth
-                : CardConstants.cardBorderWidth,
-          ),
-          boxShadow: isPlayed
-              ? []
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.35),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-        ),
-        child: Center(
-          child: Text(
-            card.label,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isPlayed ? Colors.grey.shade600 : suitColor,
-                ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// Spread deck display for interactive cut selection
 class _SpreadDeck extends StatelessWidget {
@@ -1073,36 +986,15 @@ class _SpreadDeck extends StatelessWidget {
 
   Widget _buildCutCard(BuildContext context, PlayingCard card,
       {required double width, required double height,}) {
-    final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
-        ? Colors.red.shade800
-        : Colors.black;
-
-    return Container(
+    debugPrint('[CUT CARD] Creating card ${card.label} with width=$width, height=$height');
+    return SizedBox(
       width: width,
       height: height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-          width: CardConstants.cardBorderWidth,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          card.label,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: suitColor,
-              ),
-        ),
+      child: PlayingCardWidget(
+        card: card,
+        width: width,
+        height: height,
+        isPlayable: true,
       ),
     );
   }
@@ -1116,11 +1008,11 @@ class _SpreadDeck extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    // Calculate card width and overlap
+    // Use consistent card sizes from constants
     const cardWidth = 60.0;
-    const cardHeight = 90.0;
-    const cutCardWidth = 80.0;
-    const cutCardHeight = 120.0;
+    const cardHeight = 84.0;
+    const cutCardWidth = 60.0;
+    const cutCardHeight = 84.0;
 
     // Calculate spacing between cards to fit on screen with padding
     final availableWidth = screenWidth - 32; // 16px padding on each side
@@ -1159,7 +1051,7 @@ class _SpreadDeck extends StatelessWidget {
                       onTap: state.playerHasSelectedCutCard
                           ? null
                           : () => engine.selectCutCard(index),
-                      child: _CardBackWidget(
+                      child: CardBackWidget(
                         width: cardWidth,
                         height: cardHeight,
                       ),
@@ -1288,45 +1180,6 @@ class _SpreadDeck extends StatelessWidget {
   }
 }
 
-class _CardBackWidget extends StatelessWidget {
-  final double width;
-  final double height;
-
-  const _CardBackWidget({
-    required this.width,
-    required this.height,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.tertiaryContainer,
-        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.tertiary,
-          width: CardConstants.cardBorderWidth,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Icon(
-          Icons.style,
-          color: Theme.of(context).colorScheme.tertiary,
-          size: 24,
-        ),
-      ),
-    );
-  }
-}
 
 /// Pegging display - count and pile with history
 class _PeggingDisplay extends StatefulWidget {
@@ -1386,35 +1239,19 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
     required double fontSize,
     double opacity = 1.0,
   }) {
-    final suitColor = (card.label.contains('♥') || card.label.contains('♦'))
-        ? Colors.red.shade800
-        : Colors.black;
-
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius / 2),
-        border: Border.all(
-          color: Colors.grey.shade700.withValues(alpha: opacity),
-          width: CardConstants.cardBorderWidth,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15 * opacity),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          card.label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: fontSize,
-            color: suitColor.withValues(alpha: opacity),
+    debugPrint('[PEGGING PILE] Creating card ${card.label} with width=$width, height=$height');
+    return Align(
+      alignment: Alignment.center,
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: Opacity(
+          opacity: opacity,
+          child: PlayingCardWidget(
+            card: card,
+            width: width,
+            height: height,
+            isPlayable: true,
           ),
         ),
       ),
@@ -1472,11 +1309,12 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
         isDragMode && engine != null && widget.state.isPlayerTurn;
 
     return SizedBox(
-      height: CardConstants.activePeggingCardHeight + 8,
+      height: CardConstants.playerHandHeight,
       child: ListView(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
+        padding: EdgeInsets.zero,
         children: [
           // Previous completed rounds (fanned and greyed)
           ...completedRounds.map((round) {
@@ -1486,7 +1324,6 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
                 // Cards in this round (fanned/overlapped)
                 SizedBox(
                   width: _calculateFannedWidth(round.cards.length),
-                  height: CardConstants.activePeggingCardHeight,
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: List.generate(
@@ -1523,7 +1360,6 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
           if (hasCurrentCards)
             SizedBox(
               width: _calculateFannedWidth(widget.state.peggingPile.length),
-              height: CardConstants.activePeggingCardHeight,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: List.generate(

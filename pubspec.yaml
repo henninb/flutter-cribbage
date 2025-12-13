@@ -1,5 +1,5 @@
 name: cribbage
-version: 1.0.90+90
+version: 1.0.92+92
 description: Flutter implementation of the Cribbage game with full gameplay.
 publish_to: 'none'
 
@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
   provider: ^6.1.2
-  shared_preferences: ^2.2.3
+  shared_preferences: ^2.5.4
   intl: ^0.20.2
   path_provider: ^2.1.5
 

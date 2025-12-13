@@ -3,6 +3,7 @@ import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
 import '../../utils/string_sanitizer.dart';
 import 'card_constants.dart';
+import 'playing_card_widget.dart';
 
 /// Full-screen hand counting dialog matching Android app
 class HandCountingDialog extends StatelessWidget {
@@ -323,50 +324,12 @@ class _HandCard extends StatelessWidget {
 
   const _HandCard({required this.card});
 
-  Color _getSuitColor(String label) {
-    // Red for hearts (♥) and diamonds (♦), black for spades (♠) and clubs (♣)
-    if (label.contains('♥') || label.contains('♦')) {
-      return Colors.red.shade800;
-    }
-    return Colors.black;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final suitColor = _getSuitColor(card.label);
-
-    return Container(
+    return PlayingCardWidget(
+      card: card,
       width: CardConstants.cardWidth,
-      height: CardConstants.cardHeight,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(CardConstants.cardBorderRadius),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-          width: CardConstants.cardBorderWidth,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          card.label,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: suitColor,
-              ),
-        ),
-      ),
+      isPlayable: true,
     );
   }
 }

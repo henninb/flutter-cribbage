@@ -150,10 +150,10 @@ void main() {
     mgr.onPlay(const PlayingCard(rank: Rank.king, suit: Suit.hearts));
     mgr.onPlay(const PlayingCard(rank: Rank.queen, suit: Suit.clubs));
     mgr.onPlay(const PlayingCard(rank: Rank.jack, suit: Suit.diamonds));
-    mgr.onPlay(const PlayingCard(rank: Rank.ace, suit: Suit.spades)); // Player plays last
+    mgr.onPlay(const PlayingCard(rank: Rank.ace, suit: Suit.spades)); // Opponent plays last
 
-    // After reset, opponent should start next round
-    expect(mgr.isPlayerTurn, Player.opponent);
+    // After reset, player should start next round (opponent made the 31)
+    expect(mgr.isPlayerTurn, Player.player);
   });
 
   test('onGo increments consecutive goes', () {
