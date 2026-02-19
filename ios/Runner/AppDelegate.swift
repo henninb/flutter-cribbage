@@ -8,6 +8,12 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+
+    HumanManager.shared.start()
+    if let controller = window?.rootViewController as? FlutterViewController {
+      HumanManager.shared.setupChannel(with: controller)
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

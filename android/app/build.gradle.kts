@@ -73,6 +73,10 @@ android {
     }
 }
 
+dependencies {
+    implementation("com.humansecurity:sdk:4.2.6")
+}
+
 flutter {
     source = "../.."
 }

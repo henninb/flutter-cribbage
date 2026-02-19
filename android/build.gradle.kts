@@ -2,6 +2,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jfrog.humansecurity.com/artifactory/human-android-sdk/") }
     }
 }
 
