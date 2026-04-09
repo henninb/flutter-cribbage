@@ -45,3 +45,6 @@ coverage/
 *.xcuserstate
 *.xcscmblueprint
 android/key.properties
+
+# Claude Code local settings
+.claude/settings.local.json
