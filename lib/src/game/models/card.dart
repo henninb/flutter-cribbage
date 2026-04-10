@@ -1,5 +1,7 @@
 import 'dart:math';
 
+enum Player { player, opponent }
+
 enum Suit { hearts, diamonds, clubs, spades }
 
 enum Rank {
@@ -58,6 +60,9 @@ class PlayingCard {
 
   static PlayingCard decode(String raw) {
     final parts = raw.split('|');
+    if (parts.length < 2) {
+      return const PlayingCard(rank: Rank.ace, suit: Suit.spades);
+    }
     final rankIndex = int.tryParse(parts[0]) ?? 0;
     final suitIndex = int.tryParse(parts[1]) ?? 0;
     return PlayingCard(

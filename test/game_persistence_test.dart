@@ -19,8 +19,7 @@ void main() {
 
     test('loadStats defaults to zeros and saveStats persists values', () async {
       final defaults = persistence.loadStats();
-      expect(defaults, isNotNull);
-      expect(defaults!.gamesWon, 0);
+      expect(defaults.gamesWon, 0);
       expect(defaults.gamesLost, 0);
       expect(defaults.skunksFor, 0);
       expect(defaults.skunksAgainst, 0);
@@ -37,8 +36,7 @@ void main() {
       );
 
       final loaded = persistence.loadStats();
-      expect(loaded, isNotNull);
-      expect(loaded!.gamesWon, 5);
+      expect(loaded.gamesWon, 5);
       expect(loaded.gamesLost, 2);
       expect(loaded.skunksFor, 1);
       expect(loaded.skunksAgainst, 3);

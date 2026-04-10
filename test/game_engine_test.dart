@@ -19,7 +19,16 @@ class _FakePersistence implements GamePersistence {
   String? savedOpponentName;
 
   @override
-  StoredStats? loadStats() => statsToLoad;
+  StoredStats loadStats() =>
+      statsToLoad ??
+      const StoredStats(
+        gamesWon: 0,
+        gamesLost: 0,
+        skunksFor: 0,
+        skunksAgainst: 0,
+        doubleSkunksFor: 0,
+        doubleSkunksAgainst: 0,
+      );
 
   @override
   CutCards? loadCutCards() => cutsToLoad;

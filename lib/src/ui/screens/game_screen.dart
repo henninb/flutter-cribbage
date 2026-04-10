@@ -22,7 +22,7 @@ import 'settings_screen.dart';
 /// Data passed when dragging a card
 class CardDragData {
   final int cardIndex;
-  final dynamic card;
+  final PlayingCard card;
   final GamePhase phase;
 
   const CardDragData({
@@ -87,18 +87,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug: Print card size constants on first build
-    debugPrint('=== CARD SIZE CONSTANTS ===');
-    debugPrint('cardWidth: ${CardConstants.cardWidth}');
-    debugPrint('cardHeight: ${CardConstants.cardHeight}');
-    debugPrint(
-      'activePeggingCardWidth: ${CardConstants.activePeggingCardWidth}',
-    );
-    debugPrint(
-      'activePeggingCardHeight: ${CardConstants.activePeggingCardHeight}',
-    );
-    debugPrint('==========================');
-
     return AnimatedBuilder(
       animation: widget.engine,
       builder: (context, _) {
@@ -321,9 +309,6 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
   @override
   Widget build(BuildContext context) {
     // Debug: Print scores being displayed
-    debugPrint(
-      '[UI] ScoreHeader displaying - Player: ${widget.state.playerScore}, Opponent: ${widget.state.opponentScore}',
-    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -877,9 +862,6 @@ class _PlayerHand extends StatelessWidget {
                   (state.peggingCount + card.value <= 31);
 
               // Wrap card in draggable if drag mode is enabled
-              debugPrint(
-                '[PLAYER HAND] Creating card ${card.label} with width=${CardConstants.cardWidth}',
-              );
               Widget cardWidget = PlayingCardWidget(
                 card: card,
                 width: CardConstants.cardWidth,
@@ -1001,9 +983,6 @@ class _SpreadDeck extends StatelessWidget {
     required double width,
     required double height,
   }) {
-    debugPrint(
-      '[CUT CARD] Creating card ${card.label} with width=$width, height=$height',
-    );
     return SizedBox(
       width: width,
       height: height,
@@ -1259,9 +1238,6 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
     required double fontSize,
     double opacity = 1.0,
   }) {
-    debugPrint(
-      '[PEGGING PILE] Creating card ${card.label} with width=$width, height=$height',
-    );
     return Align(
       alignment: Alignment.center,
       child: SizedBox(
@@ -1282,7 +1258,7 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    final completedRounds = widget.state.peggingManager?.completedRounds ?? [];
+    final completedRounds = widget.state.peggingCompletedRounds;
     final hasHistory = completedRounds.isNotEmpty;
     final hasCurrentCards = widget.state.peggingPile.isNotEmpty;
 

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 import '../logic/cribbage_scorer.dart';
-import '../logic/deal_utils.dart';
 import '../logic/pegging_round_manager.dart';
 import '../models/card.dart';
 
@@ -136,7 +135,6 @@ class GameState {
     this.showCutForDealer = false,
     this.cutDeck = const [],
     this.playerHasSelectedCutCard = false,
-    this.isPeggingPhase = false,
     this.isPlayerTurn = false,
     this.peggingCount = 0,
     this.peggingPile = const [],
@@ -144,7 +142,6 @@ class GameState {
     this.opponentCardsPlayed = const {},
     this.consecutiveGoes = 0,
     this.lastPlayerWhoPlayed,
-    this.isInHandCountingPhase = false,
     this.countingPhase = CountingPhase.none,
     this.handScores = const HandScores(),
     this.gameStatus = '',
@@ -152,7 +149,7 @@ class GameState {
     this.pendingReset,
     this.showWinnerModal = false,
     this.winnerModalData,
-    this.peggingManager,
+    this.peggingCompletedRounds = const [],
     this.showCutCardDisplay = false,
     this.playerScoreAnimation,
     this.opponentScoreAnimation,
@@ -182,7 +179,6 @@ class GameState {
   final bool showCutForDealer;
   final List<PlayingCard> cutDeck;
   final bool playerHasSelectedCutCard;
-  final bool isPeggingPhase;
   final bool isPlayerTurn;
   final int peggingCount;
   final List<PlayingCard> peggingPile;
@@ -190,7 +186,6 @@ class GameState {
   final Set<int> opponentCardsPlayed;
   final int consecutiveGoes;
   final Player? lastPlayerWhoPlayed;
-  final bool isInHandCountingPhase;
   final CountingPhase countingPhase;
   final HandScores handScores;
   final String gameStatus;
@@ -198,12 +193,20 @@ class GameState {
   final PendingResetState? pendingReset;
   final bool showWinnerModal;
   final WinnerModalData? winnerModalData;
-  final PeggingRoundManager? peggingManager;
+  final List<PeggingRound> peggingCompletedRounds;
   final bool showCutCardDisplay;
   final ScoreAnimation? playerScoreAnimation;
   final ScoreAnimation? opponentScoreAnimation;
   final String playerName;
   final String opponentName;
+
+  /// True while cards are being played in the pegging phase.
+  bool get isPeggingPhase => currentPhase == GamePhase.pegging;
+
+  /// True once [startHandCounting] has been called and counting is underway.
+  bool get isInHandCountingPhase =>
+      countingPhase != CountingPhase.none &&
+      countingPhase != CountingPhase.completed;
 
   GameState copyWith({
     bool? gameStarted,
@@ -229,7 +232,6 @@ class GameState {
     bool? showCutForDealer,
     List<PlayingCard>? cutDeck,
     bool? playerHasSelectedCutCard,
-    bool? isPeggingPhase,
     bool? isPlayerTurn,
     int? peggingCount,
     List<PlayingCard>? peggingPile,
@@ -237,7 +239,7 @@ class GameState {
     Set<int>? opponentCardsPlayed,
     int? consecutiveGoes,
     Player? lastPlayerWhoPlayed,
-    bool? isInHandCountingPhase,
+    bool clearLastPlayerWhoPlayed = false,
     CountingPhase? countingPhase,
     HandScores? handScores,
     String? gameStatus,
@@ -246,7 +248,8 @@ class GameState {
     bool clearPendingReset = false,
     bool? showWinnerModal,
     WinnerModalData? winnerModalData,
-    PeggingRoundManager? peggingManager,
+    bool clearWinnerModalData = false,
+    List<PeggingRound>? peggingCompletedRounds,
     bool? showCutCardDisplay,
     ScoreAnimation? playerScoreAnimation,
     ScoreAnimation? opponentScoreAnimation,
@@ -279,16 +282,15 @@ class GameState {
       cutDeck: cutDeck ?? this.cutDeck,
       playerHasSelectedCutCard:
           playerHasSelectedCutCard ?? this.playerHasSelectedCutCard,
-      isPeggingPhase: isPeggingPhase ?? this.isPeggingPhase,
       isPlayerTurn: isPlayerTurn ?? this.isPlayerTurn,
       peggingCount: peggingCount ?? this.peggingCount,
       peggingPile: peggingPile ?? this.peggingPile,
       playerCardsPlayed: playerCardsPlayed ?? this.playerCardsPlayed,
       opponentCardsPlayed: opponentCardsPlayed ?? this.opponentCardsPlayed,
       consecutiveGoes: consecutiveGoes ?? this.consecutiveGoes,
-      lastPlayerWhoPlayed: lastPlayerWhoPlayed ?? this.lastPlayerWhoPlayed,
-      isInHandCountingPhase:
-          isInHandCountingPhase ?? this.isInHandCountingPhase,
+      lastPlayerWhoPlayed: clearLastPlayerWhoPlayed
+          ? null
+          : (lastPlayerWhoPlayed ?? this.lastPlayerWhoPlayed),
       countingPhase: countingPhase ?? this.countingPhase,
       handScores: handScores ?? this.handScores,
       gameStatus: gameStatus ?? this.gameStatus,
@@ -297,8 +299,11 @@ class GameState {
       pendingReset:
           clearPendingReset ? null : (pendingReset ?? this.pendingReset),
       showWinnerModal: showWinnerModal ?? this.showWinnerModal,
-      winnerModalData: winnerModalData ?? this.winnerModalData,
-      peggingManager: peggingManager ?? this.peggingManager,
+      winnerModalData: clearWinnerModalData
+          ? null
+          : (winnerModalData ?? this.winnerModalData),
+      peggingCompletedRounds:
+          peggingCompletedRounds ?? this.peggingCompletedRounds,
       showCutCardDisplay: showCutCardDisplay ?? this.showCutCardDisplay,
       playerScoreAnimation: clearPlayerScoreAnimation
           ? null

@@ -167,7 +167,7 @@ void main() {
       state: const GameState(
         gameStarted: true,
         currentPhase: GamePhase.handCounting,
-        isInHandCountingPhase: false,
+        countingPhase: CountingPhase.none,
       ),
       onStartGame: () {},
       onCutForDealer: () {},

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../game/models/card.dart';
@@ -36,7 +35,7 @@ class PlayerNames {
 }
 
 abstract class GamePersistence {
-  StoredStats? loadStats();
+  StoredStats loadStats();
   Future<void> saveStats({
     required int gamesWon,
     required int gamesLost,
@@ -73,7 +72,7 @@ class SharedPrefsPersistence implements GamePersistence {
   static const _opponentNameKey = 'opponentName';
 
   @override
-  StoredStats? loadStats() {
+  StoredStats loadStats() {
     return StoredStats(
       gamesWon: _prefs.getInt(_gamesWonKey) ?? 0,
       gamesLost: _prefs.getInt(_gamesLostKey) ?? 0,
@@ -93,22 +92,14 @@ class SharedPrefsPersistence implements GamePersistence {
     required int doubleSkunksFor,
     required int doubleSkunksAgainst,
   }) async {
-    debugPrint(
-      '[PERSISTENCE] Saving stats: Won=$gamesWon, Lost=$gamesLost, Skunks=$skunksFor/$skunksAgainst, DoubleSkunks=$doubleSkunksFor/$doubleSkunksAgainst',
-    );
-    try {
-      await Future.wait([
-        _prefs.setInt(_gamesWonKey, gamesWon),
-        _prefs.setInt(_gamesLostKey, gamesLost),
-        _prefs.setInt(_skunksForKey, skunksFor),
-        _prefs.setInt(_skunksAgainstKey, skunksAgainst),
-        _prefs.setInt(_doubleSkunksForKey, doubleSkunksFor),
-        _prefs.setInt(_doubleSkunksAgainstKey, doubleSkunksAgainst),
-      ]);
-      debugPrint('[PERSISTENCE] Stats saved successfully');
-    } catch (e) {
-      debugPrint('[PERSISTENCE ERROR] Failed to save stats: $e');
-    }
+    await Future.wait([
+      _prefs.setInt(_gamesWonKey, gamesWon),
+      _prefs.setInt(_gamesLostKey, gamesLost),
+      _prefs.setInt(_skunksForKey, skunksFor),
+      _prefs.setInt(_skunksAgainstKey, skunksAgainst),
+      _prefs.setInt(_doubleSkunksForKey, doubleSkunksFor),
+      _prefs.setInt(_doubleSkunksAgainstKey, doubleSkunksAgainst),
+    ]);
   }
 
   @override
@@ -126,18 +117,10 @@ class SharedPrefsPersistence implements GamePersistence {
 
   @override
   Future<void> saveCutCards(PlayingCard player, PlayingCard opponent) async {
-    debugPrint(
-      '[PERSISTENCE] Saving cut cards: Player=${player.label}, Opponent=${opponent.label}',
-    );
-    try {
-      await Future.wait([
-        _prefs.setString(_playerCutKey, player.encode()),
-        _prefs.setString(_opponentCutKey, opponent.encode()),
-      ]);
-      debugPrint('[PERSISTENCE] Cut cards saved successfully');
-    } catch (e) {
-      debugPrint('[PERSISTENCE ERROR] Failed to save cut cards: $e');
-    }
+    await Future.wait([
+      _prefs.setString(_playerCutKey, player.encode()),
+      _prefs.setString(_opponentCutKey, opponent.encode()),
+    ]);
   }
 
   @override
@@ -155,17 +138,9 @@ class SharedPrefsPersistence implements GamePersistence {
     required String playerName,
     required String opponentName,
   }) async {
-    debugPrint(
-      '[PERSISTENCE] Saving player names: "$playerName" vs "$opponentName"',
-    );
-    try {
-      await Future.wait([
-        _prefs.setString(_playerNameKey, playerName),
-        _prefs.setString(_opponentNameKey, opponentName),
-      ]);
-      debugPrint('[PERSISTENCE] Player names saved successfully');
-    } catch (e) {
-      debugPrint('[PERSISTENCE ERROR] Failed to save player names: $e');
-    }
+    await Future.wait([
+      _prefs.setString(_playerNameKey, playerName),
+      _prefs.setString(_opponentNameKey, opponentName),
+    ]);
   }
 }

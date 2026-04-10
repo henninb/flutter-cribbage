@@ -1,7 +1,5 @@
 import '../models/card.dart';
 
-enum Player { player, opponent }
-
 class DealResult {
   DealResult({
     required this.playerHand,

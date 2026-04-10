@@ -87,10 +87,6 @@ class StringSanitizer {
       return 'My';
     }
 
-    if (trimmed == 'i') {
-      return 'my';
-    }
-
     // For all other names, add 's
     return "$trimmed's";
   }
