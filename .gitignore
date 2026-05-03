@@ -48,3 +48,4 @@ android/key.properties
 
 # Claude Code local settings
 .claude/settings.local.json
+android_gradlew_tmp
