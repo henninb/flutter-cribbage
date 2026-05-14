@@ -501,7 +501,7 @@ class _ScoreColumnState extends State<_ScoreColumn> {
 }
 
 class _StarterCard extends StatelessWidget {
-  final dynamic card;
+  final PlayingCard card;
 
   const _StarterCard({required this.card});
 
@@ -552,22 +552,11 @@ class _StarterCard extends StatelessWidget {
   }
 }
 
-/// Helper function to determine if the current counting phase is for the player's hand/crib
-bool _isPlayerHandOrCrib(GameState state) {
-  switch (state.countingPhase) {
-    case CountingPhase.nonDealer:
-      // Non-dealer hand: player's hand if player is NOT dealer
-      return !state.isPlayerDealer;
-    case CountingPhase.dealer:
-      // Dealer hand: player's hand if player IS dealer
-      return state.isPlayerDealer;
-    case CountingPhase.crib:
-      // Crib: player's crib if player IS dealer (crib always belongs to dealer)
-      return state.isPlayerDealer;
-    default:
-      return false;
-  }
-}
+bool _isPlayerHandOrCrib(GameState state) => switch (state.countingPhase) {
+      CountingPhase.nonDealer => !state.isPlayerDealer,
+      CountingPhase.dealer || CountingPhase.crib => state.isPlayerDealer,
+      _ => false,
+    };
 
 /// Game area - shows different content based on phase
 /// NO SCROLLING - everything must fit in available space
@@ -604,6 +593,8 @@ class _GameArea extends StatelessWidget {
       return _WinnerModal(
         data: state.winnerModalData!,
         onDismiss: engine.dismissWinnerModal,
+        playerName: state.playerName,
+        opponentName: state.opponentName,
       );
     }
 
@@ -667,72 +658,33 @@ class _GameContent extends StatelessWidget {
     );
   }
 
-  Widget _buildMiddleSection(BuildContext context) {
-    switch (state.currentPhase) {
-      case GamePhase.cutForDealer:
-        // Show spread deck (handles both pre-selection and post-selection states)
-        if (state.cutDeck.isNotEmpty) {
-          return Expanded(
-            child: _SpreadDeck(
-              state: state,
-              engine: engine,
-            ),
-          );
-        }
-        return const Expanded(child: SizedBox.shrink());
-
-      case GamePhase.dealing:
-        // Show spread deck with cut cards if we just cut for dealer
-        if (state.showCutForDealer && state.playerHasSelectedCutCard) {
-          return Expanded(
-            child: _SpreadDeck(
-              state: state,
-              engine: engine,
-            ),
-          );
-        }
-        return const Expanded(child: SizedBox.shrink());
-
-      case GamePhase.cribSelection:
-        // Show drop zone for drag mode, otherwise show instructions
-        if (settings.cardSelectionMode == CardSelectionMode.drag) {
-          return _CribDropZone(
-            state: state,
-            engine: engine,
-            settings: settings,
-          );
-        }
-        return Column(
-          children: [
-            Text(
-              'Select 2 cards for the crib',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text(
-              '${state.selectedCards.length}/2 selected',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        );
-
-      case GamePhase.pegging:
-        return _PeggingDisplay(
-          state: state,
-          engine: engine,
-          settings: settings,
-        );
-
-      case GamePhase.handCounting:
-        // Show pegging pile until user clicks "Count Hands"
-        if (!state.isInHandCountingPhase) {
-          return _PeggingDisplay(state: state);
-        }
-        return const SizedBox.shrink();
-
-      default:
-        return const SizedBox.shrink();
-    }
-  }
+  Widget _buildMiddleSection(BuildContext context) => switch (state.currentPhase) {
+        GamePhase.cutForDealer when state.cutDeck.isNotEmpty =>
+          Expanded(child: _SpreadDeck(state: state, engine: engine)),
+        GamePhase.dealing
+            when state.showCutForDealer && state.playerHasSelectedCutCard =>
+          Expanded(child: _SpreadDeck(state: state, engine: engine)),
+        GamePhase.cribSelection
+            when settings.cardSelectionMode == CardSelectionMode.drag =>
+          _CribDropZone(state: state, engine: engine, settings: settings),
+        GamePhase.cribSelection => Column(
+            children: [
+              Text(
+                'Select 2 cards for the crib',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Text(
+                '${state.selectedCards.length}/2 selected',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        GamePhase.pegging =>
+          _PeggingDisplay(state: state, engine: engine, settings: settings),
+        GamePhase.handCounting when !state.isInHandCountingPhase =>
+          _PeggingDisplay(state: state),
+        _ => const Expanded(child: SizedBox.shrink()),
+      };
 
   bool _shouldShowOpponentHand() {
     // Only show opponent hand after cards have been dealt
@@ -1605,32 +1557,25 @@ class _PendingResetDialog extends StatelessWidget {
 }
 
 /// Winner modal
-class _WinnerModal extends StatefulWidget {
+class _WinnerModal extends StatelessWidget {
   final WinnerModalData data;
   final VoidCallback onDismiss;
+  final String playerName;
+  final String opponentName;
 
   const _WinnerModal({
     required this.data,
     required this.onDismiss,
+    required this.playerName,
+    required this.opponentName,
   });
 
   @override
-  State<_WinnerModal> createState() => _WinnerModalState();
-}
-
-class _WinnerModalState extends State<_WinnerModal> {
-  @override
   Widget build(BuildContext context) {
-    // Get engine from context to access current state
-    final engine =
-        context.findAncestorStateOfType<_GameScreenState>()?.widget.engine;
-    final playerName = engine?.state.playerName ?? 'You';
-    final opponentName = engine?.state.opponentName ?? 'Opponent';
-
-    final winnerName = widget.data.playerWon ? playerName : opponentName;
+    final winnerName = data.playerWon ? playerName : opponentName;
 
     return GestureDetector(
-      onTap: widget.onDismiss,
+      onTap: onDismiss,
       child: Container(
         color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
         child: Center(
@@ -1638,7 +1583,7 @@ class _WinnerModalState extends State<_WinnerModal> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: GestureDetector(
-                onTap: widget.onDismiss,
+                onTap: onDismiss,
                 child: Card(
                   elevation: 12,
                   shape: RoundedRectangleBorder(
@@ -1652,10 +1597,10 @@ class _WinnerModalState extends State<_WinnerModal> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          widget.data.playerWon
+                          data.playerWon
                               ? Theme.of(context).colorScheme.primaryContainer
                               : Theme.of(context).colorScheme.errorContainer,
-                          widget.data.playerWon
+                          data.playerWon
                               ? Theme.of(context).colorScheme.primary
                               : Theme.of(context).colorScheme.error,
                         ],
@@ -1670,7 +1615,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: widget.data.playerWon
+                              color: data.playerWon
                                   ? Theme.of(context)
                                       .colorScheme
                                       .primary
@@ -1682,11 +1627,11 @@ class _WinnerModalState extends State<_WinnerModal> {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              widget.data.playerWon
+                              data.playerWon
                                   ? Icons.emoji_events
                                   : Icons.close,
                               size: 40,
-                              color: widget.data.playerWon
+                              color: data.playerWon
                                   ? Theme.of(context)
                                       .colorScheme
                                       .onPrimaryContainer
@@ -1704,7 +1649,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                                 .textTheme
                                 .headlineLarge
                                 ?.copyWith(
-                                  color: widget.data.playerWon
+                                  color: data.playerWon
                                       ? Theme.of(context)
                                           .colorScheme
                                           .onPrimaryContainer
@@ -1719,7 +1664,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                           const SizedBox(height: 6),
 
                           // Skunk Badge
-                          if (widget.data.wasDoubleSkunk)
+                          if (data.wasDoubleSkunk)
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.symmetric(
@@ -1760,7 +1705,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                                 ],
                               ),
                             )
-                          else if (widget.data.wasSkunk)
+                          else if (data.wasSkunk)
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.symmetric(
@@ -1808,7 +1753,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: widget.data.playerWon
+                              color: data.playerWon
                                   ? Theme.of(context)
                                       .colorScheme
                                       .primary
@@ -1827,7 +1772,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                                       .textTheme
                                       .labelSmall
                                       ?.copyWith(
-                                        color: widget.data.playerWon
+                                        color: data.playerWon
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .onPrimaryContainer
@@ -1840,12 +1785,12 @@ class _WinnerModalState extends State<_WinnerModal> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${widget.data.playerScore} - ${widget.data.opponentScore}',
+                                  '${data.playerScore} - ${data.opponentScore}',
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineMedium
                                       ?.copyWith(
-                                        color: widget.data.playerWon
+                                        color: data.playerWon
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .onPrimaryContainer
@@ -1866,7 +1811,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: widget.data.playerWon
+                              color: data.playerWon
                                   ? Theme.of(context)
                                       .colorScheme
                                       .primary
@@ -1886,7 +1831,7 @@ class _WinnerModalState extends State<_WinnerModal> {
                                       .textTheme
                                       .titleSmall
                                       ?.copyWith(
-                                        color: widget.data.playerWon
+                                        color: data.playerWon
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .onPrimaryContainer
@@ -1900,25 +1845,25 @@ class _WinnerModalState extends State<_WinnerModal> {
                                 _StatRow(
                                   label: 'Record',
                                   value:
-                                      '${widget.data.gamesWon} - ${widget.data.gamesLost}',
+                                      '${data.gamesWon} - ${data.gamesLost}',
                                   icon: Icons.sports_score,
-                                  isPlayerWin: widget.data.playerWon,
+                                  isPlayerWin: data.playerWon,
                                 ),
                                 const SizedBox(height: 6),
                                 _StatRow(
                                   label: 'Skunks',
                                   value:
-                                      '${widget.data.skunksFor} - ${widget.data.skunksAgainst}',
+                                      '${data.skunksFor} - ${data.skunksAgainst}',
                                   icon: Icons.local_fire_department,
-                                  isPlayerWin: widget.data.playerWon,
+                                  isPlayerWin: data.playerWon,
                                 ),
                                 const SizedBox(height: 6),
                                 _StatRow(
                                   label: 'Double Skunks',
                                   value:
-                                      '${widget.data.doubleSkunksFor} - ${widget.data.doubleSkunksAgainst}',
+                                      '${data.doubleSkunksFor} - ${data.doubleSkunksAgainst}',
                                   icon: Icons.whatshot,
-                                  isPlayerWin: widget.data.playerWon,
+                                  isPlayerWin: data.playerWon,
                                 ),
                               ],
                             ),

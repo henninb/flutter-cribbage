@@ -1,29 +1,17 @@
 import '../models/card.dart';
 
-class PeggingRound {
-  PeggingRound({
-    required this.cards,
-    required this.finalCount,
-    required this.endReason,
-  });
+typedef PeggingRound = ({
+  List<PlayingCard> cards,
+  int finalCount,
+  String endReason,
+});
 
-  final List<PlayingCard> cards;
-  final int finalCount;
-  final String endReason;
-}
+typedef SubRoundReset = ({
+  bool resetFor31,
+  Player? goPointTo,
+});
 
-class SubRoundReset {
-  SubRoundReset({required this.resetFor31, required this.goPointTo});
-
-  final bool resetFor31;
-  final Player? goPointTo;
-}
-
-class PlayOutcome {
-  PlayOutcome({this.reset});
-
-  final SubRoundReset? reset;
-}
+typedef PlayOutcome = ({SubRoundReset? reset});
 
 class PeggingRoundManager {
   PeggingRoundManager({Player startingPlayer = Player.player})
@@ -46,12 +34,11 @@ class PeggingRoundManager {
     consecutiveGoes = 0;
 
     if (peggingCount == 31) {
-      final reset = _performReset(resetFor31: true);
-      return PlayOutcome(reset: reset);
+      return (reset: _performReset(resetFor31: true));
     }
 
     isPlayerTurn = _other(isPlayerTurn);
-    return PlayOutcome();
+    return (reset: null);
   }
 
   SubRoundReset? onGo({required bool opponentHasLegalMove}) {
@@ -68,13 +55,11 @@ class PeggingRoundManager {
     final last = lastPlayerWhoPlayed;
 
     if (peggingPile.isNotEmpty) {
-      completedRounds.add(
-        PeggingRound(
-          cards: List.from(peggingPile),
-          finalCount: peggingCount,
-          endReason: resetFor31 ? '31' : 'Go',
-        ),
-      );
+      completedRounds.add((
+        cards: List.from(peggingPile),
+        finalCount: peggingCount,
+        endReason: resetFor31 ? '31' : 'Go',
+      ));
     }
 
     peggingCount = 0;
@@ -82,7 +67,7 @@ class PeggingRoundManager {
     consecutiveGoes = 0;
     isPlayerTurn = last == Player.player ? Player.opponent : Player.player;
     lastPlayerWhoPlayed = null;
-    return SubRoundReset(resetFor31: resetFor31, goPointTo: awardTo);
+    return (resetFor31: resetFor31, goPointTo: awardTo);
   }
 
   Player _other(Player value) =>

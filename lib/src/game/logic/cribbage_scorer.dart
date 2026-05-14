@@ -178,22 +178,12 @@ class CribbageScorer {
           break;
         }
       }
-      switch (sameRankCount) {
-        case 2:
-          pairPoints = 2;
-          total += 2;
-          break;
-        case 3:
-          pairPoints = 6;
-          total += 6;
-          break;
-        case 4:
-          pairPoints = 12;
-          total += 12;
-          break;
-        default:
-          break;
-      }
+      (pairPoints, total) = switch (sameRankCount) {
+        2 => (2, total + 2),
+        3 => (6, total + 6),
+        4 => (12, total + 12),
+        _ => (0, total),
+      };
     }
 
     for (var runLength = pile.length; runLength >= 3; runLength--) {

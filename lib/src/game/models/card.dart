@@ -20,41 +20,53 @@ enum Rank {
   king,
 }
 
+extension on Rank {
+  String get label => switch (this) {
+        Rank.ace => 'A',
+        Rank.two => '2',
+        Rank.three => '3',
+        Rank.four => '4',
+        Rank.five => '5',
+        Rank.six => '6',
+        Rank.seven => '7',
+        Rank.eight => '8',
+        Rank.nine => '9',
+        Rank.ten => '10',
+        Rank.jack => 'J',
+        Rank.queen => 'Q',
+        Rank.king => 'K',
+      };
+}
+
+extension on Suit {
+  String get label => switch (this) {
+        Suit.spades => '♠',
+        Suit.hearts => '♥',
+        Suit.diamonds => '♦',
+        Suit.clubs => '♣',
+      };
+}
+
 class PlayingCard {
   const PlayingCard({required this.rank, required this.suit});
 
   final Rank rank;
   final Suit suit;
 
-  int get value {
-    switch (rank) {
-      case Rank.ace:
-        return 1;
-      case Rank.two:
-        return 2;
-      case Rank.three:
-        return 3;
-      case Rank.four:
-        return 4;
-      case Rank.five:
-        return 5;
-      case Rank.six:
-        return 6;
-      case Rank.seven:
-        return 7;
-      case Rank.eight:
-        return 8;
-      case Rank.nine:
-        return 9;
-      case Rank.ten:
-      case Rank.jack:
-      case Rank.queen:
-      case Rank.king:
-        return 10;
-    }
-  }
+  int get value => switch (rank) {
+        Rank.ace => 1,
+        Rank.two => 2,
+        Rank.three => 3,
+        Rank.four => 4,
+        Rank.five => 5,
+        Rank.six => 6,
+        Rank.seven => 7,
+        Rank.eight => 8,
+        Rank.nine => 9,
+        Rank.ten || Rank.jack || Rank.queen || Rank.king => 10,
+      };
 
-  String get label => '${_rankLabel(rank)}${_suitLabel(suit)}';
+  String get label => '${rank.label}${suit.label}';
 
   String encode() => '${rank.index}|${suit.index}';
 
@@ -84,50 +96,6 @@ class PlayingCard {
   int get hashCode => rank.hashCode ^ suit.hashCode;
 }
 
-String _rankLabel(Rank rank) {
-  switch (rank) {
-    case Rank.ace:
-      return 'A';
-    case Rank.two:
-      return '2';
-    case Rank.three:
-      return '3';
-    case Rank.four:
-      return '4';
-    case Rank.five:
-      return '5';
-    case Rank.six:
-      return '6';
-    case Rank.seven:
-      return '7';
-    case Rank.eight:
-      return '8';
-    case Rank.nine:
-      return '9';
-    case Rank.ten:
-      return '10';
-    case Rank.jack:
-      return 'J';
-    case Rank.queen:
-      return 'Q';
-    case Rank.king:
-      return 'K';
-  }
-}
-
-String _suitLabel(Suit suit) {
-  switch (suit) {
-    case Suit.spades:
-      return '♠';
-    case Suit.hearts:
-      return '♥';
-    case Suit.diamonds:
-      return '♦';
-    case Suit.clubs:
-      return '♣';
-  }
-}
-
 List<PlayingCard> createDeck({Random? random}) {
   final deck = <PlayingCard>[];
   for (final suit in Suit.values) {
@@ -135,10 +103,6 @@ List<PlayingCard> createDeck({Random? random}) {
       deck.add(PlayingCard(rank: rank, suit: suit));
     }
   }
-  if (random != null) {
-    deck.shuffle(random);
-  } else {
-    deck.shuffle();
-  }
+  deck.shuffle(random);
   return deck;
 }

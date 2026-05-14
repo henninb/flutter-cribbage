@@ -3,6 +3,7 @@ import 'dart:math';
 import '../models/card.dart';
 
 typedef PeggingMove = ({int index, PlayingCard card});
+typedef _CribChoice = ({List<PlayingCard> keep, List<PlayingCard> discard});
 
 enum RiskProfile {
   desperate,
@@ -103,20 +104,17 @@ class OpponentAI {
   }
 
   static List<_CribChoice> _generateCombinations(List<PlayingCard> hand) {
-    final combos = <_CribChoice>[];
-    for (var i = 0; i < hand.length; i++) {
-      for (var j = i + 1; j < hand.length; j++) {
-        final discard = [hand[i], hand[j]];
-        final keep = hand
-            .asMap()
-            .entries
-            .where((entry) => entry.key != i && entry.key != j)
-            .map((entry) => entry.value)
-            .toList();
-        combos.add(_CribChoice(keep: keep, discard: discard));
-      }
-    }
-    return combos;
+    return [
+      for (var i = 0; i < hand.length; i++)
+        for (var j = i + 1; j < hand.length; j++)
+          (
+            keep: [
+              for (var k = 0; k < hand.length; k++)
+                if (k != i && k != j) hand[k],
+            ],
+            discard: [hand[i], hand[j]],
+          ),
+    ];
   }
 
   static double _evaluateCribChoice(
@@ -543,11 +541,4 @@ class OpponentAI {
     generate(0, <int>[]);
     return result;
   }
-}
-
-class _CribChoice {
-  _CribChoice({required this.keep, required this.discard});
-
-  final List<PlayingCard> keep;
-  final List<PlayingCard> discard;
 }

@@ -58,9 +58,6 @@ class GameEngine extends ChangeNotifier {
         names.opponentName,
         'Opponent',
       );
-      if (sanitizedPlayerName != names.playerName ||
-          sanitizedOpponentName != names.opponentName) {
-      }
       _state = _state.copyWith(
         playerName: sanitizedPlayerName,
         opponentName: sanitizedOpponentName,
@@ -190,7 +187,6 @@ class GameEngine extends ChangeNotifier {
       selected.remove(index);
     } else if (selected.length < 2) {
       selected.add(index);
-    } else {
     }
     _state = _state.copyWith(selectedCards: selected);
     notifyListeners();
@@ -514,419 +510,110 @@ class GameEngine extends ChangeNotifier {
   }
 
   void proceedToNextCountingPhase() {
+    if (_state.starterCard == null) return;
     final phase = _state.countingPhase;
-    final starter = _state.starterCard;
-    if (starter == null) {
+    final int? score = switch (phase) {
+      CountingPhase.nonDealer => _state.handScores.nonDealerScore,
+      CountingPhase.dealer => _state.handScores.dealerScore,
+      CountingPhase.crib => _state.handScores.cribScore,
+      _ => null,
+    };
+    if (score == null) return;
+    _applyCountingScore(score);
+  }
+
+  void proceedToNextCountingPhaseWithManualScore(int manualScore) {
+    if (_state.starterCard == null) return;
+    if (_state.countingPhase == CountingPhase.none ||
+        _state.countingPhase == CountingPhase.completed) return;
+    _applyCountingScore(manualScore);
+  }
+
+  void _applyCountingScore(int score) {
+    final phase = _state.countingPhase;
+    final starter = _state.starterCard!;
+
+    final isPlayerScoring = phase == CountingPhase.nonDealer
+        ? !_state.isPlayerDealer
+        : _state.isPlayerDealer;
+
+    var playerScore = _state.playerScore;
+    var opponentScore = _state.opponentScore;
+    if (isPlayerScoring) {
+      playerScore += score;
+    } else {
+      opponentScore += score;
+    }
+
+    final ScoreAnimation? animation = score > 0
+        ? ScoreAnimation(
+            points: score,
+            isPlayer: isPlayerScoring,
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          )
+        : null;
+    final playerAnim = animation?.isPlayer == true ? animation : null;
+    final opponentAnim = animation?.isPlayer == false ? animation : null;
+
+    if (playerScore > 120 || opponentScore > 120) {
+      _state = _state.copyWith(
+        countingPhase: CountingPhase.completed,
+        playerScore: playerScore,
+        opponentScore: opponentScore,
+        playerScoreAnimation: playerAnim,
+        opponentScoreAnimation: opponentAnim,
+      );
+      _checkGameOver();
+      notifyListeners();
       return;
     }
 
     switch (phase) {
       case CountingPhase.nonDealer:
-        // Apply non-dealer score and create animation NOW (user clicked Continue)
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        final nonDealerScore = _state.handScores.nonDealerScore;
-        ScoreAnimation? nonDealerAnimation;
-
-        if (_state.isPlayerDealer) {
-          opponentScore += nonDealerScore;
-          if (nonDealerScore > 0) {
-            nonDealerAnimation = ScoreAnimation(
-              points: nonDealerScore,
-              isPlayer: false,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        } else {
-          playerScore += nonDealerScore;
-          if (nonDealerScore > 0) {
-            nonDealerAnimation = ScoreAnimation(
-              points: nonDealerScore,
-              isPlayer: true,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        }
-
-        // Check if game is over after non-dealer score
-        if (playerScore > 120 || opponentScore > 120) {
-          _state = _state.copyWith(
-            countingPhase: CountingPhase.completed,
-            playerScore: playerScore,
-            opponentScore: opponentScore,
-            playerScoreAnimation:
-                nonDealerAnimation != null && nonDealerAnimation.isPlayer
-                    ? nonDealerAnimation
-                    : null,
-            opponentScoreAnimation:
-                nonDealerAnimation != null && !nonDealerAnimation.isPlayer
-                    ? nonDealerAnimation
-                    : null,
-          );
-          _checkGameOver();
-          notifyListeners();
-          return;
-        }
-
-        // Now calculate dealer phase and store breakdown (but don't apply score yet)
-        final hand =
+        final dealerHand =
             _state.isPlayerDealer ? _state.playerHand : _state.opponentHand;
         final breakdown =
-            CribbageScorer.scoreHandWithBreakdown(hand, starter, false);
-
-
+            CribbageScorer.scoreHandWithBreakdown(dealerHand, starter, false);
         _state = _state.copyWith(
           handScores: _state.handScores.copyWith(
+            nonDealerScore: score,
             dealerScore: breakdown.totalScore,
             dealerBreakdown: breakdown,
           ),
           countingPhase: CountingPhase.dealer,
           playerScore: playerScore,
           opponentScore: opponentScore,
-          playerScoreAnimation:
-              nonDealerAnimation != null && nonDealerAnimation.isPlayer
-                  ? nonDealerAnimation
-                  : null,
-          opponentScoreAnimation:
-              nonDealerAnimation != null && !nonDealerAnimation.isPlayer
-                  ? nonDealerAnimation
-                  : null,
+          playerScoreAnimation: playerAnim,
+          opponentScoreAnimation: opponentAnim,
         );
-        break;
 
       case CountingPhase.dealer:
-        // Apply dealer score and create animation NOW (user clicked Continue)
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        final dealerScore = _state.handScores.dealerScore;
-        ScoreAnimation? dealerAnimation;
-
-        if (_state.isPlayerDealer) {
-          playerScore += dealerScore;
-          if (dealerScore > 0) {
-            dealerAnimation = ScoreAnimation(
-              points: dealerScore,
-              isPlayer: true,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        } else {
-          opponentScore += dealerScore;
-          if (dealerScore > 0) {
-            dealerAnimation = ScoreAnimation(
-              points: dealerScore,
-              isPlayer: false,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        }
-
-        // Check if game is over after dealer score
-        if (playerScore > 120 || opponentScore > 120) {
-          _state = _state.copyWith(
-            countingPhase: CountingPhase.completed,
-            playerScore: playerScore,
-            opponentScore: opponentScore,
-            playerScoreAnimation:
-                dealerAnimation != null && dealerAnimation.isPlayer
-                    ? dealerAnimation
-                    : null,
-            opponentScoreAnimation:
-                dealerAnimation != null && !dealerAnimation.isPlayer
-                    ? dealerAnimation
-                    : null,
-          );
-          _checkGameOver();
-          notifyListeners();
-          return;
-        }
-
-        // Now calculate crib phase and store breakdown (but don't apply score yet)
-        final breakdown = CribbageScorer.scoreHandWithBreakdown(
-          _state.cribHand,
-          starter,
-          true,
-        );
-
-
+        final breakdown =
+            CribbageScorer.scoreHandWithBreakdown(_state.cribHand, starter, true);
         _state = _state.copyWith(
           handScores: _state.handScores.copyWith(
+            dealerScore: score,
             cribScore: breakdown.totalScore,
             cribBreakdown: breakdown,
           ),
           countingPhase: CountingPhase.crib,
           playerScore: playerScore,
           opponentScore: opponentScore,
-          playerScoreAnimation:
-              dealerAnimation != null && dealerAnimation.isPlayer
-                  ? dealerAnimation
-                  : null,
-          opponentScoreAnimation:
-              dealerAnimation != null && !dealerAnimation.isPlayer
-                  ? dealerAnimation
-                  : null,
+          playerScoreAnimation: playerAnim,
+          opponentScoreAnimation: opponentAnim,
         );
-        break;
 
       case CountingPhase.crib:
-        // Apply crib score and create animation NOW (user clicked Continue)
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        final cribScore = _state.handScores.cribScore;
-        ScoreAnimation? cribAnimation;
-
-        if (_state.isPlayerDealer) {
-          playerScore += cribScore;
-          if (cribScore > 0) {
-            cribAnimation = ScoreAnimation(
-              points: cribScore,
-              isPlayer: true,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        } else {
-          opponentScore += cribScore;
-          if (cribScore > 0) {
-            cribAnimation = ScoreAnimation(
-              points: cribScore,
-              isPlayer: false,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        }
-
-        // Complete counting phase
         _state = _state.copyWith(
+          handScores: _state.handScores.copyWith(cribScore: score),
           countingPhase: CountingPhase.completed,
           playerScore: playerScore,
           opponentScore: opponentScore,
-          playerScoreAnimation: cribAnimation != null && cribAnimation.isPlayer
-              ? cribAnimation
-              : null,
-          opponentScoreAnimation:
-              cribAnimation != null && !cribAnimation.isPlayer
-                  ? cribAnimation
-                  : null,
+          playerScoreAnimation: playerAnim,
+          opponentScoreAnimation: opponentAnim,
         );
         _checkGameOver();
-        if (!_state.gameOver) {
-          _startNewRound();
-        }
-        notifyListeners();
-        return;
-
-      default:
-        return;
-    }
-
-    // Don't check for game over yet - wait until all hands are counted (crib case handles this)
-    notifyListeners();
-  }
-
-  /// Process manual score input and proceed to next counting phase
-  void proceedToNextCountingPhaseWithManualScore(int manualScore) {
-    final phase = _state.countingPhase;
-    final starter = _state.starterCard;
-    if (starter == null) {
-      return;
-    }
-
-    switch (phase) {
-      case CountingPhase.nonDealer:
-        // Apply manual non-dealer score
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        ScoreAnimation? nonDealerAnimation;
-
-        if (_state.isPlayerDealer) {
-          opponentScore += manualScore;
-          if (manualScore > 0) {
-            nonDealerAnimation = ScoreAnimation(
-              points: manualScore,
-              isPlayer: false,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        } else {
-          playerScore += manualScore;
-          if (manualScore > 0) {
-            nonDealerAnimation = ScoreAnimation(
-              points: manualScore,
-              isPlayer: true,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        }
-
-        // Check if game is over after non-dealer score
-        if (playerScore > 120 || opponentScore > 120) {
-          _state = _state.copyWith(
-            countingPhase: CountingPhase.completed,
-            playerScore: playerScore,
-            opponentScore: opponentScore,
-            playerScoreAnimation:
-                nonDealerAnimation != null && nonDealerAnimation.isPlayer
-                    ? nonDealerAnimation
-                    : null,
-            opponentScoreAnimation:
-                nonDealerAnimation != null && !nonDealerAnimation.isPlayer
-                    ? nonDealerAnimation
-                    : null,
-          );
-          _checkGameOver();
-          notifyListeners();
-          return;
-        }
-
-        // Calculate dealer hand breakdown for next phase
-        final dealerHand =
-            _state.isPlayerDealer ? _state.playerHand : _state.opponentHand;
-        final dealerBreakdown =
-            CribbageScorer.scoreHandWithBreakdown(dealerHand, starter, false);
-
-
-        // Move to dealer phase (score will be entered manually next)
-        _state = _state.copyWith(
-          handScores: _state.handScores.copyWith(
-            nonDealerScore: manualScore,
-            dealerScore: dealerBreakdown.totalScore,
-            dealerBreakdown: dealerBreakdown,
-          ),
-          countingPhase: CountingPhase.dealer,
-          playerScore: playerScore,
-          opponentScore: opponentScore,
-          playerScoreAnimation:
-              nonDealerAnimation != null && nonDealerAnimation.isPlayer
-                  ? nonDealerAnimation
-                  : null,
-          opponentScoreAnimation:
-              nonDealerAnimation != null && !nonDealerAnimation.isPlayer
-                  ? nonDealerAnimation
-                  : null,
-        );
-        break;
-
-      case CountingPhase.dealer:
-        // Apply manual dealer score
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        ScoreAnimation? dealerAnimation;
-
-        if (_state.isPlayerDealer) {
-          playerScore += manualScore;
-          if (manualScore > 0) {
-            dealerAnimation = ScoreAnimation(
-              points: manualScore,
-              isPlayer: true,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        } else {
-          opponentScore += manualScore;
-          if (manualScore > 0) {
-            dealerAnimation = ScoreAnimation(
-              points: manualScore,
-              isPlayer: false,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        }
-
-        // Check if game is over after dealer score
-        if (playerScore > 120 || opponentScore > 120) {
-          _state = _state.copyWith(
-            countingPhase: CountingPhase.completed,
-            playerScore: playerScore,
-            opponentScore: opponentScore,
-            playerScoreAnimation:
-                dealerAnimation != null && dealerAnimation.isPlayer
-                    ? dealerAnimation
-                    : null,
-            opponentScoreAnimation:
-                dealerAnimation != null && !dealerAnimation.isPlayer
-                    ? dealerAnimation
-                    : null,
-          );
-          _checkGameOver();
-          notifyListeners();
-          return;
-        }
-
-        // Calculate crib breakdown for next phase (crib is always counted as "in crib")
-        final cribBreakdown = CribbageScorer.scoreHandWithBreakdown(
-          _state.cribHand,
-          starter,
-          true,
-        );
-
-
-        // Move to crib phase (score will be entered manually next)
-        _state = _state.copyWith(
-          handScores: _state.handScores.copyWith(
-            dealerScore: manualScore,
-            cribScore: cribBreakdown.totalScore,
-            cribBreakdown: cribBreakdown,
-          ),
-          countingPhase: CountingPhase.crib,
-          playerScore: playerScore,
-          opponentScore: opponentScore,
-          playerScoreAnimation:
-              dealerAnimation != null && dealerAnimation.isPlayer
-                  ? dealerAnimation
-                  : null,
-          opponentScoreAnimation:
-              dealerAnimation != null && !dealerAnimation.isPlayer
-                  ? dealerAnimation
-                  : null,
-        );
-        break;
-
-      case CountingPhase.crib:
-        // Apply manual crib score
-        var playerScore = _state.playerScore;
-        var opponentScore = _state.opponentScore;
-        ScoreAnimation? cribAnimation;
-
-        if (_state.isPlayerDealer) {
-          playerScore += manualScore;
-          if (manualScore > 0) {
-            cribAnimation = ScoreAnimation(
-              points: manualScore,
-              isPlayer: true,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        } else {
-          opponentScore += manualScore;
-          if (manualScore > 0) {
-            cribAnimation = ScoreAnimation(
-              points: manualScore,
-              isPlayer: false,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
-          }
-        }
-
-        // Complete counting phase
-        _state = _state.copyWith(
-          handScores: _state.handScores.copyWith(
-            cribScore: manualScore,
-          ),
-          countingPhase: CountingPhase.completed,
-          playerScore: playerScore,
-          opponentScore: opponentScore,
-          playerScoreAnimation: cribAnimation != null && cribAnimation.isPlayer
-              ? cribAnimation
-              : null,
-          opponentScoreAnimation:
-              cribAnimation != null && !cribAnimation.isPlayer
-                  ? cribAnimation
-                  : null,
-        );
-        _checkGameOver();
-        if (!_state.gameOver) {
-          _startNewRound();
-        }
+        if (!_state.gameOver) _startNewRound();
         notifyListeners();
         return;
 
@@ -1176,10 +863,6 @@ class GameEngine extends ChangeNotifier {
     final doubleSkunk = loserScore < 61;
     final skunk = loserScore < 91;
 
-    if (doubleSkunk) {
-    } else if (skunk) {
-    }
-
     final gamesWon = playerWins ? _state.gamesWon + 1 : _state.gamesWon;
     final gamesLost = playerWins ? _state.gamesLost : _state.gamesLost + 1;
 
@@ -1237,66 +920,48 @@ class GameEngine extends ChangeNotifier {
   }
 
   void _maybeAutoplayOpponent() {
-    if (_state.currentPhase != GamePhase.pegging || _state.isPlayerTurn) {
-      return;
-    }
-    if (_state.pendingReset != null) {
-      // Don't autoplay while showing pending reset dialog
-      return;
-    }
-    // Don't check if opponent has played all cards here - they still need to say Go if needed
-    if (_opponentAutoplayScheduled) {
-      return;
-    }
+    if (_state.currentPhase != GamePhase.pegging || _state.isPlayerTurn) return;
+    if (_state.pendingReset != null) return;
+    if (_opponentAutoplayScheduled) return;
 
-    // Capture current state snapshot for validation after delay
     final expectedPhase = _state.currentPhase;
     final expectedTurn = _state.isPlayerTurn;
     final expectedPendingReset = _state.pendingReset;
     _opponentAutoplayScheduled = true;
-    Future<void>.delayed(const Duration(milliseconds: 400)).then((_) {
-      _opponentAutoplayScheduled = false;
+    unawaited(_runOpponentAutoplay(expectedPhase, expectedTurn, expectedPendingReset));
+  }
 
-      // Comprehensive state validation - ensure state hasn't changed during delay
-      if (_state.currentPhase != expectedPhase) {
-        return;
-      }
-      if (_state.isPlayerTurn != expectedTurn) {
-        return;
-      }
-      if (_state.pendingReset != expectedPendingReset) {
-        return;
-      }
-      if (_state.currentPhase != GamePhase.pegging || _state.isPlayerTurn) {
-        return;
-      }
-      if (_state.pendingReset != null) {
-        return;
-      }
+  Future<void> _runOpponentAutoplay(
+    GamePhase expectedPhase,
+    bool expectedTurn,
+    PendingResetState? expectedPendingReset,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    _opponentAutoplayScheduled = false;
 
-      final mgr = _peggingManager;
-      if (mgr == null) {
-        return;
-      }
+    if (_state.currentPhase != expectedPhase) return;
+    if (_state.isPlayerTurn != expectedTurn) return;
+    if (_state.pendingReset != expectedPendingReset) return;
+    if (_state.currentPhase != GamePhase.pegging || _state.isPlayerTurn) return;
+    if (_state.pendingReset != null) return;
 
-      // Final validation: ensure turn is still opponent's
-      if (mgr.isPlayerTurn != Player.opponent) {
-        return;
-      }
-      final move = OpponentAI.choosePeggingCard(
-        hand: _state.opponentHand,
-        playedIndices: _state.opponentCardsPlayed,
-        currentCount: mgr.peggingCount,
-        peggingPile: mgr.peggingPile,
-        opponentCardsRemaining:
-            _state.playerHand.length - _state.playerCardsPlayed.length,
-      );
-      if (move == null) {
-        handleGo(fromPlayer: false);
-      } else {
-        playCard(move.index, isPlayer: false);
-      }
-    });
+    final mgr = _peggingManager;
+    if (mgr == null) return;
+    if (mgr.isPlayerTurn != Player.opponent) return;
+
+    final move = OpponentAI.choosePeggingCard(
+      hand: _state.opponentHand,
+      playedIndices: _state.opponentCardsPlayed,
+      currentCount: mgr.peggingCount,
+      peggingPile: mgr.peggingPile,
+      opponentCardsRemaining:
+          _state.playerHand.length - _state.playerCardsPlayed.length,
+    );
+    if (move == null) {
+      handleGo(fromPlayer: false);
+    } else {
+      playCard(move.index, isPlayer: false);
+    }
   }
 }
 
