@@ -82,7 +82,10 @@ void main() {
     await tester.pumpWidget(buildDialog(playerScore: 0, opponentScore: 0));
 
     final decrementButtons = tester.widgetList<IconButton>(
-      find.byTooltip('-1'),
+      find.ancestor(
+        of: find.byTooltip('-1'),
+        matching: find.byType(IconButton),
+      ),
     );
 
     for (final btn in decrementButtons) {
@@ -96,7 +99,10 @@ void main() {
     );
 
     final incrementButtons = tester.widgetList<IconButton>(
-      find.byTooltip('+1'),
+      find.ancestor(
+        of: find.byTooltip('+1'),
+        matching: find.byType(IconButton),
+      ),
     );
 
     for (final btn in incrementButtons) {

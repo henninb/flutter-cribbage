@@ -12,15 +12,20 @@ void main() {
     VoidCallback? onBackPressed,
   }) {
     return MaterialApp(
-      home: MediaQuery(
-        data: const MediaQueryData(size: Size(400, 1200)),
-        child: SettingsScreen(
-          currentSettings: settings,
-          onSettingsChange: onSettingsChange ?? (_) {},
-          onBackPressed: onBackPressed ?? () {},
-        ),
+      home: SettingsScreen(
+        currentSettings: settings,
+        onSettingsChange: onSettingsChange ?? (_) {},
+        onBackPressed: onBackPressed ?? () {},
       ),
     );
+  }
+
+  /// Expand the test surface so a tall ListView is fully visible.
+  Future<void> useTallSurface(WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1200));
+    addTearDown(() async {
+      await tester.binding.setSurfaceSize(null);
+    });
   }
 
   testWidgets('renders section headers', (tester) async {
@@ -41,6 +46,7 @@ void main() {
   });
 
   testWidgets('renders all counting mode options', (tester) async {
+    await useTallSurface(tester);
     await tester.pumpWidget(buildScreen());
 
     expect(find.text('Automatic'), findsOneWidget);
@@ -90,6 +96,7 @@ void main() {
   });
 
   testWidgets('tapping Manual counting mode triggers callback', (tester) async {
+    await useTallSurface(tester);
     GameSettings? updated;
     await tester.pumpWidget(
       buildScreen(onSettingsChange: (s) => updated = s),
@@ -101,6 +108,7 @@ void main() {
 
   testWidgets('tapping already-selected counting mode does not callback',
       (tester) async {
+    await useTallSurface(tester);
     var callCount = 0;
     await tester.pumpWidget(
       buildScreen(
