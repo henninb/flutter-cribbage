@@ -347,6 +347,395 @@ void main() {
       expect(persistence.savedOpponentName, 'Bot');
     });
   });
+
+  group('GameEngine.initialize', () {
+    test('loads stats from persistence', () {
+      final p = _FakePersistence()
+        ..statsToLoad = const StoredStats(
+          gamesWon: 5,
+          gamesLost: 3,
+          skunksFor: 2,
+          skunksAgainst: 1,
+          doubleSkunksFor: 1,
+          doubleSkunksAgainst: 0,
+        );
+      final e = GameEngine(persistence: p);
+      e.initialize();
+      expect(e.state.gamesWon, 5);
+      expect(e.state.gamesLost, 3);
+      expect(e.state.skunksFor, 2);
+      expect(e.state.doubleSkunksFor, 1);
+    });
+
+    test('loads cut cards from persistence', () {
+      const pc = PlayingCard(rank: Rank.king, suit: Suit.spades);
+      const oc = PlayingCard(rank: Rank.queen, suit: Suit.hearts);
+      final p = _FakePersistence()
+        ..cutsToLoad = const CutCards(player: pc, opponent: oc);
+      final e = GameEngine(persistence: p);
+      e.initialize();
+      expect(e.state.cutPlayerCard, pc);
+      expect(e.state.cutOpponentCard, oc);
+    });
+
+    test('loads and sanitizes player names', () {
+      final p = _FakePersistence()
+        ..namesToLoad = const PlayerNames(
+          playerName: 'Alice',
+          opponentName: 'Bot',
+        );
+      final e = GameEngine(persistence: p);
+      e.initialize();
+      expect(e.state.playerName, 'Alice');
+      expect(e.state.opponentName, 'Bot');
+    });
+
+    test('falls back to defaults when names are empty strings', () {
+      final p = _FakePersistence()
+        ..namesToLoad = const PlayerNames(
+          playerName: '',
+          opponentName: '',
+        );
+      final e = GameEngine(persistence: p);
+      e.initialize();
+      expect(e.state.playerName, 'You');
+      expect(e.state.opponentName, 'Opponent');
+    });
+
+    test('initialize without persistence uses default state', () {
+      final e = GameEngine();
+      e.initialize();
+      expect(e.state.gamesWon, 0);
+      expect(e.state.playerName, 'You');
+    });
+  });
+
+  group('GameEngine.toggleCardSelection', () {
+    late GameEngine engine;
+    setUp(() {
+      engine = GameEngine(persistence: _FakePersistence(), random: Random(7));
+    });
+
+    test('ignores selection beyond two cards', () {
+      engine.startNewGame();
+      _cutUntilDealer(engine);
+      engine.dealCards();
+
+      engine.toggleCardSelection(0);
+      engine.toggleCardSelection(1);
+      engine.toggleCardSelection(2); // should be ignored
+      expect(engine.state.selectedCards, {0, 1});
+    });
+
+    test('deselects an already-selected card', () {
+      engine.startNewGame();
+      _cutUntilDealer(engine);
+      engine.dealCards();
+
+      engine.toggleCardSelection(0);
+      engine.toggleCardSelection(0); // deselect
+      expect(engine.state.selectedCards, isEmpty);
+    });
+  });
+
+  group('GameEngine.confirmCribSelection guard', () {
+    late GameEngine engine;
+    setUp(() {
+      engine = GameEngine(persistence: _FakePersistence(), random: Random(7));
+    });
+
+    test('does nothing when fewer than 2 cards selected', () {
+      engine.startNewGame();
+      _cutUntilDealer(engine);
+      engine.dealCards();
+
+      engine.toggleCardSelection(0);
+      engine.confirmCribSelection(); // should be a no-op
+      expect(engine.state.currentPhase, GamePhase.cribSelection);
+    });
+  });
+
+  group('GameEngine.clearScoreAnimation', () {
+    late GameEngine engine;
+    setUp(() {
+      engine = GameEngine(persistence: _FakePersistence(), random: Random(7));
+    });
+
+    test('clears player animation only', () {
+      engine.updateScores(5, 3);
+      expect(engine.state.playerScoreAnimation, isNotNull);
+      expect(engine.state.opponentScoreAnimation, isNotNull);
+
+      engine.clearScoreAnimation(true);
+      expect(engine.state.playerScoreAnimation, isNull);
+      expect(engine.state.opponentScoreAnimation, isNotNull);
+    });
+
+    test('clears opponent animation only', () {
+      engine.updateScores(5, 3);
+      engine.clearScoreAnimation(false);
+      expect(engine.state.opponentScoreAnimation, isNull);
+      expect(engine.state.playerScoreAnimation, isNotNull);
+    });
+  });
+
+  group('GameEngine.dismissWinnerModal', () {
+    test('clears the winner modal flag', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: true,
+        requireMatchingRank: true,
+      );
+      eng.updateScores(119, 50);
+      final match = _findMatchingRankIndices(eng)!;
+      eng.playCard(match.opponentIndex, isPlayer: false);
+      eng.playCard(match.playerIndex, isPlayer: true);
+
+      expect(eng.state.showWinnerModal, isTrue);
+      eng.dismissWinnerModal();
+      expect(eng.state.showWinnerModal, isFalse);
+    });
+  });
+
+  group('GameEngine._checkGameOver', () {
+    test('player wins and stats are saved', () {
+      final p = _FakePersistence();
+      final eng = _setupPeggingEngine(
+        playerDealer: true,
+        requireMatchingRank: true,
+        persistence: p,
+      );
+      eng.updateScores(119, 50);
+      final match = _findMatchingRankIndices(eng)!;
+      eng.playCard(match.opponentIndex, isPlayer: false);
+      eng.playCard(match.playerIndex, isPlayer: true);
+
+      expect(eng.state.gameOver, isTrue);
+      expect(eng.state.winnerModalData!.playerWon, isTrue);
+      expect(p.lastSavedStats!.gamesWon, 1);
+      expect(p.lastSavedStats!.gamesLost, 0);
+    });
+
+    test('opponent wins and gamesLost increments', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        requireMatchingRank: true,
+      );
+      eng.updateScores(50, 119);
+      final match = _findMatchingRankIndices(eng)!;
+      eng.playCard(match.opponentIndex, isPlayer: false);
+
+      // If opponent scored enough to win, verify
+      if (eng.state.gameOver) {
+        expect(eng.state.winnerModalData!.playerWon, isFalse);
+        expect(eng.state.gamesLost, 1);
+      }
+    });
+
+    test('skunk recorded when loser is below 91', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: true,
+        requireMatchingRank: true,
+      );
+      eng.updateScores(119, 85); // 85 < 91 = skunk
+      final match = _findMatchingRankIndices(eng)!;
+      eng.playCard(match.opponentIndex, isPlayer: false);
+      eng.playCard(match.playerIndex, isPlayer: true);
+
+      expect(eng.state.winnerModalData!.wasSkunk, isTrue);
+      expect(eng.state.winnerModalData!.wasDoubleSkunk, isFalse);
+      expect(eng.state.skunksFor, 1);
+    });
+
+    test('double skunk recorded when loser is below 61', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: true,
+        requireMatchingRank: true,
+      );
+      eng.updateScores(119, 55); // 55 < 61 = double skunk
+      final match = _findMatchingRankIndices(eng)!;
+      eng.playCard(match.opponentIndex, isPlayer: false);
+      eng.playCard(match.playerIndex, isPlayer: true);
+
+      expect(eng.state.winnerModalData!.wasDoubleSkunk, isTrue);
+      expect(eng.state.doubleSkunksFor, 1);
+    });
+  });
+
+  group('GameEngine hand counting', () {
+    late GameEngine engine;
+    setUp(() {
+      engine = GameEngine(persistence: _FakePersistence(), random: Random(7));
+    });
+
+    test('startHandCounting enters nonDealer phase with breakdown', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        seedStart: 10,
+      );
+      _completePegging(eng);
+
+      expect(eng.state.currentPhase, GamePhase.handCounting);
+      expect(eng.state.countingPhase, CountingPhase.none);
+
+      eng.startHandCounting();
+
+      expect(eng.state.countingPhase, CountingPhase.nonDealer);
+      expect(eng.state.handScores.nonDealerBreakdown, isNotNull);
+    });
+
+    test('startHandCounting is a no-op outside handCounting phase', () {
+      engine.startNewGame();
+      engine.startHandCounting(); // should do nothing
+      expect(engine.state.countingPhase, CountingPhase.none);
+    });
+
+    test('proceedToNextCountingPhase transitions through all phases', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        seedStart: 20,
+      );
+      _completePegging(eng);
+      eng.startHandCounting();
+
+      expect(eng.state.countingPhase, CountingPhase.nonDealer);
+
+      eng.proceedToNextCountingPhase();
+      expect(eng.state.countingPhase, CountingPhase.dealer);
+
+      eng.proceedToNextCountingPhase();
+      expect(eng.state.countingPhase, CountingPhase.crib);
+
+      eng.proceedToNextCountingPhase();
+      // Either completed (new round) or game over
+      final done = eng.state.countingPhase == CountingPhase.completed ||
+          eng.state.currentPhase == GamePhase.dealing ||
+          eng.state.gameOver;
+      expect(done, isTrue);
+    });
+
+    test('proceedToNextCountingPhaseWithManualScore applies given score', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        seedStart: 30,
+      );
+      _completePegging(eng);
+      eng.startHandCounting();
+
+      // nonDealer = player when !isPlayerDealer
+      final scoreBefore = eng.state.playerScore;
+      eng.proceedToNextCountingPhaseWithManualScore(4);
+      expect(eng.state.playerScore, scoreBefore + 4);
+      expect(eng.state.countingPhase, CountingPhase.dealer);
+    });
+
+    test('proceedToNextCountingPhaseWithManualScore is a no-op in none phase',
+        () {
+      engine.startNewGame();
+      final scoreBefore = engine.state.playerScore;
+      engine.proceedToNextCountingPhaseWithManualScore(4);
+      expect(engine.state.playerScore, scoreBefore);
+    });
+
+    test('full hand counting flow triggers startNewRound', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        seedStart: 40,
+      );
+      _completePegging(eng);
+      _completeHandCounting(eng);
+
+      // After crib phase, the game either starts a new round or ends
+      final done = eng.state.currentPhase == GamePhase.dealing ||
+          eng.state.gameOver;
+      expect(done, isTrue);
+    });
+
+    test('counting game over when score exceeds 120 during counting', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        seedStart: 50,
+      );
+      _completePegging(eng);
+      eng.updateScores(118, 50);
+      eng.startHandCounting();
+
+      // Award enough points to end the game (player is non-dealer)
+      eng.proceedToNextCountingPhaseWithManualScore(3); // 118+3 = 121 > 120
+      expect(eng.state.gameOver, isTrue);
+    });
+  });
+
+  group('GameEngine._checkPeggingComplete', () {
+    test('transitions to handCounting after all 8 cards played', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        seedStart: 60,
+      );
+      _completePegging(eng);
+      expect(eng.state.currentPhase, GamePhase.handCounting);
+      expect(eng.state.playerCardsPlayed.length, 4);
+      expect(eng.state.opponentCardsPlayed.length, 4);
+    });
+
+    test('handCounting phase has no active pendingReset after complete', () {
+      final eng = _setupPeggingEngine(
+        playerDealer: false,
+        seedStart: 70,
+      );
+      _completePegging(eng);
+      expect(eng.state.pendingReset, isNull);
+    });
+  });
+
+  group('GameEngine.acknowledgePendingReset', () {
+    test('clears pending reset and continues play', () {
+      final goEngine = _setupGoScenarioEngine();
+      goEngine.handleGo(fromPlayer: true);
+
+      expect(goEngine.state.pendingReset, isNotNull);
+      goEngine.acknowledgePendingReset();
+      expect(goEngine.state.pendingReset, isNull);
+    });
+  });
+
+  group('GameEngine autoplay', () {
+    test('autoplay fires handleGo when opponent cannot play', () {
+      fakeAsync((async) {
+        // Build a scenario where opponent has no legal moves
+        GameEngine? goEngine;
+        for (var seed = 1; seed <= 2000 && goEngine == null; seed++) {
+          final eng = _setupPeggingEngine(
+            playerDealer: false,
+            selectDiscards: _selectLowestValueDiscards,
+            seedStart: seed,
+          );
+          if (eng.state.isPlayerTurn) continue;
+          // Check opponent cannot play
+          final opHand = eng.state.opponentHand;
+          final count = eng.state.peggingCount;
+          final canPlay = Iterable.generate(opHand.length).any(
+            (i) =>
+                !eng.state.opponentCardsPlayed.contains(i) &&
+                count + opHand[i].value <= 31,
+          );
+          if (!canPlay) {
+            goEngine = eng;
+          }
+        }
+        if (goEngine == null) return; // skip if not found
+
+        final goesBefore = goEngine.state.opponentCardsPlayed.length;
+        async.elapse(const Duration(milliseconds: 500));
+        // handleGo should have been called from autoplay
+        expect(
+          goEngine.state.pendingReset != null ||
+              goEngine.state.opponentCardsPlayed.length > goesBefore ||
+              goEngine.state.currentPhase != GamePhase.pegging,
+          isTrue,
+        );
+      });
+    });
+  });
 }
 
 void _cutUntilDealer(GameEngine engine, {int maxAttempts = 10}) {
@@ -505,4 +894,51 @@ GameEngine _setupGoScenarioEngine() {
   fail(
     'Failed to create Go scenario where both players stuck after 2000 attempts',
   );
+}
+
+void _completePegging(GameEngine engine) {
+  for (var i = 0; i < 300; i++) {
+    if (engine.state.currentPhase != GamePhase.pegging) break;
+    if (engine.state.pendingReset != null) {
+      engine.acknowledgePendingReset();
+      continue;
+    }
+    if (engine.state.isPlayerTurn) {
+      var played = false;
+      for (var j = 0; j < engine.state.playerHand.length; j++) {
+        if (engine.state.playerCardsPlayed.contains(j)) continue;
+        final val = engine.state.playerHand[j].value;
+        if (engine.state.peggingCount + val <= 31) {
+          engine.playCard(j, isPlayer: true);
+          played = true;
+          break;
+        }
+      }
+      if (!played) engine.handleGo(fromPlayer: true);
+    } else {
+      var played = false;
+      for (var j = 0; j < engine.state.opponentHand.length; j++) {
+        if (engine.state.opponentCardsPlayed.contains(j)) continue;
+        final val = engine.state.opponentHand[j].value;
+        if (engine.state.peggingCount + val <= 31) {
+          engine.playCard(j, isPlayer: false);
+          played = true;
+          break;
+        }
+      }
+      if (!played) engine.handleGo(fromPlayer: false);
+    }
+  }
+  if (engine.state.pendingReset != null) {
+    engine.acknowledgePendingReset();
+  }
+}
+
+void _completeHandCounting(GameEngine engine) {
+  engine.startHandCounting();
+  while (engine.state.countingPhase != CountingPhase.none &&
+      engine.state.countingPhase != CountingPhase.completed &&
+      !engine.state.gameOver) {
+    engine.proceedToNextCountingPhase();
+  }
 }

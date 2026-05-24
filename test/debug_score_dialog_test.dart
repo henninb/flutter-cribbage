@@ -180,4 +180,65 @@ void main() {
 
     expect(find.text('Debug Score Adjuster'), findsNothing);
   });
+
+  testWidgets('static show() opens dialog', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => DebugScoreDialog.show(
+                context,
+                GameEngine(),
+                10,
+                20,
+              ),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Debug Score Adjuster'), findsOneWidget);
+  });
+
+  testWidgets('+1 button increments opponent score', (tester) async {
+    await tester.pumpWidget(buildDialog(opponentScore: 20));
+
+    await tester.tap(find.byTooltip('+1').last);
+    await tester.pump();
+
+    expect(find.text('21'), findsOneWidget);
+  });
+
+  testWidgets('-1 button decrements opponent score', (tester) async {
+    await tester.pumpWidget(buildDialog(opponentScore: 20));
+
+    await tester.tap(find.byTooltip('-1').last);
+    await tester.pump();
+
+    expect(find.text('19'), findsOneWidget);
+  });
+
+  testWidgets('+5 button increments opponent score by 5', (tester) async {
+    await tester.pumpWidget(buildDialog(opponentScore: 20));
+
+    await tester.tap(find.byTooltip('+5').last);
+    await tester.pump();
+
+    expect(find.text('25'), findsOneWidget);
+  });
+
+  testWidgets('-5 button decrements opponent score by 5', (tester) async {
+    await tester.pumpWidget(buildDialog(opponentScore: 20));
+
+    await tester.tap(find.byTooltip('-5').last);
+    await tester.pump();
+
+    expect(find.text('15'), findsOneWidget);
+  });
 }
