@@ -45,8 +45,7 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
   });
 
-  testWidgets(
-      'nonDealer phase shows opponent hand title when player is dealer',
+  testWidgets('nonDealer phase shows opponent hand title when player is dealer',
       (tester) async {
     await tester.pumpWidget(
       buildDialog(
@@ -66,7 +65,8 @@ void main() {
     expect(find.textContaining("Bot"), findsWidgets);
   });
 
-  testWidgets('nonDealer phase shows player hand title when player is not dealer',
+  testWidgets(
+      'nonDealer phase shows player hand title when player is not dealer',
       (tester) async {
     await tester.pumpWidget(
       buildDialog(

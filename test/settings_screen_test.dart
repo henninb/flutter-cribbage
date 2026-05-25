@@ -138,10 +138,8 @@ void main() {
       buildScreen(onSettingsChange: (s) => updated = s),
     );
 
-    final dropdownFinder =
-        find.byType(DropdownButton<ThemeType?>);
-    final dropdown =
-        tester.widget<DropdownButton<ThemeType?>>(dropdownFinder);
+    final dropdownFinder = find.byType(DropdownButton<ThemeType?>);
+    final dropdown = tester.widget<DropdownButton<ThemeType?>>(dropdownFinder);
     dropdown.onChanged?.call(ThemeType.halloween);
     await tester.pump();
 
@@ -157,8 +155,7 @@ void main() {
       ),
     );
 
-    final dropdown =
-        tester.widget<DropdownButton<ThemeType?>>(
+    final dropdown = tester.widget<DropdownButton<ThemeType?>>(
       find.byType(DropdownButton<ThemeType?>),
     );
     dropdown.onChanged?.call(null);

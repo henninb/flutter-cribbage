@@ -195,8 +195,7 @@ void main() {
       expect(find.textContaining("You"), findsWidgets);
     });
 
-    testWidgets(
-        'dealer phase shows opponent name when player is not dealer',
+    testWidgets('dealer phase shows opponent name when player is not dealer',
         (tester) async {
       await tester.pumpWidget(
         buildWidget(
@@ -288,7 +287,8 @@ void main() {
         (tester) async {
       final controller = ManualCountingController();
 
-      await tester.pumpWidget(buildWidget(buildState(), controller: controller));
+      await tester
+          .pumpWidget(buildWidget(buildState(), controller: controller));
 
       controller.triggerShowBreakdown();
       await tester.pump();
@@ -356,7 +356,8 @@ void main() {
     testWidgets('dragging slider updates displayed score', (tester) async {
       final controller = ManualCountingController();
 
-      await tester.pumpWidget(buildWidget(buildState(), controller: controller));
+      await tester
+          .pumpWidget(buildWidget(buildState(), controller: controller));
 
       final slider = find.byType(Slider);
       // Drag right to increase score
@@ -366,8 +367,7 @@ void main() {
       expect(controller.currentScore, greaterThan(0));
     });
 
-    testWidgets(
-        'breakdown overlay renders null-safe when no starter card',
+    testWidgets('breakdown overlay renders null-safe when no starter card',
         (tester) async {
       final controller = ManualCountingController();
 
@@ -412,7 +412,8 @@ void main() {
         (tester) async {
       final controller = ManualCountingController();
 
-      await tester.pumpWidget(buildWidget(buildState(), controller: controller));
+      await tester
+          .pumpWidget(buildWidget(buildState(), controller: controller));
 
       controller.triggerShowBreakdown();
       await tester.pump();

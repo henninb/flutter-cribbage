@@ -25,7 +25,8 @@ class OpponentAI {
     }
     final combos = _generateCombinations(hand);
     final scored = combos
-        .map((c) => (combo: c, score: _evaluateCribChoice(c.keep, c.discard, isDealer)))
+        .map((c) =>
+            (combo: c, score: _evaluateCribChoice(c.keep, c.discard, isDealer)))
         .toList()
       ..sort((a, b) => b.score.compareTo(a.score));
     return scored.firstOrNull?.combo.discard ?? hand.take(2).toList();
@@ -44,16 +45,18 @@ class OpponentAI {
 
     final combos = _generateCombinations(hand);
     final scored = combos
-        .map((c) => (
-              combo: c,
-              score: _evaluateCribChoiceWithPosition(
-                c.keep,
-                c.discard,
-                isDealer,
-                playerScore,
-                opponentScore,
-              ),
-            ),)
+        .map(
+          (c) => (
+            combo: c,
+            score: _evaluateCribChoiceWithPosition(
+              c.keep,
+              c.discard,
+              isDealer,
+              playerScore,
+              opponentScore,
+            ),
+          ),
+        )
         .toList()
       ..sort((a, b) => b.score.compareTo(a.score));
 
@@ -89,15 +92,17 @@ class OpponentAI {
     if (legalMoves.isEmpty) return null;
 
     final scored = legalMoves
-        .map((m) => (
-              move: m,
-              score: _evaluatePeggingMove(
-                m.card,
-                currentCount,
-                peggingPile,
-                opponentCardsRemaining,
-              ),
-            ),)
+        .map(
+          (m) => (
+            move: m,
+            score: _evaluatePeggingMove(
+              m.card,
+              currentCount,
+              peggingPile,
+              opponentCardsRemaining,
+            ),
+          ),
+        )
         .toList()
       ..sort((a, b) => b.score.compareTo(a.score));
     return scored.first.move;
@@ -395,8 +400,8 @@ class OpponentAI {
 
   /// Finds the longest run in [cards], ignoring duplicate ranks.
   static int _findBestRun(List<PlayingCard> cards) {
-    final uniqueSorted =
-        cards.map((c) => c.rank.index).toSet().toList()..sort();
+    final uniqueSorted = cards.map((c) => c.rank.index).toSet().toList()
+      ..sort();
     for (var length = uniqueSorted.length; length >= 3; length--) {
       for (var i = 0; i <= uniqueSorted.length - length; i++) {
         final subset = uniqueSorted.sublist(i, i + length);

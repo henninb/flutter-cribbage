@@ -63,8 +63,7 @@ void main() {
 
   group('suitColor', () {
     test('hearts is red', () {
-      final color =
-          PlayingCardWidget(card: tenOfHearts, width: 60).suitColor;
+      final color = PlayingCardWidget(card: tenOfHearts, width: 60).suitColor;
       expect(color, const Color(0xFFD32F2F));
     });
 
@@ -75,14 +74,12 @@ void main() {
     });
 
     test('spades is black', () {
-      final color =
-          PlayingCardWidget(card: aceOfSpades, width: 60).suitColor;
+      final color = PlayingCardWidget(card: aceOfSpades, width: 60).suitColor;
       expect(color, const Color(0xFF212121));
     });
 
     test('clubs is black', () {
-      final color =
-          PlayingCardWidget(card: twoOfClubs, width: 60).suitColor;
+      final color = PlayingCardWidget(card: twoOfClubs, width: 60).suitColor;
       expect(color, const Color(0xFF212121));
     });
   });

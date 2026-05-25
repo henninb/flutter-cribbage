@@ -207,7 +207,8 @@ void main() {
     expect(restarted, isTrue);
   });
 
-  testWidgets('crib selection shows Advise button when fewer than 2 cards selected',
+  testWidgets(
+      'crib selection shows Advise button when fewer than 2 cards selected',
       (tester) async {
     var advised = false;
     await pumpBar(
@@ -341,7 +342,8 @@ void main() {
     expect(accepted, isTrue);
   });
 
-  testWidgets('hand counting accept with manualCountingScore of 1 uses singular',
+  testWidgets(
+      'hand counting accept with manualCountingScore of 1 uses singular',
       (tester) async {
     await tester.pumpWidget(
       MaterialApp(

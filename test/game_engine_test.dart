@@ -645,8 +645,8 @@ void main() {
       _completeHandCounting(eng);
 
       // After crib phase, the game either starts a new round or ends
-      final done = eng.state.currentPhase == GamePhase.dealing ||
-          eng.state.gameOver;
+      final done =
+          eng.state.currentPhase == GamePhase.dealing || eng.state.gameOver;
       expect(done, isTrue);
     });
 

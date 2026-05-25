@@ -563,12 +563,11 @@ class GameEngine extends ChangeNotifier {
           opponentScore: opponentScore,
           playerScoreAnimation: anims.player,
           opponentScoreAnimation: anims.opponent,
-
         );
 
       case CountingPhase.dealer:
-        final breakdown =
-            CribbageScorer.scoreHandWithBreakdown(_state.cribHand, starter, true);
+        final breakdown = CribbageScorer.scoreHandWithBreakdown(
+            _state.cribHand, starter, true);
         _state = _state.copyWith(
           handScores: _state.handScores.copyWith(
             dealerScore: score,
@@ -580,7 +579,6 @@ class GameEngine extends ChangeNotifier {
           opponentScore: opponentScore,
           playerScoreAnimation: anims.player,
           opponentScoreAnimation: anims.opponent,
-
         );
 
       case CountingPhase.crib:
@@ -591,7 +589,6 @@ class GameEngine extends ChangeNotifier {
           opponentScore: opponentScore,
           playerScoreAnimation: anims.player,
           opponentScoreAnimation: anims.opponent,
-
         );
         _checkGameOver();
         if (!_state.gameOver) _startNewRound();
@@ -642,7 +639,6 @@ class GameEngine extends ChangeNotifier {
   }
 
   void updateScores(int newPlayerScore, int newOpponentScore) {
-
     final playerDelta = newPlayerScore - _state.playerScore;
     final opponentDelta = newOpponentScore - _state.opponentScore;
     final playerAnims = _splitAnimation(playerDelta > 0
@@ -888,11 +884,12 @@ class GameEngine extends ChangeNotifier {
     final expectedTurn = _state.isPlayerTurn;
     final expectedPendingReset = _state.pendingReset;
     _opponentAutoplayScheduled = true;
-    unawaited(_runOpponentAutoplay(expectedPhase, expectedTurn, expectedPendingReset));
+    unawaited(_runOpponentAutoplay(
+        expectedPhase, expectedTurn, expectedPendingReset));
   }
 
   ({ScoreAnimation? player, ScoreAnimation? opponent}) _splitAnimation(
-      ScoreAnimation? anim) =>
+          ScoreAnimation? anim) =>
       anim == null
           ? (player: null, opponent: null)
           : (
@@ -933,4 +930,3 @@ class GameEngine extends ChangeNotifier {
     }
   }
 }
-

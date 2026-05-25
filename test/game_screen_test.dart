@@ -274,7 +274,8 @@ void main() {
       expect(find.text('Tap the deck to cut for dealer'), findsOneWidget);
     });
 
-    testWidgets('shows cut card results when player has selected', (tester) async {
+    testWidgets('shows cut card results when player has selected',
+        (tester) async {
       await _usePhone(tester);
       final engine = _FakeGameEngine(const GameState(
         gameStarted: true,
@@ -296,7 +297,8 @@ void main() {
       expect(find.text('DEALER'), findsOneWidget);
     });
 
-    testWidgets('shows tie message when cut cards have same rank', (tester) async {
+    testWidgets('shows tie message when cut cards have same rank',
+        (tester) async {
       await _usePhone(tester);
       final engine = _FakeGameEngine(const GameState(
         gameStarted: true,
@@ -815,7 +817,8 @@ void main() {
       expect(find.text('Please enter a valid name'), findsOneWidget);
     });
 
-    testWidgets('opens opponent name dialog on opponent name tap', (tester) async {
+    testWidgets('opens opponent name dialog on opponent name tap',
+        (tester) async {
       await _usePhone(tester);
       final engine = _FakeGameEngine(const GameState(
         gameStarted: true,
@@ -910,8 +913,7 @@ void main() {
         MaterialApp(
           home: buildScreen(
             engine: engine,
-            settings:
-                const GameSettings(countingMode: CountingMode.automatic),
+            settings: const GameSettings(countingMode: CountingMode.automatic),
             onSettingsChange: (_) {},
           ),
         ),
@@ -1200,7 +1202,8 @@ void main() {
   });
 
   group('pegging display with history', () {
-    testWidgets('shows completed pegging rounds and current pile', (tester) async {
+    testWidgets('shows completed pegging rounds and current pile',
+        (tester) async {
       await _usePhone(tester);
       final completedRound = (
         cards: const <PlayingCard>[

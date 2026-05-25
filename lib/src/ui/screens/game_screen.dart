@@ -665,7 +665,8 @@ class _GameContent extends StatelessWidget {
     );
   }
 
-  Widget _buildMiddleSection(BuildContext context) => switch (state.currentPhase) {
+  Widget _buildMiddleSection(BuildContext context) =>
+      switch (state.currentPhase) {
         GamePhase.cutForDealer when state.cutDeck.isNotEmpty =>
           Expanded(child: _SpreadDeck(state: state, engine: engine)),
         GamePhase.dealing
@@ -1613,9 +1614,7 @@ class _WinnerModal extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              data.playerWon
-                                  ? Icons.emoji_events
-                                  : Icons.close,
+                              data.playerWon ? Icons.emoji_events : Icons.close,
                               size: 40,
                               color: data.playerWon
                                   ? Theme.of(context)
@@ -1830,8 +1829,7 @@ class _WinnerModal extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 _StatRow(
                                   label: 'Record',
-                                  value:
-                                      '${data.gamesWon} - ${data.gamesLost}',
+                                  value: '${data.gamesWon} - ${data.gamesLost}',
                                   icon: Icons.sports_score,
                                   isPlayerWin: data.playerWon,
                                 ),
