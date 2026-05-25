@@ -162,11 +162,11 @@ void main() {
         opponentName: 'TestOpponent',
         playerScore: 42,
         opponentScore: 17,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -179,11 +179,11 @@ void main() {
       final engine = _FakeGameEngine(const GameState(
         gameStarted: false,
         playerScore: 42,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -200,11 +200,11 @@ void main() {
         starterCard: PlayingCard(rank: Rank.ace, suit: Suit.hearts),
         playerHand: _hand4,
         opponentHand: _hand4,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -221,11 +221,11 @@ void main() {
         starterCard: PlayingCard(rank: Rank.king, suit: Suit.spades),
         playerHand: _hand4,
         opponentHand: _hand4,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -243,11 +243,11 @@ void main() {
         opponentName: 'TestOpponent',
         playerHand: _hand6,
         opponentHand: _hand6,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -263,11 +263,11 @@ void main() {
         currentPhase: GamePhase.cutForDealer,
         cutDeck: _smallCutDeck,
         playerHasSelectedCutCard: false,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -285,11 +285,11 @@ void main() {
         cutPlayerCard: PlayingCard(rank: Rank.ace, suit: Suit.spades),
         cutOpponentCard: PlayingCard(rank: Rank.king, suit: Suit.hearts),
         isPlayerDealer: true,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -307,11 +307,11 @@ void main() {
         playerHasSelectedCutCard: true,
         cutPlayerCard: PlayingCard(rank: Rank.ace, suit: Suit.spades),
         cutOpponentCard: PlayingCard(rank: Rank.ace, suit: Suit.hearts),
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -329,11 +329,11 @@ void main() {
         opponentName: 'TestOpponent',
         playerHand: _hand6,
         opponentHand: _hand6,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -348,11 +348,11 @@ void main() {
         currentPhase: GamePhase.cribSelection,
         playerHand: _hand6,
         opponentHand: _hand6,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -377,7 +377,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -400,7 +400,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -421,11 +421,11 @@ void main() {
         opponentHand: _hand4,
         peggingCount: 15,
         isPlayerTurn: true,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -444,11 +444,11 @@ void main() {
         opponentHand: _hand4,
         peggingCount: 10,
         isPlayerTurn: false,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -472,11 +472,11 @@ void main() {
         pendingReset: pending,
         playerHand: _hand4,
         opponentHand: _hand4,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -497,11 +497,11 @@ void main() {
         gameStarted: true,
         currentPhase: GamePhase.pegging,
         pendingReset: pending,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -533,11 +533,11 @@ void main() {
         winnerModalData: winnerData,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -569,11 +569,11 @@ void main() {
         winnerModalData: winnerData,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -603,11 +603,11 @@ void main() {
         winnerModalData: winnerData,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -637,11 +637,11 @@ void main() {
         winnerModalData: winnerData,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -670,11 +670,11 @@ void main() {
         winnerModalData: winnerData,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -704,11 +704,11 @@ void main() {
         winnerModalData: winnerData,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -725,11 +725,11 @@ void main() {
         gameStarted: true,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -746,11 +746,11 @@ void main() {
         gameStarted: true,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -771,11 +771,11 @@ void main() {
         gameStarted: true,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -797,11 +797,11 @@ void main() {
         gameStarted: true,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -824,11 +824,11 @@ void main() {
         gameStarted: true,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -846,11 +846,11 @@ void main() {
         gameStarted: true,
         playerName: 'TestPlayer',
         opponentName: 'TestOpponent',
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -879,7 +879,7 @@ void main() {
         playerHand: _hand4,
         opponentHand: _hand4,
         starterCard: PlayingCard(rank: Rank.five, suit: Suit.hearts),
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
@@ -907,7 +907,7 @@ void main() {
         playerHand: _hand4,
         opponentHand: _hand4,
         starterCard: PlayingCard(rank: Rank.five, suit: Suit.hearts),
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
@@ -940,11 +940,11 @@ void main() {
           isPlayer: true,
           timestamp: 0,
         ),
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -967,11 +967,11 @@ void main() {
           isPlayer: false,
           timestamp: 0,
         ),
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -988,11 +988,11 @@ void main() {
         opponentName: 'TestOpponent',
         playerScore: 55,
         opponentScore: 33,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -1018,11 +1018,11 @@ void main() {
         currentPhase: GamePhase.cutForDealer,
         cutDeck: _smallCutDeck,
         playerHasSelectedCutCard: false,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -1043,11 +1043,11 @@ void main() {
         playerHand: _hand6,
         opponentHand: _hand6,
         selectedCards: {},
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -1071,11 +1071,11 @@ void main() {
         peggingCount: 20,
         isPlayerTurn: true,
         selectedCards: {},
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -1106,11 +1106,11 @@ void main() {
         peggingCount: 22,
         isPlayerTurn: true,
         selectedCards: {},
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -1140,7 +1140,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -1160,7 +1160,7 @@ void main() {
         currentPhase: GamePhase.cribSelection,
         playerHand: _hand6,
         opponentHand: _hand6,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
@@ -1189,11 +1189,11 @@ void main() {
         cutPlayerCard: PlayingCard(rank: Rank.three, suit: Suit.clubs),
         cutOpponentCard: PlayingCard(rank: Rank.king, suit: Suit.hearts),
         isPlayerDealer: false,
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 
@@ -1226,11 +1226,11 @@ void main() {
         isPlayerTurn: true,
         peggingPile: const [PlayingCard(rank: Rank.five, suit: Suit.hearts)],
         peggingCompletedRounds: [completedRound],
-      ));
+      ),);
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {})),
+            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
       );
       await tester.pump();
 

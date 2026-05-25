@@ -504,7 +504,9 @@ class GameEngine extends ChangeNotifier {
   void proceedToNextCountingPhaseWithManualScore(int manualScore) {
     if (_state.starterCard == null) return;
     if (_state.countingPhase == CountingPhase.none ||
-        _state.countingPhase == CountingPhase.completed) return;
+        _state.countingPhase == CountingPhase.completed) {
+      return;
+    }
     _applyCountingScore(manualScore);
   }
 
@@ -567,7 +569,7 @@ class GameEngine extends ChangeNotifier {
 
       case CountingPhase.dealer:
         final breakdown = CribbageScorer.scoreHandWithBreakdown(
-            _state.cribHand, starter, true);
+            _state.cribHand, starter, true,);
         _state = _state.copyWith(
           handScores: _state.handScores.copyWith(
             dealerScore: score,
@@ -647,14 +649,14 @@ class GameEngine extends ChangeNotifier {
             isPlayer: true,
             timestamp: DateTime.now().millisecondsSinceEpoch,
           )
-        : null);
+        : null,);
     final opponentAnims = _splitAnimation(opponentDelta > 0
         ? ScoreAnimation(
             points: opponentDelta,
             isPlayer: false,
             timestamp: DateTime.now().millisecondsSinceEpoch,
           )
-        : null);
+        : null,);
 
     _state = _state.copyWith(
       playerScore: newPlayerScore,
@@ -885,11 +887,11 @@ class GameEngine extends ChangeNotifier {
     final expectedPendingReset = _state.pendingReset;
     _opponentAutoplayScheduled = true;
     unawaited(_runOpponentAutoplay(
-        expectedPhase, expectedTurn, expectedPendingReset));
+        expectedPhase, expectedTurn, expectedPendingReset,),);
   }
 
   ({ScoreAnimation? player, ScoreAnimation? opponent}) _splitAnimation(
-          ScoreAnimation? anim) =>
+          ScoreAnimation? anim,) =>
       anim == null
           ? (player: null, opponent: null)
           : (

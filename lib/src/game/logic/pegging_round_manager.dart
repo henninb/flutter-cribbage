@@ -59,7 +59,7 @@ class PeggingRoundManager {
         cards: List.from(peggingPile),
         finalCount: peggingCount,
         endReason: resetFor31 ? '31' : 'Go',
-      ));
+      ),);
     }
 
     peggingCount = 0;
