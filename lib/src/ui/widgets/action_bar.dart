@@ -253,16 +253,10 @@ class ActionBar extends StatelessWidget {
     return buttons;
   }
 
-  int? _currentCountingPoints() {
-    switch (state.countingPhase) {
-      case CountingPhase.nonDealer:
-        return state.handScores.nonDealerScore;
-      case CountingPhase.dealer:
-        return state.handScores.dealerScore;
-      case CountingPhase.crib:
-        return state.handScores.cribScore;
-      default:
-        return null;
-    }
-  }
+  int? _currentCountingPoints() => switch (state.countingPhase) {
+        CountingPhase.nonDealer => state.handScores.nonDealerScore,
+        CountingPhase.dealer => state.handScores.dealerScore,
+        CountingPhase.crib => state.handScores.cribScore,
+        _ => null,
+      };
 }

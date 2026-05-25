@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../models/card.dart';
 
 class DetailedScoreBreakdown {
@@ -92,7 +94,7 @@ class CribbageScorer {
         j++;
       }
       if (runLength >= 3) {
-        longestRun = runLength > longestRun ? runLength : longestRun;
+        longestRun = max(longestRun, runLength);
       }
     }
 
@@ -237,9 +239,6 @@ class CribbageScorer {
       return combos;
     }
 
-    return helper(0)
-        .where((combo) => combo.length == groups.length)
-        .map((combo) => combo.toList())
-        .toList();
+    return helper(0);
   }
 }

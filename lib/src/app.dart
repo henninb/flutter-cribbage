@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -40,15 +42,10 @@ class _CribbageAppState extends State<CribbageApp> {
     });
   }
 
-  CribbageTheme _getThemeFromSettings(GameSettings settings) {
-    if (settings.selectedTheme != null) {
-      // Use selected theme from settings
-      return ThemeDefinitions.getThemeByType(settings.selectedTheme!);
-    } else {
-      // Use date-based theme
-      return ThemeCalculator.getCurrentTheme();
-    }
-  }
+  CribbageTheme _getThemeFromSettings(GameSettings settings) =>
+      settings.selectedTheme != null
+          ? ThemeDefinitions.getThemeByType(settings.selectedTheme!)
+          : ThemeCalculator.getCurrentTheme();
 
   void _handleThemeChange(CribbageTheme newTheme) {
     setState(() {
@@ -62,8 +59,7 @@ class _CribbageAppState extends State<CribbageApp> {
       // Update theme when settings change
       _currentTheme = _getThemeFromSettings(newSettings);
     });
-    // Save settings
-    _settingsRepository.saveSettings(newSettings);
+    unawaited(_settingsRepository.saveSettings(newSettings));
   }
 
   @override

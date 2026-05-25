@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../game/engine/game_engine.dart';
 import '../../game/engine/game_state.dart';
+import '../../game/logic/pegging_round_manager.dart';
 import '../../game/models/card.dart';
 import '../../models/theme_models.dart';
 import '../../models/game_settings.dart';
@@ -308,8 +309,6 @@ class _ScoreHeaderState extends State<_ScoreHeader> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug: Print scores being displayed
-
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -508,8 +507,7 @@ class _StarterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    // Determine suit color for better visibility
-    final isRedSuit = card.label.contains('♥') || card.label.contains('♦');
+    final isRedSuit = card.suit == Suit.hearts || card.suit == Suit.diamonds;
     final suitColor = isRedSuit ? Colors.red.shade700 : Colors.black87;
 
     return Container(
@@ -550,6 +548,15 @@ class _StarterCard extends StatelessWidget {
       ),
     );
   }
+}
+
+List<int> _sortedHandIndices(List<PlayingCard> hand) {
+  final indices = List<int>.generate(hand.length, (i) => i);
+  return indices
+    ..sort((a, b) {
+      final r = hand[a].rank.index.compareTo(hand[b].rank.index);
+      return r != 0 ? r : hand[a].suit.index.compareTo(hand[b].suit.index);
+    });
 }
 
 bool _isPlayerHandOrCrib(GameState state) => switch (state.countingPhase) {
@@ -703,18 +710,7 @@ class _OpponentHand extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardsRemaining =
         state.opponentHand.length - state.opponentCardsPlayed.length;
-
-    // Create sorted indices based on card rank (lowest to highest)
-    final sortedIndices =
-        List<int>.generate(state.opponentHand.length, (i) => i);
-    sortedIndices.sort((a, b) {
-      final cardA = state.opponentHand[a];
-      final cardB = state.opponentHand[b];
-      // First compare by rank index, then by suit for consistent ordering
-      final rankComparison = cardA.rank.index.compareTo(cardB.rank.index);
-      if (rankComparison != 0) return rankComparison;
-      return cardA.suit.index.compareTo(cardB.suit.index);
-    });
+    final sortedIndices = _sortedHandIndices(state.opponentHand);
 
     return Column(
       children: [
@@ -776,17 +772,7 @@ class _PlayerHand extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardsRemaining =
         state.playerHand.length - state.playerCardsPlayed.length;
-
-    // Create sorted indices based on card rank (lowest to highest)
-    final sortedIndices = List<int>.generate(state.playerHand.length, (i) => i);
-    sortedIndices.sort((a, b) {
-      final cardA = state.playerHand[a];
-      final cardB = state.playerHand[b];
-      // First compare by rank index, then by suit for consistent ordering
-      final rankComparison = cardA.rank.index.compareTo(cardB.rank.index);
-      if (rankComparison != 0) return rankComparison;
-      return cardA.suit.index.compareTo(cardB.suit.index);
-    });
+    final sortedIndices = _sortedHandIndices(state.playerHand);
 
     return Column(
       children: [
@@ -1251,7 +1237,7 @@ class _PeggingDisplayState extends State<_PeggingDisplay> {
 
   Widget _buildPileArea(
     BuildContext context,
-    List<dynamic> completedRounds,
+    List<PeggingRound> completedRounds,
     bool hasHistory,
     bool hasCurrentCards,
   ) {

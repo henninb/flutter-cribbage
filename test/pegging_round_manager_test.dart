@@ -28,7 +28,7 @@ void main() {
     final mgr = PeggingRoundManager(startingPlayer: Player.player);
     final reset = mgr.onGo(opponentHasLegalMove: true);
     expect(reset, isNull);
-    expect(mgr.isPlayerTurn, Player.opponent);
+    expect(mgr.activePlayer, Player.opponent);
     expect(mgr.consecutiveGoes, 1);
   });
 
@@ -50,7 +50,7 @@ void main() {
     expect(round.cards.length, 2);
     expect(mgr.peggingPile, isEmpty);
     expect(mgr.peggingCount, 0);
-    expect(mgr.isPlayerTurn, Player.player);
+    expect(mgr.activePlayer, Player.player);
   });
 
   test('plays that exceed 31 throw an argument error', () {
@@ -66,23 +66,23 @@ void main() {
 
   test('initializes with correct starting player', () {
     final playerStarts = PeggingRoundManager(startingPlayer: Player.player);
-    expect(playerStarts.isPlayerTurn, Player.player);
+    expect(playerStarts.activePlayer, Player.player);
 
     final opponentStarts = PeggingRoundManager(startingPlayer: Player.opponent);
-    expect(opponentStarts.isPlayerTurn, Player.opponent);
+    expect(opponentStarts.activePlayer, Player.opponent);
   });
 
   test('default starting player is player', () {
     final mgr = PeggingRoundManager();
-    expect(mgr.isPlayerTurn, Player.player);
+    expect(mgr.activePlayer, Player.player);
   });
 
   test('onPlay switches turns after valid play', () {
     final mgr = PeggingRoundManager(startingPlayer: Player.player);
     mgr.onPlay(const PlayingCard(rank: Rank.five, suit: Suit.hearts));
-    expect(mgr.isPlayerTurn, Player.opponent);
+    expect(mgr.activePlayer, Player.opponent);
     mgr.onPlay(const PlayingCard(rank: Rank.six, suit: Suit.clubs));
-    expect(mgr.isPlayerTurn, Player.player);
+    expect(mgr.activePlayer, Player.player);
   });
 
   test('onPlay updates pegging count correctly', () {
@@ -162,7 +162,7 @@ void main() {
     ); // Opponent plays last
 
     // After reset, player should start next round (opponent made the 31)
-    expect(mgr.isPlayerTurn, Player.player);
+    expect(mgr.activePlayer, Player.player);
   });
 
   test('onGo increments consecutive goes', () {

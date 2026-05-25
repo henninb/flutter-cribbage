@@ -15,9 +15,9 @@ typedef PlayOutcome = ({SubRoundReset? reset});
 
 class PeggingRoundManager {
   PeggingRoundManager({Player startingPlayer = Player.player})
-      : isPlayerTurn = startingPlayer;
+      : activePlayer = startingPlayer;
 
-  Player isPlayerTurn;
+  Player activePlayer;
   int peggingCount = 0;
   int consecutiveGoes = 0;
   Player? lastPlayerWhoPlayed;
@@ -30,14 +30,14 @@ class PeggingRoundManager {
     }
     peggingPile.add(card);
     peggingCount += card.value;
-    lastPlayerWhoPlayed = isPlayerTurn;
+    lastPlayerWhoPlayed = activePlayer;
     consecutiveGoes = 0;
 
     if (peggingCount == 31) {
       return (reset: _performReset(resetFor31: true));
     }
 
-    isPlayerTurn = _other(isPlayerTurn);
+    activePlayer = _other(activePlayer);
     return (reset: null);
   }
 
@@ -46,7 +46,7 @@ class PeggingRoundManager {
     if (!opponentHasLegalMove) {
       return _performReset(resetFor31: false);
     }
-    isPlayerTurn = _other(isPlayerTurn);
+    activePlayer = _other(activePlayer);
     return null;
   }
 
@@ -65,7 +65,7 @@ class PeggingRoundManager {
     peggingCount = 0;
     peggingPile.clear();
     consecutiveGoes = 0;
-    isPlayerTurn = last == Player.player ? Player.opponent : Player.player;
+    activePlayer = last == Player.player ? Player.opponent : Player.player;
     lastPlayerWhoPlayed = null;
     return (resetFor31: resetFor31, goPointTo: awardTo);
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
+import '../../game/models/card.dart';
 import '../../utils/string_sanitizer.dart';
 import 'card_constants.dart';
 import 'playing_card_widget.dart';
@@ -209,13 +210,11 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     if (dialogData == null) return null;
 
     final isCrib = widget.state.countingPhase == CountingPhase.crib;
-    final breakdown = CribbageScorer.scoreHandWithBreakdown(
-      dialogData.hand.cast(),
+    return CribbageScorer.scoreHandWithBreakdown(
+      dialogData.hand,
       starter,
       isCrib,
     );
-
-    return breakdown;
   }
 
   void _handleAccept() {
@@ -319,40 +318,31 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     );
   }
 
-  _DialogData? _getDialogData() {
-    switch (widget.state.countingPhase) {
-      case CountingPhase.nonDealer:
-        return _DialogData(
-          title: widget.state.isPlayerDealer
-              ? "${StringSanitizer.possessive(widget.state.opponentName)} Hand"
-              : "${StringSanitizer.possessive(widget.state.playerName)} Hand",
-          hand: widget.state.isPlayerDealer
-              ? widget.state.opponentHand
-              : widget.state.playerHand,
-        );
-
-      case CountingPhase.dealer:
-        return _DialogData(
-          title: widget.state.isPlayerDealer
-              ? "${StringSanitizer.possessive(widget.state.playerName)} Hand"
-              : "${StringSanitizer.possessive(widget.state.opponentName)} Hand",
-          hand: widget.state.isPlayerDealer
-              ? widget.state.playerHand
-              : widget.state.opponentHand,
-        );
-
-      case CountingPhase.crib:
-        return _DialogData(
-          title: widget.state.isPlayerDealer
-              ? "${StringSanitizer.possessive(widget.state.playerName)} Crib"
-              : "${StringSanitizer.possessive(widget.state.opponentName)} Crib",
-          hand: widget.state.cribHand,
-        );
-
-      default:
-        return null;
-    }
-  }
+  _DialogData? _getDialogData() => switch (widget.state.countingPhase) {
+        CountingPhase.nonDealer => _DialogData(
+            title: widget.state.isPlayerDealer
+                ? "${StringSanitizer.possessive(widget.state.opponentName)} Hand"
+                : "${StringSanitizer.possessive(widget.state.playerName)} Hand",
+            hand: widget.state.isPlayerDealer
+                ? widget.state.opponentHand
+                : widget.state.playerHand,
+          ),
+        CountingPhase.dealer => _DialogData(
+            title: widget.state.isPlayerDealer
+                ? "${StringSanitizer.possessive(widget.state.playerName)} Hand"
+                : "${StringSanitizer.possessive(widget.state.opponentName)} Hand",
+            hand: widget.state.isPlayerDealer
+                ? widget.state.playerHand
+                : widget.state.opponentHand,
+          ),
+        CountingPhase.crib => _DialogData(
+            title: widget.state.isPlayerDealer
+                ? "${StringSanitizer.possessive(widget.state.playerName)} Crib"
+                : "${StringSanitizer.possessive(widget.state.opponentName)} Crib",
+            hand: widget.state.cribHand,
+          ),
+        _ => null,
+      };
 
   Widget _buildHeader(BuildContext context, String title) {
     return Container(
@@ -378,14 +368,12 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
     );
   }
 
-  Widget _buildCardsSection(BuildContext context, List<dynamic> hand) {
-    // Sort the hand by rank (lowest to highest)
-    final sortedHand = List<dynamic>.from(hand);
-    sortedHand.sort((a, b) {
-      final rankComparison = a.rank.index.compareTo(b.rank.index);
-      if (rankComparison != 0) return rankComparison;
-      return a.suit.index.compareTo(b.suit.index);
-    });
+  Widget _buildCardsSection(BuildContext context, List<PlayingCard> hand) {
+    final sortedHand = hand.toList()
+      ..sort((a, b) {
+        final r = a.rank.index.compareTo(b.rank.index);
+        return r != 0 ? r : a.suit.index.compareTo(b.suit.index);
+      });
 
     return Column(
       children: [
@@ -837,7 +825,7 @@ class _ManualCountingDialogState extends State<ManualCountingDialog> {
 
 class _DialogData {
   final String title;
-  final List<dynamic> hand;
+  final List<PlayingCard> hand;
 
   _DialogData({
     required this.title,
@@ -847,7 +835,7 @@ class _DialogData {
 
 /// Card display for manual counting dialog
 class _HandCard extends StatelessWidget {
-  final dynamic card;
+  final PlayingCard card;
 
   const _HandCard({required this.card});
 

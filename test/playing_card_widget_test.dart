@@ -31,26 +31,11 @@ void main() {
     );
   }
 
-  group('rankString', () {
-    test('ace returns A', () {
-      final w = PlayingCardWidget(card: aceOfSpades, width: 60);
-      expect(w.rankString, 'A');
-    });
-
-    test('ten returns 10', () {
-      final w = PlayingCardWidget(card: tenOfHearts, width: 60);
-      expect(w.rankString, '10');
-    });
-
-    test('king returns K', () {
-      final w = PlayingCardWidget(card: kingOfDiamonds, width: 60);
-      expect(w.rankString, 'K');
-    });
-
-    test('two returns 2', () {
-      final w = PlayingCardWidget(card: twoOfClubs, width: 60);
-      expect(w.rankString, '2');
-    });
+  group('Rank.label', () {
+    test('ace returns A', () => expect(Rank.ace.label, 'A'));
+    test('ten returns 10', () => expect(Rank.ten.label, '10'));
+    test('king returns K', () => expect(Rank.king.label, 'K'));
+    test('two returns 2', () => expect(Rank.two.label, '2'));
 
     for (final entry in {
       Rank.three: '3',
@@ -64,43 +49,16 @@ void main() {
       Rank.queen: 'Q',
     }.entries) {
       test('${entry.key} returns ${entry.value}', () {
-        final w = PlayingCardWidget(
-          card: PlayingCard(rank: entry.key, suit: Suit.clubs),
-          width: 60,
-        );
-        expect(w.rankString, entry.value);
+        expect(entry.key.label, entry.value);
       });
     }
   });
 
-  group('suitSymbol', () {
-    test('spades returns ♠', () {
-      expect(
-        PlayingCardWidget(card: aceOfSpades, width: 60).suitSymbol,
-        '♠',
-      );
-    });
-
-    test('hearts returns ♥', () {
-      expect(
-        PlayingCardWidget(card: tenOfHearts, width: 60).suitSymbol,
-        '♥',
-      );
-    });
-
-    test('diamonds returns ♦', () {
-      expect(
-        PlayingCardWidget(card: kingOfDiamonds, width: 60).suitSymbol,
-        '♦',
-      );
-    });
-
-    test('clubs returns ♣', () {
-      expect(
-        PlayingCardWidget(card: twoOfClubs, width: 60).suitSymbol,
-        '♣',
-      );
-    });
+  group('Suit.label', () {
+    test('spades returns ♠', () => expect(Suit.spades.label, '♠'));
+    test('hearts returns ♥', () => expect(Suit.hearts.label, '♥'));
+    test('diamonds returns ♦', () => expect(Suit.diamonds.label, '♦'));
+    test('clubs returns ♣', () => expect(Suit.clubs.label, '♣'));
   });
 
   group('suitColor', () {

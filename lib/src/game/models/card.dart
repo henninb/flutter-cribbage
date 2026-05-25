@@ -20,7 +20,7 @@ enum Rank {
   king,
 }
 
-extension on Rank {
+extension RankDisplay on Rank {
   String get label => switch (this) {
         Rank.ace => 'A',
         Rank.two => '2',
@@ -38,7 +38,7 @@ extension on Rank {
       };
 }
 
-extension on Suit {
+extension SuitDisplay on Suit {
   String get label => switch (this) {
         Suit.spades => '♠',
         Suit.hearts => '♥',
@@ -97,12 +97,11 @@ class PlayingCard {
 }
 
 List<PlayingCard> createDeck({Random? random}) {
-  final deck = <PlayingCard>[];
-  for (final suit in Suit.values) {
-    for (final rank in Rank.values) {
-      deck.add(PlayingCard(rank: rank, suit: suit));
-    }
-  }
+  final deck = [
+    for (final suit in Suit.values)
+      for (final rank in Rank.values)
+        PlayingCard(rank: rank, suit: suit),
+  ];
   deck.shuffle(random);
   return deck;
 }

@@ -88,7 +88,7 @@ class CribbageBoard extends StatelessWidget {
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxScore = 121;
+        const maxScore = 121;
         final trackWidth = constraints.maxWidth;
         final pegPosition = (score / maxScore) * trackWidth;
 

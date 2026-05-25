@@ -145,7 +145,6 @@ class GameEngine extends ChangeNotifier {
       playerHasSelectedCutCard: true,
       showCutForDealer: true,
     );
-    // Fire and forget - don't block UI on save
     unawaited(_persistence?.saveCutCards(playerCut, opponentCut));
 
     final dealer = dealerFromCut(playerCut, opponentCut);
@@ -206,7 +205,6 @@ class GameEngine extends ChangeNotifier {
     );
   }
 
-
   void confirmCribSelection() {
     if (_state.selectedCards.length != 2) {
       return;
@@ -233,26 +231,22 @@ class GameEngine extends ChangeNotifier {
     var playerScore = _state.playerScore;
     var opponentScore = _state.opponentScore;
     var status = 'Starter card: ${starter?.label ?? '?'}';
-    ScoreAnimation? hisHeelsAnimation;
+    ScoreAnimation? hisHeelsAnim;
     if (starter?.rank == Rank.jack) {
       if (_state.isPlayerDealer) {
         playerScore += 2;
         status += '\nYou scored 2 for His Heels!';
-        hisHeelsAnimation = ScoreAnimation(
-          points: 2,
-          isPlayer: true,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-        );
       } else {
         opponentScore += 2;
         status += '\nOpponent scored 2 for His Heels!';
-        hisHeelsAnimation = ScoreAnimation(
-          points: 2,
-          isPlayer: false,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-        );
       }
+      hisHeelsAnim = ScoreAnimation(
+        points: 2,
+        isPlayer: _state.isPlayerDealer,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
     }
+    final heelsAnims = _splitAnimation(hisHeelsAnim);
 
     _peggingManager = PeggingRoundManager(
       startingPlayer: _state.isPlayerDealer ? Player.opponent : Player.player,
@@ -276,10 +270,8 @@ class GameEngine extends ChangeNotifier {
           (_state.isPlayerDealer
               ? '\nOpponent plays first.'
               : '\nYour turn to play.'),
-      playerScoreAnimation:
-          hisHeelsAnimation?.isPlayer == true ? hisHeelsAnimation : null,
-      opponentScoreAnimation:
-          hisHeelsAnimation?.isPlayer == false ? hisHeelsAnimation : null,
+      playerScoreAnimation: heelsAnims.player,
+      opponentScoreAnimation: heelsAnims.opponent,
     );
     notifyListeners();
     _maybeAutoplayOpponent();
@@ -321,27 +313,23 @@ class GameEngine extends ChangeNotifier {
     var status = _state.gameStatus;
     var playerScore = _state.playerScore;
     var opponentScore = _state.opponentScore;
-    ScoreAnimation? peggingAnimation;
+    ScoreAnimation? peggingAnim;
 
     if (points.total > 0) {
       if (isPlayer) {
         playerScore += points.total;
         status += '\nYou scored ${points.total}.';
-        peggingAnimation = ScoreAnimation(
-          points: points.total,
-          isPlayer: true,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-        );
       } else {
         opponentScore += points.total;
         status += '\nOpponent scored ${points.total}.';
-        peggingAnimation = ScoreAnimation(
-          points: points.total,
-          isPlayer: false,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-        );
       }
+      peggingAnim = ScoreAnimation(
+        points: points.total,
+        isPlayer: isPlayer,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
     }
+    final peggingAnims = _splitAnimation(peggingAnim);
 
     final updatedPlayed = Set<int>.from(played)..add(cardIndex);
 
@@ -349,7 +337,7 @@ class GameEngine extends ChangeNotifier {
     final stateUpdate = _state.copyWith(
       peggingCount: countAfter,
       peggingPile: pileAfter,
-      isPlayerTurn: mgr.isPlayerTurn == Player.player,
+      isPlayerTurn: mgr.activePlayer == Player.player,
       playerCardsPlayed: isPlayer ? updatedPlayed : _state.playerCardsPlayed,
       opponentCardsPlayed:
           isPlayer ? _state.opponentCardsPlayed : updatedPlayed,
@@ -359,15 +347,10 @@ class GameEngine extends ChangeNotifier {
       peggingCompletedRounds: List<PeggingRound>.from(mgr.completedRounds),
     );
 
-    // Apply animation updates only if there are points to show
-    _state = peggingAnimation != null
-        ? stateUpdate.copyWith(
-            playerScoreAnimation:
-                peggingAnimation.isPlayer ? peggingAnimation : null,
-            opponentScoreAnimation:
-                !peggingAnimation.isPlayer ? peggingAnimation : null,
-          )
-        : stateUpdate;
+    _state = stateUpdate.copyWith(
+      playerScoreAnimation: peggingAnims.player,
+      opponentScoreAnimation: peggingAnims.opponent,
+    );
     notifyListeners();
 
     if (outcome.reset != null && outcome.reset!.resetFor31) {
@@ -406,28 +389,26 @@ class GameEngine extends ChangeNotifier {
       var playerScore = _state.playerScore;
       var opponentScore = _state.opponentScore;
       var scoreAwarded = 0;
-      ScoreAnimation? goAnimation;
-      if (reset.goPointTo == Player.player) {
-        playerScore += 1;
+      ScoreAnimation? goAnim;
+      final goPointTo = reset.goPointTo;
+      if (goPointTo != null) {
+        final isPlayer = goPointTo == Player.player;
+        if (isPlayer) {
+          playerScore += 1;
+        } else {
+          opponentScore += 1;
+        }
         scoreAwarded = 1;
-        goAnimation = ScoreAnimation(
+        goAnim = ScoreAnimation(
           points: 1,
-          isPlayer: true,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-        );
-      } else if (reset.goPointTo == Player.opponent) {
-        opponentScore += 1;
-        scoreAwarded = 1;
-        goAnimation = ScoreAnimation(
-          points: 1,
-          isPlayer: false,
+          isPlayer: isPlayer,
           timestamp: DateTime.now().millisecondsSinceEpoch,
         );
       }
+      final goAnims = _splitAnimation(goAnim);
 
-      // Show pending reset dialog for Go (similar to 31)
       _state = _state.copyWith(
-        isPlayerTurn: mgr.isPlayerTurn == Player.player,
+        isPlayerTurn: mgr.activePlayer == Player.player,
         playerScore: playerScore,
         opponentScore: opponentScore,
         peggingPile: List<PlayingCard>.from(mgr.peggingPile),
@@ -439,10 +420,8 @@ class GameEngine extends ChangeNotifier {
           scoreAwarded: scoreAwarded,
           message: 'Go!',
         ),
-        playerScoreAnimation:
-            goAnimation?.isPlayer == true ? goAnimation : null,
-        opponentScoreAnimation:
-            goAnimation?.isPlayer == false ? goAnimation : null,
+        playerScoreAnimation: goAnims.player,
+        opponentScoreAnimation: goAnims.opponent,
       );
       notifyListeners();
       _checkPeggingComplete();
@@ -450,7 +429,7 @@ class GameEngine extends ChangeNotifier {
       return;
     } else {
       _state = _state.copyWith(
-        isPlayerTurn: mgr.isPlayerTurn == Player.player,
+        isPlayerTurn: mgr.activePlayer == Player.player,
       );
       notifyListeners();
     }
@@ -545,23 +524,22 @@ class GameEngine extends ChangeNotifier {
       opponentScore += score;
     }
 
-    final ScoreAnimation? animation = score > 0
+    final ScoreAnimation? anim = score > 0
         ? ScoreAnimation(
             points: score,
             isPlayer: isPlayerScoring,
             timestamp: DateTime.now().millisecondsSinceEpoch,
           )
         : null;
-    final playerAnim = animation?.isPlayer == true ? animation : null;
-    final opponentAnim = animation?.isPlayer == false ? animation : null;
+    final anims = _splitAnimation(anim);
 
     if (playerScore > 120 || opponentScore > 120) {
       _state = _state.copyWith(
         countingPhase: CountingPhase.completed,
         playerScore: playerScore,
         opponentScore: opponentScore,
-        playerScoreAnimation: playerAnim,
-        opponentScoreAnimation: opponentAnim,
+        playerScoreAnimation: anims.player,
+        opponentScoreAnimation: anims.opponent,
       );
       _checkGameOver();
       notifyListeners();
@@ -583,8 +561,9 @@ class GameEngine extends ChangeNotifier {
           countingPhase: CountingPhase.dealer,
           playerScore: playerScore,
           opponentScore: opponentScore,
-          playerScoreAnimation: playerAnim,
-          opponentScoreAnimation: opponentAnim,
+          playerScoreAnimation: anims.player,
+          opponentScoreAnimation: anims.opponent,
+
         );
 
       case CountingPhase.dealer:
@@ -599,8 +578,9 @@ class GameEngine extends ChangeNotifier {
           countingPhase: CountingPhase.crib,
           playerScore: playerScore,
           opponentScore: opponentScore,
-          playerScoreAnimation: playerAnim,
-          opponentScoreAnimation: opponentAnim,
+          playerScoreAnimation: anims.player,
+          opponentScoreAnimation: anims.opponent,
+
         );
 
       case CountingPhase.crib:
@@ -609,8 +589,9 @@ class GameEngine extends ChangeNotifier {
           countingPhase: CountingPhase.completed,
           playerScore: playerScore,
           opponentScore: opponentScore,
-          playerScoreAnimation: playerAnim,
-          opponentScoreAnimation: opponentAnim,
+          playerScoreAnimation: anims.player,
+          opponentScoreAnimation: anims.opponent,
+
         );
         _checkGameOver();
         if (!_state.gameOver) _startNewRound();
@@ -651,7 +632,6 @@ class GameEngine extends ChangeNotifier {
     } else {
       _state = _state.copyWith(opponentName: sanitizedName);
     }
-    // Fire and forget - don't block UI on save
     unawaited(
       _persistence?.savePlayerNames(
         playerName: _state.playerName,
@@ -663,41 +643,29 @@ class GameEngine extends ChangeNotifier {
 
   void updateScores(int newPlayerScore, int newOpponentScore) {
 
-    // Calculate deltas to create animations
     final playerDelta = newPlayerScore - _state.playerScore;
     final opponentDelta = newOpponentScore - _state.opponentScore;
+    final playerAnims = _splitAnimation(playerDelta > 0
+        ? ScoreAnimation(
+            points: playerDelta,
+            isPlayer: true,
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          )
+        : null);
+    final opponentAnims = _splitAnimation(opponentDelta > 0
+        ? ScoreAnimation(
+            points: opponentDelta,
+            isPlayer: false,
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          )
+        : null);
 
-    ScoreAnimation? playerAnimation;
-    ScoreAnimation? opponentAnimation;
-
-    // Create animations for positive deltas
-    if (playerDelta > 0) {
-      playerAnimation = ScoreAnimation(
-        points: playerDelta,
-        isPlayer: true,
-        timestamp: DateTime.now().millisecondsSinceEpoch,
-      );
-    }
-    if (opponentDelta > 0) {
-      opponentAnimation = ScoreAnimation(
-        points: opponentDelta,
-        isPlayer: false,
-        timestamp: DateTime.now().millisecondsSinceEpoch,
-      );
-    }
-
-    // Only update animations if there are positive deltas to show
-    final stateUpdate = _state.copyWith(
+    _state = _state.copyWith(
       playerScore: newPlayerScore,
       opponentScore: newOpponentScore,
+      playerScoreAnimation: playerAnims.player,
+      opponentScoreAnimation: opponentAnims.opponent,
     );
-
-    _state = (playerAnimation != null || opponentAnimation != null)
-        ? stateUpdate.copyWith(
-            playerScoreAnimation: playerAnimation,
-            opponentScoreAnimation: opponentAnimation,
-          )
-        : stateUpdate;
     notifyListeners();
   }
 
@@ -772,29 +740,26 @@ class GameEngine extends ChangeNotifier {
 
       var scoreAwarded = 0;
       if (mgr != null && finalCount > 0 && finalCount != 31) {
-        // Last player who played gets 1 point for last card
-        if (mgr.lastPlayerWhoPlayed == Player.player) {
-          playerScore += 1;
-          status += '\nYou scored 1 for last card.';
+        final lastPlayer = mgr.lastPlayerWhoPlayed;
+        if (lastPlayer != null) {
+          final isPlayer = lastPlayer == Player.player;
+          if (isPlayer) {
+            playerScore += 1;
+            status += '\nYou scored 1 for last card.';
+          } else {
+            opponentScore += 1;
+            status += '\nOpponent scored 1 for last card.';
+          }
           scoreAwarded = 1;
           lastCardAnimation = ScoreAnimation(
             points: 1,
-            isPlayer: true,
-            timestamp: DateTime.now().millisecondsSinceEpoch,
-          );
-        } else if (mgr.lastPlayerWhoPlayed == Player.opponent) {
-          opponentScore += 1;
-          status += '\nOpponent scored 1 for last card.';
-          scoreAwarded = 1;
-          lastCardAnimation = ScoreAnimation(
-            points: 1,
-            isPlayer: false,
+            isPlayer: isPlayer,
             timestamp: DateTime.now().millisecondsSinceEpoch,
           );
         }
       }
+      final lastCardAnims = _splitAnimation(lastCardAnimation);
 
-      // Only update animations if last card scored, otherwise preserve existing animations
       final stateUpdate = _state.copyWith(
         currentPhase: GamePhase.handCounting,
         gameStatus: '$status\nPegging complete. Count hands.',
@@ -817,14 +782,10 @@ class GameEngine extends ChangeNotifier {
         mgr.lastPlayerWhoPlayed = null;
       }
 
-      _state = lastCardAnimation != null
-          ? stateUpdate.copyWith(
-              playerScoreAnimation:
-                  lastCardAnimation.isPlayer ? lastCardAnimation : null,
-              opponentScoreAnimation:
-                  !lastCardAnimation.isPlayer ? lastCardAnimation : null,
-            )
-          : stateUpdate;
+      _state = stateUpdate.copyWith(
+        playerScoreAnimation: lastCardAnims.player,
+        opponentScoreAnimation: lastCardAnims.opponent,
+      );
       notifyListeners();
     }
   }
@@ -879,7 +840,6 @@ class GameEngine extends ChangeNotifier {
     final doubleSkunksAgainst = !playerWins && doubleSkunk
         ? _state.doubleSkunksAgainst + 1
         : _state.doubleSkunksAgainst;
-    // Fire and forget - don't block UI on save
     unawaited(
       _persistence?.saveStats(
         gamesWon: gamesWon,
@@ -931,6 +891,15 @@ class GameEngine extends ChangeNotifier {
     unawaited(_runOpponentAutoplay(expectedPhase, expectedTurn, expectedPendingReset));
   }
 
+  ({ScoreAnimation? player, ScoreAnimation? opponent}) _splitAnimation(
+      ScoreAnimation? anim) =>
+      anim == null
+          ? (player: null, opponent: null)
+          : (
+              player: anim.isPlayer ? anim : null,
+              opponent: anim.isPlayer ? null : anim,
+            );
+
   Future<void> _runOpponentAutoplay(
     GamePhase expectedPhase,
     bool expectedTurn,
@@ -947,7 +916,7 @@ class GameEngine extends ChangeNotifier {
 
     final mgr = _peggingManager;
     if (mgr == null) return;
-    if (mgr.isPlayerTurn != Player.opponent) return;
+    if (mgr.activePlayer != Player.opponent) return;
 
     final move = OpponentAI.choosePeggingCard(
       hand: _state.opponentHand,

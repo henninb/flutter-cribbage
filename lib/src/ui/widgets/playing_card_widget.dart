@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../../game/models/card.dart';
 
@@ -28,72 +30,15 @@ class PlayingCardWidget extends StatelessWidget {
     this.onTap,
   });
 
-  /// Calculate height based on traditional 2.5:3.5 ratio if not provided
   double get _height => height ?? (width * 1.4);
 
-  /// Get suit color (red for hearts/diamonds, black for spades/clubs)
-  Color get suitColor {
-    switch (card.suit) {
-      case Suit.hearts:
-      case Suit.diamonds:
-        return const Color(0xFFD32F2F); // Rich red
-      case Suit.spades:
-      case Suit.clubs:
-        return const Color(0xFF212121); // Pure black
-    }
-  }
-
-  /// Get rank string
-  String get rankString {
-    switch (card.rank) {
-      case Rank.ace:
-        return 'A';
-      case Rank.two:
-        return '2';
-      case Rank.three:
-        return '3';
-      case Rank.four:
-        return '4';
-      case Rank.five:
-        return '5';
-      case Rank.six:
-        return '6';
-      case Rank.seven:
-        return '7';
-      case Rank.eight:
-        return '8';
-      case Rank.nine:
-        return '9';
-      case Rank.ten:
-        return '10';
-      case Rank.jack:
-        return 'J';
-      case Rank.queen:
-        return 'Q';
-      case Rank.king:
-        return 'K';
-    }
-  }
-
-  /// Get suit symbol
-  String get suitSymbol {
-    switch (card.suit) {
-      case Suit.spades:
-        return '♠';
-      case Suit.hearts:
-        return '♥';
-      case Suit.diamonds:
-        return '♦';
-      case Suit.clubs:
-        return '♣';
-    }
-  }
+  Color get suitColor => switch (card.suit) {
+        Suit.hearts || Suit.diamonds => const Color(0xFFD32F2F),
+        Suit.spades || Suit.clubs => const Color(0xFF212121),
+      };
 
   @override
   Widget build(BuildContext context) {
-    // Debug logging to track card sizes
-    debugPrint('[CARD SIZE] ${card.label}: width=$width, height=$_height');
-
     final backgroundColor = isPlayed
         ? const Color(0xFFE0E0E0) // Light gray for played cards
         : isSelected
@@ -154,7 +99,7 @@ class PlayingCardWidget extends StatelessWidget {
                 bottom: width * 0.08,
                 right: width * 0.12,
                 child: Transform.rotate(
-                  angle: 3.14159, // 180 degrees in radians
+                  angle: pi,
                   child: _buildCornerIndex(opacity),
                 ),
               ),
@@ -163,7 +108,7 @@ class PlayingCardWidget extends StatelessWidget {
                 child: Opacity(
                   opacity: opacity,
                   child: Text(
-                    suitSymbol,
+                    card.suit.label,
                     style: TextStyle(
                       fontSize: width * 0.35,
                       color: suitColor,
@@ -188,7 +133,7 @@ class PlayingCardWidget extends StatelessWidget {
         children: [
           // Rank
           Text(
-            rankString,
+            card.rank.label,
             style: TextStyle(
               fontSize: width * 0.25,
               fontWeight: FontWeight.bold,
@@ -198,7 +143,7 @@ class PlayingCardWidget extends StatelessWidget {
           ),
           // Suit symbol
           Text(
-            suitSymbol,
+            card.suit.label,
             style: TextStyle(
               fontSize: width * 0.22,
               color: suitColor,

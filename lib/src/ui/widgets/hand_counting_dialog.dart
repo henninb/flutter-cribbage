@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../game/engine/game_state.dart';
 import '../../game/logic/cribbage_scorer.dart';
+import '../../game/models/card.dart';
 import '../../utils/string_sanitizer.dart';
 import 'card_constants.dart';
 import 'playing_card_widget.dart';
@@ -61,42 +62,30 @@ class HandCountingDialog extends StatelessWidget {
     );
   }
 
-  _DialogData? _getDialogData() {
-    final scores = state.handScores;
-
-
-    switch (state.countingPhase) {
-      case CountingPhase.nonDealer:
-        return _DialogData(
-          title: state.isPlayerDealer
-              ? "${StringSanitizer.possessive(state.opponentName)} Hand"
-              : "${StringSanitizer.possessive(state.playerName)} Hand",
-          hand: state.isPlayerDealer ? state.opponentHand : state.playerHand,
-          breakdown: scores.nonDealerBreakdown,
-        );
-
-      case CountingPhase.dealer:
-        return _DialogData(
-          title: state.isPlayerDealer
-              ? "${StringSanitizer.possessive(state.playerName)} Hand"
-              : "${StringSanitizer.possessive(state.opponentName)} Hand",
-          hand: state.isPlayerDealer ? state.playerHand : state.opponentHand,
-          breakdown: scores.dealerBreakdown,
-        );
-
-      case CountingPhase.crib:
-        return _DialogData(
-          title: state.isPlayerDealer
-              ? "${StringSanitizer.possessive(state.playerName)} Crib"
-              : "${StringSanitizer.possessive(state.opponentName)} Crib",
-          hand: state.cribHand,
-          breakdown: scores.cribBreakdown,
-        );
-
-      default:
-        return null;
-    }
-  }
+  _DialogData? _getDialogData() => switch (state.countingPhase) {
+        CountingPhase.nonDealer => _DialogData(
+            title: state.isPlayerDealer
+                ? "${StringSanitizer.possessive(state.opponentName)} Hand"
+                : "${StringSanitizer.possessive(state.playerName)} Hand",
+            hand: state.isPlayerDealer ? state.opponentHand : state.playerHand,
+            breakdown: state.handScores.nonDealerBreakdown,
+          ),
+        CountingPhase.dealer => _DialogData(
+            title: state.isPlayerDealer
+                ? "${StringSanitizer.possessive(state.playerName)} Hand"
+                : "${StringSanitizer.possessive(state.opponentName)} Hand",
+            hand: state.isPlayerDealer ? state.playerHand : state.opponentHand,
+            breakdown: state.handScores.dealerBreakdown,
+          ),
+        CountingPhase.crib => _DialogData(
+            title: state.isPlayerDealer
+                ? "${StringSanitizer.possessive(state.playerName)} Crib"
+                : "${StringSanitizer.possessive(state.opponentName)} Crib",
+            hand: state.cribHand,
+            breakdown: state.handScores.cribBreakdown,
+          ),
+        _ => null,
+      };
 
   Widget _buildHeader(BuildContext context, String title) {
     return Container(
@@ -125,15 +114,12 @@ class HandCountingDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildCardsSection(BuildContext context, List<dynamic> hand) {
-    // Sort the hand by rank (lowest to highest)
-    final sortedHand = List<dynamic>.from(hand);
-    sortedHand.sort((a, b) {
-      // First compare by rank index, then by suit for consistent ordering
-      final rankComparison = a.rank.index.compareTo(b.rank.index);
-      if (rankComparison != 0) return rankComparison;
-      return a.suit.index.compareTo(b.suit.index);
-    });
+  Widget _buildCardsSection(BuildContext context, List<PlayingCard> hand) {
+    final sortedHand = hand.toList()
+      ..sort((a, b) {
+        final r = a.rank.index.compareTo(b.rank.index);
+        return r != 0 ? r : a.suit.index.compareTo(b.suit.index);
+      });
 
     return Column(
       children: [
@@ -288,7 +274,7 @@ class HandCountingDialog extends StatelessWidget {
 
 class _DialogData {
   final String title;
-  final List<dynamic> hand;
+  final List<PlayingCard> hand;
   final DetailedScoreBreakdown? breakdown;
 
   _DialogData({
@@ -300,7 +286,7 @@ class _DialogData {
 
 /// Card display for hand counting dialog
 class _HandCard extends StatelessWidget {
-  final dynamic card;
+  final PlayingCard card;
 
   const _HandCard({required this.card});
 
