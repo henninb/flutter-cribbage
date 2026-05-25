@@ -155,18 +155,21 @@ void main() {
   group('score header', () {
     testWidgets('visible when gameStarted is true', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.setup,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerScore: 42,
-        opponentScore: 17,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.setup,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerScore: 42,
+          opponentScore: 17,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -176,14 +179,17 @@ void main() {
 
     testWidgets('hidden when gameStarted is false', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: false,
-        playerScore: 42,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: false,
+          playerScore: 42,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -192,19 +198,22 @@ void main() {
 
     testWidgets('shows starter card for red suit', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        starterCard: PlayingCard(rank: Rank.ace, suit: Suit.hearts),
-        playerHand: _hand4,
-        opponentHand: _hand4,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          starterCard: PlayingCard(rank: Rank.ace, suit: Suit.hearts),
+          playerHand: _hand4,
+          opponentHand: _hand4,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -213,19 +222,22 @@ void main() {
 
     testWidgets('shows starter card for black suit', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        starterCard: PlayingCard(rank: Rank.king, suit: Suit.spades),
-        playerHand: _hand4,
-        opponentHand: _hand4,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          starterCard: PlayingCard(rank: Rank.king, suit: Suit.spades),
+          playerHand: _hand4,
+          opponentHand: _hand4,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -235,19 +247,22 @@ void main() {
 
     testWidgets('shows dealer badge when player is dealer', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cribSelection,
-        isPlayerDealer: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand6,
-        opponentHand: _hand6,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cribSelection,
+          isPlayerDealer: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand6,
+          opponentHand: _hand6,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -258,16 +273,19 @@ void main() {
   group('spread deck', () {
     testWidgets('renders spread deck in cutForDealer phase', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cutForDealer,
-        cutDeck: _smallCutDeck,
-        playerHasSelectedCutCard: false,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cutForDealer,
+          cutDeck: _smallCutDeck,
+          playerHasSelectedCutCard: false,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -277,19 +295,22 @@ void main() {
     testWidgets('shows cut card results when player has selected',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cutForDealer,
-        cutDeck: _smallCutDeck,
-        playerHasSelectedCutCard: true,
-        cutPlayerCard: PlayingCard(rank: Rank.ace, suit: Suit.spades),
-        cutOpponentCard: PlayingCard(rank: Rank.king, suit: Suit.hearts),
-        isPlayerDealer: true,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cutForDealer,
+          cutDeck: _smallCutDeck,
+          playerHasSelectedCutCard: true,
+          cutPlayerCard: PlayingCard(rank: Rank.ace, suit: Suit.spades),
+          cutOpponentCard: PlayingCard(rank: Rank.king, suit: Suit.hearts),
+          isPlayerDealer: true,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -300,18 +321,21 @@ void main() {
     testWidgets('shows tie message when cut cards have same rank',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cutForDealer,
-        cutDeck: _smallCutDeck,
-        playerHasSelectedCutCard: true,
-        cutPlayerCard: PlayingCard(rank: Rank.ace, suit: Suit.spades),
-        cutOpponentCard: PlayingCard(rank: Rank.ace, suit: Suit.hearts),
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cutForDealer,
+          cutDeck: _smallCutDeck,
+          playerHasSelectedCutCard: true,
+          cutPlayerCard: PlayingCard(rank: Rank.ace, suit: Suit.spades),
+          cutOpponentCard: PlayingCard(rank: Rank.ace, suit: Suit.hearts),
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -322,18 +346,21 @@ void main() {
   group('opponent and player hands', () {
     testWidgets('shows hands in crib selection phase', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cribSelection,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand6,
-        opponentHand: _hand6,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cribSelection,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand6,
+          opponentHand: _hand6,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -343,16 +370,19 @@ void main() {
 
     testWidgets('shows crib selection instructions', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cribSelection,
-        playerHand: _hand6,
-        opponentHand: _hand6,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cribSelection,
+          playerHand: _hand6,
+          opponentHand: _hand6,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -377,7 +407,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -400,7 +431,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -412,20 +444,23 @@ void main() {
   group('pegging display', () {
     testWidgets('shows count and player turn indicator', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        peggingCount: 15,
-        isPlayerTurn: true,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          peggingCount: 15,
+          isPlayerTurn: true,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -435,20 +470,23 @@ void main() {
 
     testWidgets('shows opponent turn indicator', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        peggingCount: 10,
-        isPlayerTurn: false,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          peggingCount: 10,
+          isPlayerTurn: false,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -466,17 +504,20 @@ void main() {
         message: 'Fifteen for 2!',
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        pendingReset: pending,
-        playerHand: _hand4,
-        opponentHand: _hand4,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          pendingReset: pending,
+          playerHand: _hand4,
+          opponentHand: _hand4,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -493,15 +534,18 @@ void main() {
         message: '31 for 2!',
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        pendingReset: pending,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          pendingReset: pending,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -527,17 +571,20 @@ void main() {
         doubleSkunksAgainst: 0,
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        showWinnerModal: true,
-        winnerModalData: winnerData,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          showWinnerModal: true,
+          winnerModalData: winnerData,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -563,17 +610,20 @@ void main() {
         doubleSkunksAgainst: 0,
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        showWinnerModal: true,
-        winnerModalData: winnerData,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          showWinnerModal: true,
+          winnerModalData: winnerData,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -597,17 +647,20 @@ void main() {
         doubleSkunksAgainst: 0,
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        showWinnerModal: true,
-        winnerModalData: winnerData,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          showWinnerModal: true,
+          winnerModalData: winnerData,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -631,17 +684,20 @@ void main() {
         doubleSkunksAgainst: 0,
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        showWinnerModal: true,
-        winnerModalData: winnerData,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          showWinnerModal: true,
+          winnerModalData: winnerData,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -664,17 +720,20 @@ void main() {
         doubleSkunksAgainst: 0,
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        showWinnerModal: true,
-        winnerModalData: winnerData,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          showWinnerModal: true,
+          winnerModalData: winnerData,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -698,17 +757,20 @@ void main() {
         doubleSkunksAgainst: 0,
       );
 
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        showWinnerModal: true,
-        winnerModalData: winnerData,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          showWinnerModal: true,
+          winnerModalData: winnerData,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -721,15 +783,18 @@ void main() {
   group('player name dialog', () {
     testWidgets('opens when player name is tapped', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -742,15 +807,18 @@ void main() {
 
     testWidgets('cancel button closes the dialog', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -767,15 +835,18 @@ void main() {
 
     testWidgets('save with valid name closes dialog', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -793,15 +864,18 @@ void main() {
     testWidgets('save with whitespace-only name shows error snackbar',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -820,15 +894,18 @@ void main() {
     testWidgets('opens opponent name dialog on opponent name tap',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -842,15 +919,18 @@ void main() {
     testWidgets('save name with double-space shows modification snackbar',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -871,15 +951,17 @@ void main() {
     testWidgets('shows ManualCountingDialog for player hand', (tester) async {
       await _usePhone(tester);
       // countingPhase=dealer + isPlayerDealer=true => player's dealer hand
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.handCounting,
-        countingPhase: CountingPhase.dealer,
-        isPlayerDealer: true,
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        starterCard: PlayingCard(rank: Rank.five, suit: Suit.hearts),
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.handCounting,
+          countingPhase: CountingPhase.dealer,
+          isPlayerDealer: true,
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          starterCard: PlayingCard(rank: Rank.five, suit: Suit.hearts),
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
@@ -899,15 +981,17 @@ void main() {
     testWidgets('shows HandCountingDialog when counting mode is auto',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.handCounting,
-        countingPhase: CountingPhase.dealer,
-        isPlayerDealer: true,
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        starterCard: PlayingCard(rank: Rank.five, suit: Suit.hearts),
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.handCounting,
+          countingPhase: CountingPhase.dealer,
+          isPlayerDealer: true,
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          starterCard: PlayingCard(rank: Rank.five, suit: Suit.hearts),
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
@@ -927,24 +1011,27 @@ void main() {
   group('score animations', () {
     testWidgets('shows player score animation widget', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        playerScore: 42,
-        playerScoreAnimation: ScoreAnimation(
-          points: 5,
-          isPlayer: true,
-          timestamp: 0,
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          playerScore: 42,
+          playerScoreAnimation: ScoreAnimation(
+            points: 5,
+            isPlayer: true,
+            timestamp: 0,
+          ),
         ),
-      ),);
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -954,24 +1041,27 @@ void main() {
 
     testWidgets('shows opponent score animation widget', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        opponentScore: 20,
-        opponentScoreAnimation: ScoreAnimation(
-          points: 3,
-          isPlayer: false,
-          timestamp: 0,
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          opponentScore: 20,
+          opponentScoreAnimation: ScoreAnimation(
+            points: 3,
+            isPlayer: false,
+            timestamp: 0,
+          ),
         ),
-      ),);
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -982,17 +1072,20 @@ void main() {
   group('score column triple tap (debug)', () {
     testWidgets('triple tap on score shows debug dialog', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerScore: 55,
-        opponentScore: 33,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerScore: 55,
+          opponentScore: 33,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -1013,16 +1106,19 @@ void main() {
     testWidgets('tapping a card back in spread deck calls selectCutCard',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cutForDealer,
-        cutDeck: _smallCutDeck,
-        playerHasSelectedCutCard: false,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cutForDealer,
+          cutDeck: _smallCutDeck,
+          playerHasSelectedCutCard: false,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -1037,17 +1133,20 @@ void main() {
   group('player hand card interactions', () {
     testWidgets('tap card in crib selection selects it', (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cribSelection,
-        playerHand: _hand6,
-        opponentHand: _hand6,
-        selectedCards: {},
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cribSelection,
+          playerHand: _hand6,
+          opponentHand: _hand6,
+          selectedCards: {},
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -1061,21 +1160,24 @@ void main() {
     testWidgets('tap playable card in pegging plays it', (tester) async {
       await _usePhone(tester);
       // Player has a low card (ace=1) that can be played when count is 20
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        peggingCount: 20,
-        isPlayerTurn: true,
-        selectedCards: {},
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          peggingCount: 20,
+          isPlayerTurn: true,
+          selectedCards: {},
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -1094,23 +1196,26 @@ void main() {
       // With count=28: ace(1)→29 OK, 5(5)→33 EXCEEDS, 10(10)→38 EXCEEDS, king(10)→38 EXCEEDS
       // Need a card that is unplayable (value+count > 31)
       // With count=22 and king(10): 22+10=32 > 31 → unplayable
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: [
-          PlayingCard(rank: Rank.king, suit: Suit.spades), // value=10
-        ],
-        opponentHand: _hand4,
-        peggingCount: 22,
-        isPlayerTurn: true,
-        selectedCards: {},
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: [
+            PlayingCard(rank: Rank.king, suit: Suit.spades), // value=10
+          ],
+          opponentHand: _hand4,
+          peggingCount: 22,
+          isPlayerTurn: true,
+          selectedCards: {},
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -1140,7 +1245,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -1155,12 +1261,14 @@ void main() {
     testWidgets('shows CribDropZone in crib selection with drag mode',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.cribSelection,
-        playerHand: _hand6,
-        opponentHand: _hand6,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.cribSelection,
+          playerHand: _hand6,
+          opponentHand: _hand6,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
@@ -1180,20 +1288,23 @@ void main() {
     testWidgets('dealing phase with showCutForDealer shows spread deck',
         (tester) async {
       await _usePhone(tester);
-      final engine = _FakeGameEngine(const GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.dealing,
-        cutDeck: _smallCutDeck,
-        showCutForDealer: true,
-        playerHasSelectedCutCard: true,
-        cutPlayerCard: PlayingCard(rank: Rank.three, suit: Suit.clubs),
-        cutOpponentCard: PlayingCard(rank: Rank.king, suit: Suit.hearts),
-        isPlayerDealer: false,
-      ),);
+      final engine = _FakeGameEngine(
+        const GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.dealing,
+          cutDeck: _smallCutDeck,
+          showCutForDealer: true,
+          playerHasSelectedCutCard: true,
+          cutPlayerCard: PlayingCard(rank: Rank.three, suit: Suit.clubs),
+          cutOpponentCard: PlayingCard(rank: Rank.king, suit: Suit.hearts),
+          isPlayerDealer: false,
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 
@@ -1215,22 +1326,25 @@ void main() {
       );
 
       // Use FakeGameEngine with completed rounds in pegging
-      final engine = _FakeGameEngine(GameState(
-        gameStarted: true,
-        currentPhase: GamePhase.pegging,
-        playerName: 'TestPlayer',
-        opponentName: 'TestOpponent',
-        playerHand: _hand4,
-        opponentHand: _hand4,
-        peggingCount: 5,
-        isPlayerTurn: true,
-        peggingPile: const [PlayingCard(rank: Rank.five, suit: Suit.hearts)],
-        peggingCompletedRounds: [completedRound],
-      ),);
+      final engine = _FakeGameEngine(
+        GameState(
+          gameStarted: true,
+          currentPhase: GamePhase.pegging,
+          playerName: 'TestPlayer',
+          opponentName: 'TestOpponent',
+          playerHand: _hand4,
+          opponentHand: _hand4,
+          peggingCount: 5,
+          isPlayerTurn: true,
+          peggingPile: const [PlayingCard(rank: Rank.five, suit: Suit.hearts)],
+          peggingCompletedRounds: [completedRound],
+        ),
+      );
 
       await tester.pumpWidget(
         MaterialApp(
-            home: buildScreen(engine: engine, onSettingsChange: (_) {}),),
+          home: buildScreen(engine: engine, onSettingsChange: (_) {}),
+        ),
       );
       await tester.pump();
 

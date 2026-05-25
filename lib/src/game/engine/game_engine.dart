@@ -569,7 +569,10 @@ class GameEngine extends ChangeNotifier {
 
       case CountingPhase.dealer:
         final breakdown = CribbageScorer.scoreHandWithBreakdown(
-            _state.cribHand, starter, true,);
+          _state.cribHand,
+          starter,
+          true,
+        );
         _state = _state.copyWith(
           handScores: _state.handScores.copyWith(
             dealerScore: score,
@@ -643,20 +646,24 @@ class GameEngine extends ChangeNotifier {
   void updateScores(int newPlayerScore, int newOpponentScore) {
     final playerDelta = newPlayerScore - _state.playerScore;
     final opponentDelta = newOpponentScore - _state.opponentScore;
-    final playerAnims = _splitAnimation(playerDelta > 0
-        ? ScoreAnimation(
-            points: playerDelta,
-            isPlayer: true,
-            timestamp: DateTime.now().millisecondsSinceEpoch,
-          )
-        : null,);
-    final opponentAnims = _splitAnimation(opponentDelta > 0
-        ? ScoreAnimation(
-            points: opponentDelta,
-            isPlayer: false,
-            timestamp: DateTime.now().millisecondsSinceEpoch,
-          )
-        : null,);
+    final playerAnims = _splitAnimation(
+      playerDelta > 0
+          ? ScoreAnimation(
+              points: playerDelta,
+              isPlayer: true,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            )
+          : null,
+    );
+    final opponentAnims = _splitAnimation(
+      opponentDelta > 0
+          ? ScoreAnimation(
+              points: opponentDelta,
+              isPlayer: false,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            )
+          : null,
+    );
 
     _state = _state.copyWith(
       playerScore: newPlayerScore,
@@ -886,12 +893,18 @@ class GameEngine extends ChangeNotifier {
     final expectedTurn = _state.isPlayerTurn;
     final expectedPendingReset = _state.pendingReset;
     _opponentAutoplayScheduled = true;
-    unawaited(_runOpponentAutoplay(
-        expectedPhase, expectedTurn, expectedPendingReset,),);
+    unawaited(
+      _runOpponentAutoplay(
+        expectedPhase,
+        expectedTurn,
+        expectedPendingReset,
+      ),
+    );
   }
 
   ({ScoreAnimation? player, ScoreAnimation? opponent}) _splitAnimation(
-          ScoreAnimation? anim,) =>
+    ScoreAnimation? anim,
+  ) =>
       anim == null
           ? (player: null, opponent: null)
           : (

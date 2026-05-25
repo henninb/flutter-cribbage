@@ -55,11 +55,13 @@ class PeggingRoundManager {
     final last = lastPlayerWhoPlayed;
 
     if (peggingPile.isNotEmpty) {
-      completedRounds.add((
-        cards: List.from(peggingPile),
-        finalCount: peggingCount,
-        endReason: resetFor31 ? '31' : 'Go',
-      ),);
+      completedRounds.add(
+        (
+          cards: List.from(peggingPile),
+          finalCount: peggingCount,
+          endReason: resetFor31 ? '31' : 'Go',
+        ),
+      );
     }
 
     peggingCount = 0;

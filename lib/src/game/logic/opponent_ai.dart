@@ -25,8 +25,12 @@ class OpponentAI {
     }
     final combos = _generateCombinations(hand);
     final scored = combos
-        .map((c) =>
-            (combo: c, score: _evaluateCribChoice(c.keep, c.discard, isDealer)),)
+        .map(
+          (c) => (
+            combo: c,
+            score: _evaluateCribChoice(c.keep, c.discard, isDealer)
+          ),
+        )
         .toList()
       ..sort((a, b) => b.score.compareTo(a.score));
     return scored.firstOrNull?.combo.discard ?? hand.take(2).toList();
